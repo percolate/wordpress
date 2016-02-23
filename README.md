@@ -25,7 +25,8 @@ along with your user ID.
 
 * Initial release with support for custom platforms/templates.
 
-For change history of the Percolate-Wordpress legacy plugin, please refer to the original repository:
+For change history of the Percolate-Wordpress legacy plugin,
+please refer to the original repository:
 [WP-Percolate](https://github.com/percolate/WP-Percolate)
 
 --------------------------------------------------
