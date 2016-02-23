@@ -1,0 +1,9 @@
+dependencies:
+  override:
+    - gem install mdl
+
+test:
+  override:
+    - mdl:
+        files:
+          - "**/*.md"
