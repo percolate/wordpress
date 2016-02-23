@@ -8,8 +8,8 @@ It requires Wordpress 4.1 and is tested up to 4.4.2.
 
 It replaces the legacy Percolate-Wordpress plugin, available [here](https://github.com/percolate/WP-Percolate).
 
-*Note:* The legacy plugin is no longer being supported by Percolate. 
-While it may continue to function, continued functionality is not guaranteed. 
+*Note:* The legacy plugin is no longer being supported by Percolate.
+While it may continue to function, continued functionality is not guaranteed.
 For more information, or to upgrade to the new plugin, please reach out to your Percolate Engagement Manager.
 
 ## Get Started
