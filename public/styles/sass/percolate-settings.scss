@@ -1,0 +1,94 @@
+.percolate-app {
+  @import '../../lib/bootstrap-sass-3.3.6/assets/stylesheets/_bootstrap.scss';
+}
+
+#percolate-app {
+
+  #load-bar {
+    position: fixed;
+    top: 33px;
+    left: 161px; right: 0;
+    padding: 10px 12px 5px;
+    background-color: rgba(221, 221, 221, 0.85);
+    z-index: 999;
+
+    .loader, span {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .msg {
+      margin-top: -4px;
+      margin-left: 18px;
+      font-weight: 700;
+    }
+  }
+
+  .alert.ng-hide {
+    display: none;
+  }
+
+  & > .continer-fluid {
+    padding-left: 0;
+  }
+
+  hr {
+    border-color: #CCC9C9;
+  }
+
+  .table {
+    background-color: white;
+    border: 1px solid #CECECE;
+  }
+
+  .switch {
+    position: relative;
+    width: 44px;
+    height: 20px;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 30px;
+    border: 1px solid black;
+    cursor: pointer;
+
+    input {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 40px;
+      height: 20px;
+      opacity: 0;
+      z-index: 2;
+      cursor: pointer;
+    }
+
+    input:checked~.toggle {
+      left: 24px;
+    }
+
+    input~:checked~.toggle {
+      left: 1px;
+      background-color: #5d5856;
+    }
+
+    input:checked {
+      z-index: 0;
+    }
+
+    .toggle {
+      position: absolute;
+      $radius: 16px;
+      width: $radius; height: $radius;
+      border-radius: 50%;
+      background-color: #f1651f;
+      top: 1px;
+      left: 1px;
+      transition: left 250ms ease-in-out;
+    }
+  }
+
+
+  .an-reveal {
+    display: none;
+  }
+}
