@@ -9,19 +9,17 @@ It replaces the legacy Percolate-Wordpress plugin, available [here](https://gith
 
 *Note:* The legacy plugin is no longer being supported by Percolate. While it may continue to function, continued functionality is not guaranteed. For more information, or to upgrade to the new plugin, please reach out to your Percolate Engagement Manager.
 
-Get Started
------------
+## Get Started
 
-In order to use this plugin you will need an API key issued to you from Percolate, along with your user ID. 
+In order to use this plugin you will need an API key issued to you from Percolate, along with your user ID.
 
-Changelog
------------
+## Changelog
+
 ### 4.0.0
  * Initial release with support for custom platforms/templates.
 
 For change history of the Percolate-Wordpress legacy plugin, please refer to the original repository [here](https://github.com/percolate/WP-Percolate)
 
------------
 _Method of Deployment_
 
 1. Update this readme with updated change log.
