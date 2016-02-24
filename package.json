@@ -1,0 +1,44 @@
+{
+  "name": "percolate-wp-importer",
+  "version": "4.0.0",
+  "author": "Balazs Szabo <balazs@eegl.co>",
+  "dependencies": {},
+  "devDependencies": {
+
+    "gulp-filter": "^3.0.1",
+    "gulp-flatten": "^0.2.0",
+    "gulp-if": "^1.2.1",
+    "gulp-imagemin": "^1.2.1",
+    "gulp-jshint": "^1.5.3",
+    "gulp-livereload": "^3.8.0",
+    "gulp-ng-annotate": "^1.1.0",
+    "gulp-plumber": "^1.0.0",
+    "gulp-replace": "^0.5.3",
+    "imagemin-jpeg-recompress": "^4.1.0",
+    "lazypipe": "^1.0.1",
+
+    "autoprefixer": "^6.2.3",
+    "browser-sync": "^2.5.2",
+    "del": "^2.2.0",
+    "gulp": "^3.8.11",
+    "gulp-cache": "^0.4.1",
+    "gulp-csso": "^1.0.0",
+    "gulp-if": "^2.0.0",
+    "gulp-imagemin": "^2.2.1",
+    "gulp-jshint": "^2.0.0",
+    "gulp-load-plugins": "^1.2.0",
+    "gulp-minify-html": "^1.0.2",
+    "gulp-postcss": "^6.0.1",
+    "gulp-sass": "^2.1.1",
+    "gulp-size": "^2.0.0",
+    "gulp-sourcemaps": "^1.5.1",
+    "gulp-uglify": "^1.1.0",
+    "gulp-useref": "^3.0.4",
+    "jshint-stylish": "^2.1.0",
+    "main-bower-files": "^2.6.2",
+    "opn": "^3.0.3"
+  },
+  "engines": {
+    "node": ">=0.12.0"
+  }
+}
