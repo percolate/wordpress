@@ -57,6 +57,18 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
+                <label for="{{template.id}}-postTitle">Wordpress Post Title</label>
+              </div>
+              <div class="col-sm-6">
+                <select name="{{template.id}}-postTitle" id="{{template.id}}-postTitle" class="form-control"
+                        ng-model="formData[template.id].postTitle"
+                        ng-init="formData[template.id].postTitle = edit.active ? formData[template.id].postTitle : template.fields[0].key"
+                        ng-options="option.key as option.label for option in template.fields"></select>
+              </div>
+            </div>
+
+            <div class="row form-group">
+              <div class="col-sm-6">
                 <label for="{{template.id}}-postBody">Wordpress Post Body</label>
               </div>
               <div class="col-sm-6">
@@ -131,7 +143,7 @@
             <!-- ::::: CPM :::::  -->
             <div class="form-group"
                   ng-repeat="field in template.fields"
-                  ng-hide="field.key == formData[template.id].postBody || field.key == formData[template.id].postImage">
+                  ng-hide="field.key == formData[template.id].postBody || field.key == formData[template.id].postImage || field.key == formData[template.id].postTitle">
               <div class="input-group">
                 <span class="input-group-addon">{{field.label}}</span>
                 <span class="input-group-addon">{{field.type}}</span>

@@ -137,6 +137,12 @@ angular.module('myApp')
         } else {
           // Data is already stored, populate the settings object
           $scope.Percolate = res.data
+          if(!$scope.Percolate.channels) {
+            $scope.Percolate.channels = {}
+          }
+          if(!$scope.Percolate.settings) {
+            $scope.Percolate.settings = {}
+          }
         }
       }, function (err) {
         $scope.stopLoader()

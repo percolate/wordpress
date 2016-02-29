@@ -156,8 +156,8 @@ class PercolateImportV4
         'Percolate',
         'administrator', // or 'manage_options'
         'percolate-settings',
-        array($this, renderSettings),
-        plugin_dir_url( __FILE__ ) . '/images/percolate-icon.png',
+        array($this, 'renderSettings'),
+        plugin_dir_url( __FILE__ ) . '/public/images/percolate-icon.png',
         81
       );
 

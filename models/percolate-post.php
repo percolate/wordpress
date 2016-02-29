@@ -40,6 +40,8 @@ class Percolate_POST_Model
     // Media library
     include_once(__DIR__ . '/percolate-media.php');
     $this->Media = PercolateMedia::instance();
+    // Dom Parser plugin
+    require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
   }
 
 
@@ -232,7 +234,7 @@ class Percolate_POST_Model
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
-      // Percolate_Log::log(print_r($posts, true));
+      Percolate_Log::log('Post already imported.');
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
@@ -241,7 +243,16 @@ class Percolate_POST_Model
       return $res;
     }
 
-    $title = $post['name'];
+    Percolate_Log::log('Importing post: ' . $post['id'] );
+
+    // ----------- Post title --------------
+    $title = "";
+    if ( isset($template->postTitle) && !empty($template->postTitle) ) {
+      $title = $post['ext'][$template->postTitle];
+    }
+    elseif ( !isset($post['name']) || empty($post['name']) ) {
+      $title = $post['name'];
+    }
 
     // ----------- Post body --------------
     $body = "";
@@ -254,6 +265,23 @@ class Percolate_POST_Model
       $body = preg_replace("/<a(.*?)>/", "<a$1 target=\"_blank\">", $body);
     }
 
+    // ----------- Process post body for images --------------
+    if( is_string($body) ) {
+      Percolate_Log::log('Body is a string, checking for images...');
+      $html = str_get_html($body);
+      // Find all images
+      foreach($html->find('img') as $img) {
+        Percolate_Log::log('Image found: ' . print_r($img->src, true));
+        $newSrc = $this->Media->importImageFromUrl($img->src);
+        if( $newSrc ) {
+          Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
+          $img->src = $newSrc;
+        }
+      }
+
+      $body = $html->save();
+    }
+
     // ----------- Categories --------------
     $post_category = array();
 
@@ -262,12 +290,11 @@ class Percolate_POST_Model
         $topic_id = str_replace( 'topic:', '', $topic_id );
         $category_wp = $channel->topics->$topic_id;
         $post_category[] = $category_wp;
-        // Percolate_Log::log($topic_id);
-        // Percolate_Log::log($category_wp);
       }
     }
 
     // ----------- Post date --------------
+    $post_status = 'future';
     $publish_date = $post['live_at'];
 
     // Trying to fix 1970 bug
@@ -282,16 +309,11 @@ class Percolate_POST_Model
     // Still trying to fix 1970 bug
     if ($publish_date == NULL){
       $publish_date = $object['created_at'];
+      $post_status = 'draft';
     }
     $publish_date = strtotime($publish_date);
 
     // ----------- Post status--------------
-    /* TODO:
-     *  - add logic to determine if publish date is in future
-     *  - compare WP and Percolate timezones
-     */
-    $post_status = 'future';
-
     if ( isset($template->safety) && $template->safety == 'on' ) {
       $post_status = 'draft';
     }
@@ -314,11 +336,13 @@ class Percolate_POST_Model
     $wp_post_id = wp_insert_post($post_args);
 
     if( !$wp_post_id ) {
+      Percolate_Log::log('Post cannot be inserted.');
       $res['success'] = false;
       $res['percolate_id'] = $post['id'];
       $res['message'] = 'Post cannot be inserted into WP.';
       return $res;
     }
+    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true));
 
     // ----------- Factory meta fields --------------
     update_post_meta($wp_post_id, 'wp_channel_uuid', $channel->uuid);
