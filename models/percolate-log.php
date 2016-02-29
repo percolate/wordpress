@@ -39,7 +39,7 @@ class Percolate_Log
     if ( ! @file_exists($dir . DIRECTORY_SEPARATOR . 'index.php') ) @touch( $dir . DIRECTORY_SEPARATOR . 'index.php' );
   }
 
-  public function log($msg='')
+  public static function log($msg='')
   {
     $uploads = wp_upload_dir();
 

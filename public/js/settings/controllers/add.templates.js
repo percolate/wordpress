@@ -39,10 +39,6 @@ angular.module('myApp')
 
         $scope.templates = res.data.data
 
-        // $scope.templates = $scope._.filter(res.data.data, function (o) {
-        //   return o.ext.platform_id = $scope.activeChannel.platform.platform_id
-        // })
-
         return
 
       }, function (err) {
@@ -73,7 +69,7 @@ angular.module('myApp')
      */
     Api.getCpts()
       .then(function (res) {
-        // console.log('Post types', res.data)
+        console.log('Post types', res.data)
         delete res.data.page
         delete res.data.attachment
         $scope._.each(res.data, function (obj) {
@@ -82,7 +78,7 @@ angular.module('myApp')
         // Set default valus if new channel
         if( !$scope.edit.active ) {
           $scope._.each($scope.templates, function(obj) {
-            $scope.formData[obj.slug].postType = ''
+            $scope.formData[obj.id].postType = ''
           })
         }
         return Api.getAcfStatus()
@@ -104,7 +100,7 @@ angular.module('myApp')
           // Set default valus if new channel
           if( !$scope.edit.active ) {
             $scope._.each($scope.templates, function(obj) {
-              $scope.formData[obj.slug].acfSet = 'false'
+              $scope.formData[obj.id].acfSet = 'false'
             })
           }
         }
@@ -121,6 +117,16 @@ angular.module('myApp')
       if( form.$invalid ) {
         return
       }
+
+      $scope._.each($scope.templates, function(obj) {
+        // Check if the template has a post type set
+        if($scope.formData[obj.id] && $scope.formData[obj.id].postType && !$scope.formData[obj.id].postType != 'false') {
+          if(!$scope.formData[obj.id].postTitle) {
+            $scope.showError('You need to specify post title for every template that has a post type set.')
+            return
+          }
+        }
+      })
 
       // extend new channel object
       angular.extend($scope.activeChannel, $scope.formData)
