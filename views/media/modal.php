@@ -53,6 +53,15 @@
                   </div>
                 </div>
 
+                <div ng-if="item.type === 'video'">
+                  <div class="img-container" >
+                    <div ng-if="item.formats[1].url" class="img-holder" style="background-image: url({{item.formats[1].url}});"></div>
+                  </div>
+                  <div class="meta-container">
+                    {{item.metadata.original_filename}}
+                  </div>
+                </div>
+
                 <div ng-if="item.type === 'folder'">
                   <div class="folder-container">
                     <div class="icon-folder">
