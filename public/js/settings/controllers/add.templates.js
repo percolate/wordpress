@@ -24,7 +24,7 @@ angular.module('myApp')
       key    : $scope.activeChannel.key,
       fields : {
         'scope_ids': 'license:' + $scope.activeChannel.license,
-        'ext.platform_ids': $scope.activeChannel.platform.id,
+        'ext.platform_ids': $scope.activeChannel.platform,
         'type': 'post'
       }
     })

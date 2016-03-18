@@ -186,8 +186,28 @@ class PercolateMedia
       $src = $imageData[0]['src'];
       $imageData = $imageData[0];
     }
+    elseif( isset($imageData['data']['formats'][0]['url']) ) {
+      // It's an array field, let's gran the first match
+      $src = $imageData['data']['formats'][0]['url'];
+    }
+    elseif( isset($imageData[0]['data']['formats'][0]['url']) ) {
+      // It's an array field, let's gran the first match
+      $src = $imageData[0]['data']['formats'][0]['url'];
+      $imageData = $imageData[0];
+    }
     else {
       Percolate_Log::log("Image soruce cannot be found in Percolate API response.");
+      return;
+    }
+
+    if( isset($imageData['id']) ) {
+	    $percolate_id =  $imageData['id'];
+    }
+    else if( isset($imageData['data']['id']) ) {
+	    $percolate_id =  $imageData['data']['id'];
+    }
+    else {
+      Percolate_Log::log("Image ID cannot be found");
       return;
     }
 
@@ -196,13 +216,13 @@ class PercolateMedia
     	'post_type'		=>	'attachment',
       'post_status'	=>	'any',
       'meta_key'    =>  'percolate_id',
-	    'meta_value'  =>  $imageData['id']
+	    'meta_value'  =>  $percolate_id
     );
     $posts = new WP_Query( $args );
     wp_reset_postdata();
-    // Percolate_Log::log(print_r($posts, true));
 
     if ( $posts->post_count > 0) {
+      // Percolate_Log::log(print_r($posts, true));
       Percolate_Log::log("Image already imported.");
       // wp_delete_post($posts->posts[0]->ID, true);
       return $posts->posts[0]->ID;
@@ -215,14 +235,6 @@ class PercolateMedia
   		require_once(ABSPATH . "wp-admin" . '/includes/file.php');
   		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   	}
-
-    if( isset($imageData['id']) ) {
-	    $percolate_id =  $imageData['id'];
-    }
-    else {
-      Percolate_Log::log("Image ID cannot be found");
-      return;
-    }
 
     $uploads = wp_upload_dir();
     // get unique file name
