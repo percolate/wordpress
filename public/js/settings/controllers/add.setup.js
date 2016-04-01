@@ -29,7 +29,7 @@ angular.module('myApp')
               key    : $scope.formData.key,
               fields : {
                 user_id: $scope.formData.user.id,
-                limit: 100
+                limit: 1000
               }
             })
 
