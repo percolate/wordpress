@@ -326,8 +326,8 @@ class Percolate_POST_Model
       'post_status'    => $post_status, // [ 'draft' | 'publish' | 'pending'| 'future' | 'private' | custom registered status ]
       'post_type'      => $template->postType,
       'post_author'    => $channel->wpUser, // The user ID number of the author. Default is the current user ID.
-      'post_date'      => date('Y-m-d H:i:s', $publish_date), // [ Y-m-d H:i:s ] // The time post was made.
-      // 'post_date_gmt'  => [ Y-m-d H:i:s ] // The time post was made, in GMT.
+      // 'post_date'      => date('Y-m-d H:i:s', $publish_date), // [ Y-m-d H:i:s ] // The time post was made.
+      'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
       'post_category'  => $post_category // [ array(<category id>, ...) ] // Default empty.
     );
 
