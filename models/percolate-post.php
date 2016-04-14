@@ -224,6 +224,16 @@ class Percolate_POST_Model
           return $res;
     }
 
+    // ------ Check approval status from Perc --------
+    if( isset($post['status']) && $post['status'] != "queued.publishing" )
+    {
+          Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
+          $res['success'] = false;
+          $res['message'] = "Post isn't approved";
+          $res['percolate_id'] = $post['id'];
+          return $res;
+    }
+
     // ------ Check if imported already --------
     $args = array(
     	'post_type'		=>	$template->postType,
