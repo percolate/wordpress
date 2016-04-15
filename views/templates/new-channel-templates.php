@@ -44,12 +44,25 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
-                <label for="{{template.id}}-safety">Set status to Draft</label>
+                <label for="{{template.id}}-safety">Set status to Draft in WP</label>
               </div>
               <div class="col-sm-6">
                 <div class="switch">
                   <input type="radio" id="{{template.id}}-safety-on" name="{{template.id}}-safety" value="on" ng-model="formData[template.id].safety">
                   <input type="radio" id="{{template.id}}-safety-off" name="{{template.id}}-safety" value="off" ng-model="formData[template.id].safety" ng-checked="true" ng-init="formData[template.id].safety = edit.active ? formData[template.id].safety : 'off'">
+                  <span class="toggle"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row form-group">
+              <div class="col-sm-6">
+                <label for="{{template.id}}-approved">Import approved drafts</label>
+              </div>
+              <div class="col-sm-6">
+                <div class="switch">
+                  <input type="radio" id="{{template.id}}-approved-on" name="{{template.id}}-approved" value="on" ng-model="formData[template.id].approved">
+                  <input type="radio" id="{{template.id}}-approved-off" name="{{template.id}}-approved" value="off" ng-model="formData[template.id].approved" ng-checked="true" ng-init="formData[template.id].approved = edit.active ? formData[template.id].approved : 'off'">
                   <span class="toggle"></span>
                 </div>
               </div>

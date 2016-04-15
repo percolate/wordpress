@@ -227,8 +227,19 @@ class Percolate_POST_Model
           return $res;
     }
 
+    $statusToImport = array(
+      'queued.publishing'
+    );
+
+    if( isset($template->approved) && $template->approved == 'on') {
+      $statusToImport[] = 'draft';
+    }
+
+    // Percolate_Log::log("status to import: ");
+    // Percolate_Log::log(print_r($statusToImport, true));
+
     // ------ Check approval status from Perc --------
-    if( isset($post['status']) && $post['status'] != "queued.publishing" )
+    if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
     {
           Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
           $res['success'] = false;
