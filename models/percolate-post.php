@@ -41,7 +41,10 @@ class Percolate_POST_Model
     include_once(__DIR__ . '/percolate-media.php');
     $this->Media = PercolateMedia::instance();
     // Dom Parser plugin
-    require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
+    if (!class_exists('simple_html_dom_node')) {
+      // Percolate_Log::log("simple_html_dom_node isn't present");
+      require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
+    }
   }
 
 
