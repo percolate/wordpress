@@ -99,6 +99,9 @@ class PercolateImportV4
     // Add Angular's tags to header
     add_action('wp_head', array( $this, 'setupHeader' ));
 
+    // Add custom Cron schedules
+    add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
+
     // Serve templates to Angular
     add_action( 'wp_ajax_template', array( $this->AJAX, 'getTemplate' ) );
     // Get the Percolate data model
@@ -330,6 +333,16 @@ class PercolateImportV4
   public function setupHeader()
   {
     echo '<base href="/">';
+  }
+
+  public function cron_update_schedules()
+  {
+    return array(
+        'every_30_min' => array('interval' => 1800, 'display' => 'Once in 30 minutes'),
+        'every_15_min' => array('interval' => 900, 'display' => 'Once in 15 minutes'),
+        'every_5_min' => array('interval' => 300, 'display' => 'Once in 5 minutes'),
+        'every_min' => array('interval' => 60, 'display' => 'In every minute')
+    );
   }
 }
 

@@ -241,9 +241,9 @@ class Percolate_POST_Model
     // ------ Check approval status from Perc --------
     if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
     {
-          Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
+          // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
           $res['success'] = false;
-          $res['message'] = "Post isn't approved";
+          $res['message'] = "Post hasn't been approved yet. Status: " . $post['status'];
           $res['percolate_id'] = $post['id'];
           return $res;
     }
@@ -475,7 +475,7 @@ class Percolate_POST_Model
    */
   public function activateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event activeted');
-    wp_schedule_event(time(), 'hourly', 'percolate_import_posts_event');
+    wp_schedule_event(time(), 'every_15_min', 'percolate_import_posts_event');
   }
   public function deactivateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
