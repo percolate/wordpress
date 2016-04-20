@@ -475,7 +475,7 @@ class Percolate_POST_Model
    */
   public function activateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event activeted');
-    wp_schedule_event(time(), 'every_15_min', 'percolate_import_posts_event');
+    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
   }
   public function deactivateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
