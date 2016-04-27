@@ -21,6 +21,13 @@ along with your user ID.
 
 ## Changelog
 
+### 4.0.1
+
+* Custom approvals workflow support
+* 5 minute CRON interval
+* Bugfixes / improved compatibility with other plugins
+
+
 ### 4.0.0
 
 * Initial release with support for custom platforms/templates.
@@ -31,4 +38,4 @@ please refer to the original repository:
 
 --------------------------------------------------
 _Please do not remove this version declaration_
-~Current Version:4.0.0~
+~Current Version:4.0.1~
