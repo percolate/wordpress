@@ -59,6 +59,9 @@ class PercolateImportV4
    * Class constructor
    */
   public function __construct() {
+    if ( ! is_admin() ) {
+      return false;
+    }
 
     // Logging
     include_once(__DIR__ . '/models/percolate-log.php');
@@ -82,9 +85,7 @@ class PercolateImportV4
 
     // GitHub updater
     require_once( __DIR__ . '/models/percolate-updater.php' );
-    if ( is_admin() ) {
-      new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
-    }
+    new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods
     register_activation_hook(self::FILE, array($this, '__activation'));
@@ -181,6 +182,7 @@ class PercolateImportV4
     * Register all scripts for admin page
     */
   public function addAdminScripts () {
+
     $scripts = array();
     // $scripts[] = array(
     // 	'handle'	=> 'lodash',
