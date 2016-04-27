@@ -41,7 +41,10 @@ class Percolate_POST_Model
     include_once(__DIR__ . '/percolate-media.php');
     $this->Media = PercolateMedia::instance();
     // Dom Parser plugin
-    require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
+    if (!class_exists('simple_html_dom_node')) {
+      // Percolate_Log::log("simple_html_dom_node isn't present");
+      require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
+    }
   }
 
 
@@ -220,6 +223,27 @@ class Percolate_POST_Model
     {
           $res['success'] = false;
           $res['message'] = 'Missing data for $channel';
+          $res['percolate_id'] = $post['id'];
+          return $res;
+    }
+
+    $statusToImport = array(
+      'queued.publishing'
+    );
+
+    if( isset($template->approved) && $template->approved == 'on') {
+      $statusToImport[] = 'draft';
+    }
+
+    // Percolate_Log::log("status to import: ");
+    // Percolate_Log::log(print_r($statusToImport, true));
+
+    // ------ Check approval status from Perc --------
+    if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
+    {
+          // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
+          $res['success'] = false;
+          $res['message'] = "Post hasn't been approved yet. Status: " . $post['status'];
           $res['percolate_id'] = $post['id'];
           return $res;
     }
@@ -451,7 +475,7 @@ class Percolate_POST_Model
    */
   public function activateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event activeted');
-    wp_schedule_event(time(), 'hourly', 'percolate_import_posts_event');
+    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
   }
   public function deactivateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');

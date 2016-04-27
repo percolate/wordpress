@@ -59,6 +59,9 @@ class PercolateImportV4
    * Class constructor
    */
   public function __construct() {
+    if ( ! is_admin() ) {
+      return false;
+    }
 
     // Logging
     include_once(__DIR__ . '/models/percolate-log.php');
@@ -82,9 +85,7 @@ class PercolateImportV4
 
     // GitHub updater
     require_once( __DIR__ . '/models/percolate-updater.php' );
-    if ( is_admin() ) {
-      new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
-    }
+    new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods
     register_activation_hook(self::FILE, array($this, '__activation'));
@@ -98,6 +99,9 @@ class PercolateImportV4
 
     // Add Angular's tags to header
     add_action('wp_head', array( $this, 'setupHeader' ));
+
+    // Add custom Cron schedules
+    add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
 
     // Serve templates to Angular
     add_action( 'wp_ajax_template', array( $this->AJAX, 'getTemplate' ) );
@@ -178,6 +182,7 @@ class PercolateImportV4
     * Register all scripts for admin page
     */
   public function addAdminScripts () {
+
     $scripts = array();
     // $scripts[] = array(
     // 	'handle'	=> 'lodash',
@@ -330,6 +335,16 @@ class PercolateImportV4
   public function setupHeader()
   {
     echo '<base href="/">';
+  }
+
+  public function cron_update_schedules()
+  {
+    return array(
+        'every_30_min' => array('interval' => 1800, 'display' => 'Once in 30 minutes'),
+        'every_15_min' => array('interval' => 900, 'display' => 'Once in 15 minutes'),
+        'every_5_min' => array('interval' => 300, 'display' => 'Once in 5 minutes'),
+        'every_min' => array('interval' => 60, 'display' => 'In every minute')
+    );
   }
 }
 
