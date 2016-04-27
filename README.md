@@ -27,7 +27,6 @@ along with your user ID.
 * 5 minute CRON interval
 * Bugfixes / improved compatibility with other plugins
 
-
 ### 4.0.0
 
 * Initial release with support for custom platforms/templates.
