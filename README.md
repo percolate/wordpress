@@ -25,7 +25,7 @@ along with your user ID.
 
 * Draft | Queued post status support
 * Draft posts from Percolate will become drafts in WP
-* Percolate's Single or Multi Select field can be mapped to ACF True/False field 
+* Percolate's Select field can be mapped to ACF True/False field
 
 ### 4.0.1
 
