@@ -49,6 +49,15 @@ angular.module('myApp')
 
 
     /**
+     * Earliest import
+     */
+    $scope.earliestImport = [
+      {key: 'draft', label: 'Draft'},
+      {key: 'queued', label: 'Queued'},
+      {key: 'queued.publishing', label: 'On Schedule'}
+    ];
+
+    /**
      * Post types
      */
     $scope.postTypes = [{

@@ -130,7 +130,7 @@ class PercolateImportV4
     // Import image into WP
     add_action( 'wp_ajax_image_import', array( $this->Media, 'importImageEndpoint' ) );
 
-    Percolate_Log::log('Percolate V4 constructed!');
+    // Percolate_Log::log('Percolate V4 constructed!');
   }
 
   /**
