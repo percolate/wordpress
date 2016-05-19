@@ -21,12 +21,6 @@ along with your user ID.
 
 ## Changelog
 
-### 4.0.2
-
-* Draft | Queued post status support
-* Draft posts from Percolate will become drafts in WP
-* Percolate's Single or Multi Select field can be mapped to ACF True/False field (as long as its value is 'true')
-
 ### 4.0.1
 
 * Custom approvals workflow support
@@ -43,4 +37,4 @@ please refer to the original repository:
 
 --------------------------------------------------
 _Please do not remove this version declaration_
-~Current Version:4.0.2~
+~Current Version:4.0.1~
