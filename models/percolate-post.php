@@ -231,14 +231,23 @@ class Percolate_POST_Model
       'queued.publishing'
     );
 
-    if( isset($template->approved) && $template->approved == 'on') {
-      $statusToImport[] = 'draft';
+    if( isset($template->import) ) {
+      switch($template->import){
+        case 'draft':
+          $statusToImport[] = 'draft';
+          $statusToImport[] = 'queued';
+          break;
+        case 'queued':
+          $statusToImport[] = 'queued';
+          break;
+      }
     }
 
     // Percolate_Log::log("status to import: ");
     // Percolate_Log::log(print_r($statusToImport, true));
 
     // ------ Check approval status from Perc --------
+    Percolate_Log::log('Post status: ' . $post['status']);
     if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
     {
           // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
@@ -285,7 +294,7 @@ class Percolate_POST_Model
     }
 
     // Open links in new tab
-    if( $channel->tab == true && is_string( $body ) ) {
+    if( array_key_exists('tab', $channel) && $channel->tab == true && is_string( $body ) ) {
       $body = preg_replace("/<a(.*?)>/", "<a$1 target=\"_blank\">", $body);
     }
 
@@ -317,7 +326,7 @@ class Percolate_POST_Model
       }
     }
 
-    // ----------- Post date --------------
+    // ----------- Post date & status --------------
     $post_status = 'future';
     $publish_date = $post['live_at'];
 
@@ -338,7 +347,7 @@ class Percolate_POST_Model
     $publish_date = strtotime($publish_date);
 
     // ----------- Post status--------------
-    if ( isset($template->safety) && $template->safety == 'on' ) {
+    if ( (isset($template->safety) && $template->safety == 'on') || $post['status'] == 'draft' ) {
       $post_status = 'draft';
     }
 
@@ -397,9 +406,29 @@ class Percolate_POST_Model
         }
 
         // Open links in new tab
-        if( $channel->tab == true && is_string( $value ) ) {
+        if( array_key_exists('tab', $channel) && $channel->tab == true && is_string( $value ) ) {
           $value = preg_replace("/<a(.*?)>/", "<a$1 target=\"_blank\">", $value);
         }
+
+        /*
+         * Check if field is an a Single or Multi Select array
+         *  If it is, we're correctly converting this to be ACF True/False field compatible
+         */
+        if(is_array($value)){
+          $value = array_shift($value);
+          $value = strtolower($value);
+          switch($value){
+            case true:
+            case 'true':
+              $value = 1;
+              break;
+            case false:
+            case 'false':
+              $value = 0;
+              break;
+          }
+        }
+
 
         // ----- ACF -----
         if( isset($template->acf) && $template->acf == 'on' ) {
@@ -409,7 +438,6 @@ class Percolate_POST_Model
           } else {
             $_fieldname = false;
           }
-
           $meta_success = update_field($_fieldname, $value, $wp_post_id);
         }
         // ----- No ACF -----
@@ -421,7 +449,6 @@ class Percolate_POST_Model
           } else {
             $_fieldname = $key;
           }
-
           $meta_success = update_post_meta($wp_post_id, $_fieldname, $value);
         }
 

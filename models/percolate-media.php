@@ -163,7 +163,7 @@ class PercolateMedia
   /**
 	 * Import image from Percolate DAM to WP Media Library
    *
-   * @param $imageKey: Percolate uid, eg. video:674337823375193305
+   * @param $imageKey: Percolate uid, eg. video:674337.....193305
    * @param $key: importer's custom channel set's key
    * @return string: imported image's ID
    */
@@ -172,7 +172,7 @@ class PercolateMedia
     if( is_array($imageKey) ) {
       $imageKey = $imageKey[0];
     }
-    // https://percolate.com/api/v3/media/video:674337823375193305
+
     $method = "v3/media/" . $imageKey;
     $imageData = $this->Percolate->callAPI($key, $method, $fields);
     Percolate_Log::log($method);

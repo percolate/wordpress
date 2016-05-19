@@ -55,7 +55,7 @@
               </div>
             </div>
 
-            <div class="row form-group">
+            <!--div class="row form-group">
               <div class="col-sm-6">
                 <label for="{{template.id}}-approved">Import approved drafts</label>
               </div>
@@ -65,6 +65,16 @@
                   <input type="radio" id="{{template.id}}-approved-off" name="{{template.id}}-approved" value="off" ng-model="formData[template.id].approved" ng-checked="true" ng-init="formData[template.id].approved = edit.active ? formData[template.id].approved : 'off'">
                   <span class="toggle"></span>
                 </div>
+              </div>
+            </div-->
+            <div class="row form-group">
+              <div class="col-sm-6">
+                <label for="{{template.id}}-import">Earliest import</label>
+              </div>
+              <div class="col-sm-6">
+                <select name="{{template.id}}-import" id="{{template.id}}-import" class="form-control"
+                        ng-model="formData[template.id].import"
+                        ng-options="option.key as option.label for option in earliestImport"></select>
               </div>
             </div>
 
