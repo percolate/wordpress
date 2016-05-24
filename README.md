@@ -20,26 +20,27 @@ While it may continue to function, continued functionality is not guaranteed.
 In order to use this plugin you will need an API key issued to you from Percolate,
 along with your user ID.
 ***
+
 ## <a name="user-guide">User Installation Guide</a>
 
 ### <a name="plugin-overview">Plugin overview</a>
 
-The WordPress-Percolate connector is an installable WordPress plugin made 
-available to Percolate Customers. The plugin is designed specifically for 
-WordPress, and includes support for common WordPress concepts like 
-Custom Post Types, post categories, Media Library, and Featured Images. 
+The WordPress-Percolate connector is an installable WordPress plugin made
+available to Percolate Customers. The plugin is designed specifically for
+WordPress, and includes support for common WordPress concepts like
+Custom Post Types, post categories, Media Library, and Featured Images.
 
-It is tested up to WordPress 4.4.2, and is hosted on Github. 
+It is tested up to WordPress 4.4.2, and is hosted on Github.
 
 #### How does it work?
 
-The plugin can be configured for Percolate licenses by using a 
-Percolate API key combined with License and Channel information, both configurable 
-via dropdown menu. For each configured license, custom templates in Percolate 
-can be mapped to Post Types in WordPress. The content from each post created 
-in Percolate is pushed to WordPress every 5 minutes, using the WordPress 
-built-in, PHP-driven cron. For each post, WordPress content is created 
-based on the field mappings and import rules. 
+The plugin can be configured for Percolate licenses by using a
+Percolate API key combined with License and Channel information, both configurable
+via dropdown menu. For each configured license, custom templates in Percolate
+can be mapped to Post Types in WordPress. The content from each post created
+in Percolate is pushed to WordPress every 5 minutes, using the WordPress
+built-in, PHP-driven cron. For each post, WordPress content is created
+based on the field mappings and import rules.
 
 Percolate custom creative templates support most commonly-used blog page elements.
 
@@ -63,7 +64,7 @@ Percolate custom creative templates support most commonly-used blog page element
 | Public library support | Supporting libraries from Angular, Boostrap, et al. |
 | Additional files       | For CSS compilation, markdown, testing, etc. |
 
-### <a name="installation">Installation & initial configuration</a>
+### Installation & initial configuration
 
 This section describes how to install the Percolate-WordPress plugin 
 and perform initial configuration.
@@ -71,20 +72,20 @@ and perform initial configuration.
 As a first step, please ensure you have the latest Percolate-WordPress 
 plugin distribution, available on Github.
 
-**1. In WordPress, navigate to Plugins**
+##### 1. In WordPress, navigate to Plugins
   * Select "Add New"
   * Add the Percolate-WordPress .zip file and select “Install Now”
 
-**2 Click into the Percolate Plugin from the WordPress menu**
+##### 2 Click into the Percolate Plugin from the WordPress menu
   * Under “Manage Channels,” select “Add New”
   
-**3. Perform initial Channel configuration**
+##### 3. Perform initial Channel configuration
   * Add user API key to unlock list of available Licenses
   * Provide your preferred name for configured channel in WordPress (e.g. “Percolate Posts”)
   * Select Percolate License, Platform, and Channel
   * “Continue”
   
-**4. Map Channel Topics and Subtopics**
+##### 4. Map Channel Topics and Subtopics
   * Percolate License Topics will appear on the left
   * Select WordPress categories for each Percolate topic. 
   * Unmapped Topics will not import
@@ -107,7 +108,7 @@ to be set for each License:Channel configuration:
 | Queued | "Publishing," "Queued," | Import all posts that are done being drafted |
 | On Schedule | "Publishing" | Import posts only at their scheduled publishing times | 
 
-**1. Map custom templates: basic**
+##### 1. Map custom templates: basic
   * Each Custom Creative template associated with the configured Percolate Channel can be mapped to a WordPress Post Type
   * For each of the default WordPress Post fields, select a Percolate field to be mapped
   * In the “Earliest import” dropdown, select the workflow step at which you’d like Percolate content to import
@@ -115,38 +116,42 @@ to be set for each License:Channel configuration:
     * By default, imports of “Queued” and “Publishing” posts will be scheduled for publishing in WP
     * Note: “Drafts” imported from Percolate will never publish automatically
 
-**2. Map custom templates: advanced**
+##### 2. Map custom templates: advanced
   * Additional Custom Creative fields can be mapped to WordPress shortcodes
   * While using special markup for Percolate-importing fields is not required, it is recommended for clarity
   * All basic title/body/image mappings still apply
 
 ### <a name="browse-assets">Browse Percolate assets</a>
 
-This section describes the setup and functionality of the basic Percolate-WordPress asset integration that comes bundled with the post import plugin.
+This section describes the setup and functionality of the basic Percolate-WordPress
+asset integration that comes bundled with the post import plugin.
 
-**1. In the Percolate plugin homepage, select Settings**
+##### 1. In the Percolate plugin homepage, select Settings
 
-**2. Configure a License**
+##### 2. Configure a License
   * Enter a Percolate API Key to unlock a list of Licenses
   * Select the License that will be used for asset search
 
-**3. Confirm you can insert Percolate assets on new WordPress posts**
+##### 3. Confirm you can insert Percolate assets on new WordPress posts
   * Select image size and alt text, and import
-
 
 ### <a name="testing-imports">Testing imports</a>
 
-Once Channel and template configuration are complete, you can test the module by creating a Post in Percolate, and forcing the import job to run with the “Import” button on the plugin homepage.
+Once Channel and template configuration are complete, you can test the module by
+creating a Post in Percolate, and forcing the import job to run with the
+“Import” button on the plugin homepage.
 
-The following steps require that a custom WordPress Channel has been added to your Percolate License. For assistance with custom Channels, please contact your Percolate Engagement Manager or Product Specialist.
+The following steps require that a custom WordPress Channel has been added to your
+Percolate License. For assistance with custom Channels, please contact your Percolate
+Engagement Manager or Product Specialist.
 
-**1. Using the “Create” button, create a Post in the configured WordPress Custom Channel**
+##### 1. Using the “Create” button, create a Post in the configured WordPress Custom Channel
   * Select desired WordPress Channel and Template
   * Compose your post
 
-**2. Run the Import job from the Plugin homepage**
+##### 2. Run the Import job from the Plugin homepage
 
-**3. Confirm your test Post has appeared in WordPress as expected. You should see:**
+##### 3. Confirm your test Post has appeared in WordPress as expected. You should see:
   * All configured fields have imported
   * All tags have been imported
   * Topics are mapped correctly
