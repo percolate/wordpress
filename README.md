@@ -3,8 +3,6 @@
 [![Circle CI](https://circleci.com/gh/percolate/wordpress.svg?style=svg&circle-token=31cbc7d300a4aaa0396a12fffc722cda7a00dc7b)](https://circleci.com/gh/percolate/wordpress)
 [![codecov.io](https://codecov.io/github/percolate/wordpress/coverage.svg?branch=master&token=D4xm32VsPP)](https://codecov.io/github/percolate/wordpress?branch=master)
 
-**Table of contents**
-
 * [User Guide](#user-guide)
   * [Plugin overview](#plugin-overview)
   * [Installation & initial configuration](#installation)
@@ -67,10 +65,10 @@ Percolate custom creative templates support most commonly-used blog page element
 
 ### Installation & setup
 
-This section describes how to install the Percolate-WordPress plugin 
+This section describes how to install the Percolate-WordPress plugin
 and perform initial configuration.
 
-As a first step, please ensure you have the latest Percolate-WordPress 
+As a first step, please ensure you have the latest Percolate-WordPress
 plugin distribution, available on Github.
 
 #### Initial configuration
@@ -87,7 +85,8 @@ plugin distribution, available on Github.
 ##### 3. Perform initial Channel configuration
 
 * Add user API key to unlock list of available Licenses
-* Provide your preferred name for configured channel in WordPress (e.g. “Percolate Posts”)
+* Provide your preferred name for configured channel in WordPress
+  (e.g. “Percolate Posts”)
 * Select Percolate License, Platform, and Channel
 * “Continue”
 
@@ -102,8 +101,8 @@ and return at any time.
 
 #### Custom template configuration
 
-This process requires that Custom Creative templates have been configured for 
-your License in Percolate. For assistance with Custom Creative templates, please 
+This process requires that Custom Creative templates have been configured for
+your License in Percolate. For assistance with Custom Creative templates, please
 reach out to your Percolate Engagement Manager or Product Specialist.
 
 In addition to template mapping, you can set specific import rules
@@ -111,28 +110,28 @@ to be set for each License:Channel configuration:
 
 | Earliest import | Percolate statuses imported | Description |
 | --- | --- | --- |
-| Draft | "Publishing," "Queued," "Draft" | Import all approved drafts and posts |
-| Queued | "Publishing," "Queued," | Import all posts that are done being drafted |
-| On Schedule | "Publishing" | Import posts only at their scheduled publishing times | 
+| Draft | "Publishing," "Queued," "Draft" | Import all approved drafts and posts
+| Queued | "Publishing," "Queued," | Import all posts that are done being drafted
+| On Schedule | "Publishing" | Import posts only at their scheduled publishing times
 
 ##### 1. Map custom templates: basic
 
 * Each custom template associated with the configured Channel can be mapped to a
-WordPress Post Type
+  WordPress Post Type
 * For each of the default WordPress Post fields, select a Percolate field to be mapped
 * In the “Earliest import” dropdown, select the workflow step at which you’d like
-Percolate content to import
+  Percolate content to import
 * To avoid “Queued” posts automatically publishing at their scheduled times, select
-“Set status to Draft in WP”
+  “Set status to Draft in WP”
   * By default, imports of “Queued” and “Publishing” posts will be scheduled for
-  publishing in WP
+    publishing in WP
   * Note: “Drafts” imported from Percolate will never publish automatically
 
 ##### 2. Map custom templates: advanced
 
 * Additional Custom Creative fields can be mapped to WordPress shortcodes
 * While using special markup for Percolate-importing fields is not required,
-it is recommended for clarity
+  it is recommended for clarity
   * All basic title/body/image mappings still apply
 
 #### Browsing Percolate assets
@@ -163,7 +162,8 @@ Engagement Manager or Product Specialist.
 
 #### Testing imports
 
-##### 1. Using the “Create” button, create a Post in the configured WordPress Custom Channel
+##### 1. Using the “Create” button, create a Post in the configured
+WordPress Custom Channel
 
 * Select desired WordPress Channel and Template
 * Compose your post
@@ -203,6 +203,7 @@ For change history of the Percolate-Wordpress legacy plugin,
 please refer to the original repository:
 [WP-Percolate](https://github.com/percolate/WP-Percolate)
 
---------------------------------------------------
+***
+
 _Please do not remove this version declaration_
 ~Current Version:4.0.2~
