@@ -6,7 +6,7 @@
 * [User Guide](#user-installation-guide)
   * [Plugin overview](#plugin-overview)
   * [Installation and setup](#installation-and-setup)
-    * [Initial configuration](#initial-configuration) 
+    * [Initial configuration](#initial-configuration)
     * [Custom template configuration](#custom-template-configuration)
     * [Browsing Percolate assets](#browsing-percolate-assets)
   * [Testing the plugin](#testing-the-plugin)
@@ -20,12 +20,14 @@ While it may continue to function, continued functionality is not guaranteed.
 
 In order to use this plugin you will need an API key issued to you from Percolate,
 along with your user ID.
+
 ***
 
 ## User Installation Guide
 
 ### Plugin overview
 
+***
 The WordPress-Percolate connector is an installable WordPress plugin made
 available to Percolate Customers. The plugin is designed specifically for
 WordPress, and includes support for common WordPress concepts like
@@ -35,6 +37,7 @@ It is tested up to WordPress 4.4.2, and is hosted on Github.
 
 #### How it works
 
+***
 The plugin can be configured for Percolate licenses by using a
 Percolate API key combined with License and Channel information, both configurable
 via dropdown menu. For each configured license, custom templates in Percolate
@@ -46,6 +49,8 @@ based on the field mappings and import rules.
 Percolate custom creative templates support most commonly-used blog page elements.
 
 #### Supported features
+
+***
 
 * Importing posts
 * Importing post images (Featured Image and in-line in post body)
@@ -59,6 +64,7 @@ Percolate custom creative templates support most commonly-used blog page element
 
 #### Plugin components
 
+***
 | Component              | Description |
 | ---------------------- | ----------- |
 | Plugin core            | Core and model/view files |
@@ -67,6 +73,7 @@ Percolate custom creative templates support most commonly-used blog page element
 
 ### Installation and setup
 
+***
 This section describes how to install the Percolate-WordPress plugin
 and perform initial configuration.
 
@@ -74,6 +81,8 @@ As a first step, please ensure you have the latest Percolate-WordPress
 plugin distribution, available on Github.
 
 #### Initial configuration
+
+***
 
 ##### 1. In WordPress, navigate to Plugins
 
@@ -103,6 +112,7 @@ and return at any time.
 
 #### Custom template configuration
 
+***
 This process requires that Custom Creative templates have been configured for
 your License in Percolate. For assistance with Custom Creative templates, please
 reach out to your Percolate Engagement Manager or Product Specialist.
@@ -138,6 +148,7 @@ to be set for each License:Channel configuration:
 
 #### Browsing Percolate assets
 
+***
 This section describes the setup and functionality of the basic Percolate-WordPress
 asset integration that comes bundled with the post import plugin.
 
@@ -154,6 +165,7 @@ asset integration that comes bundled with the post import plugin.
 
 ### Testing the plugin
 
+***
 Once Channel and template configuration are complete, you can test the module by
 creating a Post in Percolate, and forcing the import job to run with the
 “Import” button on the plugin homepage.
@@ -163,6 +175,8 @@ Percolate License. For assistance with custom Channels, please contact your Perc
 Engagement Manager or Product Specialist.
 
 #### Testing imports
+
+***
 
 ##### 1. Using the “Create” button, create a Post in the configured Channel
 
