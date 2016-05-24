@@ -4,6 +4,7 @@
 [![codecov.io](https://codecov.io/github/percolate/wordpress/coverage.svg?branch=master&token=D4xm32VsPP)](https://codecov.io/github/percolate/wordpress?branch=master)
 
 **Table of contents**
+
 * [User Guide](#user-guide)
   * [Plugin overview](#plugin-overview)
   * [Installation & initial configuration](#installation)
@@ -21,9 +22,9 @@ In order to use this plugin you will need an API key issued to you from Percolat
 along with your user ID.
 ***
 
-## <a name="user-guide">User Installation Guide</a>
+## User Installation Guide
 
-### <a name="plugin-overview">Plugin overview</a>
+### Plugin overview
 
 The WordPress-Percolate connector is an installable WordPress plugin made
 available to Percolate Customers. The plugin is designed specifically for
@@ -73,27 +74,31 @@ As a first step, please ensure you have the latest Percolate-WordPress
 plugin distribution, available on Github.
 
 ##### 1. In WordPress, navigate to Plugins
-  * Select "Add New"
-  * Add the Percolate-WordPress .zip file and select “Install Now”
 
-##### 2 Click into the Percolate Plugin from the WordPress menu
-  * Under “Manage Channels,” select “Add New”
-  
+* Select "Add New"
+* Add the Percolate-WordPress .zip file and select “Install Now”
+
+##### 2. Click into the Percolate Plugin from the WordPress menu
+
+* Under “Manage Channels,” select “Add New”
+
 ##### 3. Perform initial Channel configuration
-  * Add user API key to unlock list of available Licenses
-  * Provide your preferred name for configured channel in WordPress (e.g. “Percolate Posts”)
-  * Select Percolate License, Platform, and Channel
-  * “Continue”
-  
+
+* Add user API key to unlock list of available Licenses
+* Provide your preferred name for configured channel in WordPress (e.g. “Percolate Posts”)
+* Select Percolate License, Platform, and Channel
+* “Continue”
+
 ##### 4. Map Channel Topics and Subtopics
-  * Percolate License Topics will appear on the left
-  * Select WordPress categories for each Percolate topic. 
-  * Unmapped Topics will not import
+
+* Percolate License Topics will appear on the left
+* Select WordPress categories for each Percolate topic. 
+* Unmapped Topics will not import
 
 **Note:** after this step, you may “Save” without configuring templates,
 and return at any time
-  
-### <a name="template-configuration">Custom template configuration</a>
+
+### Custom template configuration
 
 This process requires that Custom Creative templates have been configured for 
 your License in Percolate. For assistance with Custom Creative templates, please 
@@ -109,19 +114,21 @@ to be set for each License:Channel configuration:
 | On Schedule | "Publishing" | Import posts only at their scheduled publishing times | 
 
 ##### 1. Map custom templates: basic
-  * Each Custom Creative template associated with the configured Percolate Channel can be mapped to a WordPress Post Type
-  * For each of the default WordPress Post fields, select a Percolate field to be mapped
-  * In the “Earliest import” dropdown, select the workflow step at which you’d like Percolate content to import
-  * To avoid “Queued” posts automatically publishing at their scheduled times, select “Set status to Draft in WP”
-    * By default, imports of “Queued” and “Publishing” posts will be scheduled for publishing in WP
-    * Note: “Drafts” imported from Percolate will never publish automatically
+
+* Each Custom Creative template associated with the configured Percolate Channel can be mapped to a WordPress Post Type
+* For each of the default WordPress Post fields, select a Percolate field to be mapped
+* In the “Earliest import” dropdown, select the workflow step at which you’d like Percolate content to import
+* To avoid “Queued” posts automatically publishing at their scheduled times, select “Set status to Draft in WP”
+  * By default, imports of “Queued” and “Publishing” posts will be scheduled for publishing in WP
+  * Note: “Drafts” imported from Percolate will never publish automatically
 
 ##### 2. Map custom templates: advanced
-  * Additional Custom Creative fields can be mapped to WordPress shortcodes
-  * While using special markup for Percolate-importing fields is not required, it is recommended for clarity
+
+* Additional Custom Creative fields can be mapped to WordPress shortcodes
+* While using special markup for Percolate-importing fields is not required, it is recommended for clarity
   * All basic title/body/image mappings still apply
 
-### <a name="browse-assets">Browse Percolate assets</a>
+### Browse Percolate assets
 
 This section describes the setup and functionality of the basic Percolate-WordPress
 asset integration that comes bundled with the post import plugin.
@@ -129,13 +136,15 @@ asset integration that comes bundled with the post import plugin.
 ##### 1. In the Percolate plugin homepage, select Settings
 
 ##### 2. Configure a License
-  * Enter a Percolate API Key to unlock a list of Licenses
-  * Select the License that will be used for asset search
+
+* Enter a Percolate API Key to unlock a list of Licenses
+* Select the License that will be used for asset search
 
 ##### 3. Confirm you can insert Percolate assets on new WordPress posts
-  * Select image size and alt text, and import
 
-### <a name="testing-imports">Testing imports</a>
+* Select image size and alt text, and import
+
+### Testing imports
 
 Once Channel and template configuration are complete, you can test the module by
 creating a Post in Percolate, and forcing the import job to run with the
@@ -146,19 +155,22 @@ Percolate License. For assistance with custom Channels, please contact your Perc
 Engagement Manager or Product Specialist.
 
 ##### 1. Using the “Create” button, create a Post in the configured WordPress Custom Channel
-  * Select desired WordPress Channel and Template
-  * Compose your post
+
+* Select desired WordPress Channel and Template
+* Compose your post
 
 ##### 2. Run the Import job from the Plugin homepage
 
 ##### 3. Confirm your test Post has appeared in WordPress as expected. You should see:
-  * All configured fields have imported
-  * All tags have been imported
-  * Topics are mapped correctly
-  * Images have imported and are available in Media Library
+
+* All configured fields have imported
+* All tags have been imported
+* Topics are mapped correctly
+* Images have imported and are available in Media Library
 
 ***
-## <a name="changelog">Changelog</a>
+
+## Changelog
 
 ### 4.0.2
 
