@@ -3,17 +3,19 @@
 [![Circle CI](https://circleci.com/gh/percolate/wordpress.svg?style=svg&circle-token=31cbc7d300a4aaa0396a12fffc722cda7a00dc7b)](https://circleci.com/gh/percolate/wordpress)
 [![codecov.io](https://codecov.io/github/percolate/wordpress/coverage.svg?branch=master&token=D4xm32VsPP)](https://codecov.io/github/percolate/wordpress?branch=master)
 
-* [User Guide](#user-guide)
+* [User Guide](#user-installation-guide)
   * [Plugin overview](#plugin-overview)
-  * [Installation & initial configuration](#installation)
-  * [Custom template configuration](#template-configuration)
-  * [Browse assets](#browse-assets)
-  * [Testng imports](#testing-imports)
-* [Changlog](#changelog)
+  * [Installation and setup](#installation-and-setup)
+    * [Initial configuration](#initial-configuration) 
+    * [Custom template configuration](#custom-template-configuration)
+    * [Browsing Percolate assets](#browsing-percolate-assets)
+  * [Testing the plugin](#testing-the-plugin)
+* [Changelog](#changelog)
 
 **Document version:** 1.0
 
-*Note:* The [legacy plugin](https://github.com/percolate/WP-Percolate) is no longer being supported by Percolate.
+*Note:* The [legacy plugin](https://github.com/percolate/WP-Percolate)
+is no longer being supported by Percolate.
 While it may continue to function, continued functionality is not guaranteed.
 
 In order to use this plugin you will need an API key issued to you from Percolate,
@@ -63,7 +65,7 @@ Percolate custom creative templates support most commonly-used blog page element
 | Public library support | Supporting libraries from Angular, Boostrap, et al. |
 | Additional files       | For CSS compilation, markdown, testing, etc. |
 
-### Installation & setup
+### Installation and setup
 
 This section describes how to install the Percolate-WordPress plugin
 and perform initial configuration.
@@ -162,8 +164,7 @@ Engagement Manager or Product Specialist.
 
 #### Testing imports
 
-##### 1. Using the “Create” button, create a Post in the configured
-WordPress Custom Channel
+##### 1. Using the “Create” button, create a Post in the configured Channel
 
 * Select desired WordPress Channel and Template
 * Compose your post
