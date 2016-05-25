@@ -29,7 +29,7 @@ along with your user ID.
 
 ***
 The WordPress-Percolate connector is an installable WordPress plugin made
-available to Percolate Customers. The plugin is designed specifically for
+available to Percolate clients. The plugin is designed specifically for
 WordPress, and includes support for common WordPress concepts like
 Custom Post Types, post categories, Media Library, and Featured Images.
 
