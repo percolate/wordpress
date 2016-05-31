@@ -302,17 +302,20 @@ class Percolate_POST_Model
     if( is_string($body) ) {
       Percolate_Log::log('Body is a string, checking for images...');
       $html = str_get_html($body);
-      // Find all images
-      foreach($html->find('img') as $img) {
-        Percolate_Log::log('Image found: ' . print_r($img->src, true));
-        $newSrc = $this->Media->importImageFromUrl($img->src);
-        if( $newSrc ) {
-          Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
-          $img->src = $newSrc;
-        }
-      }
 
-      $body = $html->save();
+      if (is_object($html)) {
+        // Find all images
+        foreach($html->find('img') as $img) {
+          Percolate_Log::log('Image found: ' . print_r($img->src, true));
+          $newSrc = $this->Media->importImageFromUrl($img->src);
+          if( $newSrc ) {
+            Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
+            $img->src = $newSrc;
+          }
+        }
+
+        $body = $html->save();
+      }
     }
 
     // ----------- Categories --------------
