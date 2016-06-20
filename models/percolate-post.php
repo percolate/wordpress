@@ -388,6 +388,7 @@ class Percolate_POST_Model
     update_post_meta($wp_post_id, 'percolate_channel_id', $post['channel_id']);
     update_post_meta($wp_post_id, 'percolate_schema_id', $post['schema_id']);
     update_post_meta($wp_post_id, 'percolate_name', $post['name']);
+    update_post_meta($wp_post_id, 'percolate_status', $post['status']);
 
     // ----------- Meta fields --------------
     if( isset($post['ext']) && !empty($post['ext']) ) {
@@ -510,6 +511,59 @@ class Percolate_POST_Model
   public function deactivateImport(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
     wp_clear_scheduled_hook('percolate_import_posts_event');
+  }
+
+
+  /**
+   * Method for catching when a post gets published
+   *   -> in that case we need to tell percolate the new post status
+   */
+  public function onPostPublish( $wp_post_id, $post ) {
+    Percolate_Log::log('Post was published in WP. ID:' . $wp_post_id . '. Calling Percolate API to transition status.');
+
+    // check current post status
+    $postStatus = get_post_meta($wp_post_id, 'percolate_status', true);
+    Percolate_Log::log('Post current status:' . $postStatus);
+
+    if( $postStatus == 'draft' ) {
+      $this->transitionPost( $wp_post_id, 'queued' );
+    }
+    $this->transitionPost( $wp_post_id, 'live' );
+  }
+
+  private function transitionPost( $wp_post_id, $status='live' )
+  {
+    // Get the UUID of the WP-Perc channel that imported the post
+    $wpChannelUuid = get_post_meta($wp_post_id, 'wp_channel_uuid', true);
+
+    // Get the plugin options from DB
+    $option = json_decode( $this->getChannels() );
+    if( !isset($option->channels) ) {
+      Percolate_Log::log('No channels were found, exiting.');
+      return;
+    }
+
+    $postsChannel = $option->channels->{$wpChannelUuid};
+    Percolate_Log::log("Post's original importing channel found.");
+
+    $key    = $postsChannel->key;
+    $method = "v5/post/" . get_post_meta($wp_post_id, 'percolate_id', true);
+    $fields = array();
+    $jsonFields = array(
+      'status' => $status
+    );
+
+    $res = $this->Percolate->callAPI($key, $method, $fields, $jsonFields, 'PUT');
+
+    if(!isset($res['data'])) {
+      Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
+      return;
+    }
+
+    update_post_meta($wp_post_id, 'percolate_status', $res['data']['status']);
+    Percolate_Log::log('Post '. $wp_post_id .' was transitioned to ' . $status);
+
+    return $res_schema;
   }
 
 

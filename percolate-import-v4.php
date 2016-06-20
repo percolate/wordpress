@@ -7,7 +7,7 @@ Plugin Name: WP Percolate v4
 Plugin URI: http://percolate.com
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.0.2
+Version: 4.0.3
 Author URI: http://percolate.com
 
 */
@@ -130,7 +130,9 @@ class PercolateImportV4
     // Import image into WP
     add_action( 'wp_ajax_image_import', array( $this->Media, 'importImageEndpoint' ) );
 
-    // Percolate_Log::log('Percolate V4 constructed!');
+    // Post transition hook
+    add_action(  'publish_post',  array( $this->Post, 'onPostPublish' ), 10, 2 );
+
   }
 
   /**

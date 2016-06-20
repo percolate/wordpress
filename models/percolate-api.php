@@ -34,7 +34,7 @@ class Percolate_API_Model
   }
 
 
-  public function callAPI ($api_key, $method, $fields=array(), $jsonFields=array())
+  public function callAPI ($api_key, $method, $fields=array(), $jsonFields=array(), $type="")
   {
     if( !isset($api_key) || !isset($method) ) {
       $res = 'Invalid request';
@@ -65,6 +65,12 @@ class Percolate_API_Model
       curl_setopt($curl_handle, CURLOPT_POSTFIELDS, json_encode($jsonFields));
     } else {
       // curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Expect:', "Authorization: $key"));
+    }
+
+    // Custom CRUD
+    if( $type != "" ) {
+      curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Content-Type: application/json', "Authorization: $api_key", "Content-Length: " . strlen(json_encode($jsonFields))));
+      curl_setopt($curl_handle, CURLOPT_CUSTOMREQUEST, $type);
     }
 
     $res = curl_exec($curl_handle);

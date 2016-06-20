@@ -8,7 +8,7 @@
   <div class="col-sm-12 text-right">
     <table class="table table-striped table-hover">
       <tbody>
-        <tr ng-repeat="(uuid, channel) in Percolate.channels" data-uuid="{{uuid}}">
+        <tr ng-repeat="(uuid, channel) in Percolate.channels" data-uuid="{{uuid}}" ng-show="channel.active == 'true'">
           <td class="text-left">
             <h4>{{channel.name}}</h4>
           </td>

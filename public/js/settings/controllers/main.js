@@ -49,7 +49,7 @@ angular.module('myApp')
     }
 
     $scope.deleteChannel = function (channelId) {
-      delete $scope.Percolate.channels[channelId]
+      $scope.Percolate.channels[channelId].active = 'false'
 
       console.log('Submiting data, current dataset: ', $scope.Percolate)
       $scope.showLoader('Saving data...')

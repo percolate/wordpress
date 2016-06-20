@@ -4,7 +4,9 @@ angular.module('myApp')
   .controller('AddSetupCtr', function ($scope, $state, Percolate) {
     console.log('Add New Channel - Setup state')
 
-    $scope.formData = {}
+    $scope.formData = {
+      active: 'true'
+    }
 
     /*
      * Check the API key and retrieve data from Percolata
