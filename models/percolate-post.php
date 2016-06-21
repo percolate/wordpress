@@ -495,6 +495,7 @@ class Percolate_POST_Model
     }
 
     // ----------- All done here --------------
+    update_post_meta($post['id'], 'import_done', 'yes');
     $res['success'] = true;
     $res['percolate_id'] = $post['id'];
     $res['message'] = "Post imported successfully.";
@@ -519,20 +520,17 @@ class Percolate_POST_Model
    *   -> in that case we need to tell percolate the new post status
    */
   public function onPostPublish( $wp_post_id, $post ) {
+    /**
+     * @param string $wp_post_id: WP post ID
+     * @param obejct $post: WP post object
+     * @return bool success or failure
+     */
+    $postPercID = get_post_meta($wp_post_id, 'percolate_id', true);
+    if(!isset($postPercID) || empty($postPercID)) { return false; }
+
     Percolate_Log::log('Post was published in WP. ID:' . $wp_post_id . '. Calling Percolate API to transition status.');
 
-    // check current post status
-    $postStatus = get_post_meta($wp_post_id, 'percolate_status', true);
-    Percolate_Log::log('Post current status:' . $postStatus);
-
-    if( $postStatus == 'draft' ) {
-      $this->transitionPost( $wp_post_id, 'queued' );
-    }
-    $this->transitionPost( $wp_post_id, 'live' );
-  }
-
-  private function transitionPost( $wp_post_id, $status='live' )
-  {
+    // ------------- Importing Channel -------------
     // Get the UUID of the WP-Perc channel that imported the post
     $wpChannelUuid = get_post_meta($wp_post_id, 'wp_channel_uuid', true);
 
@@ -540,14 +538,64 @@ class Percolate_POST_Model
     $option = json_decode( $this->getChannels() );
     if( !isset($option->channels) ) {
       Percolate_Log::log('No channels were found, exiting.');
-      return;
+      return false;
     }
 
     $postsChannel = $option->channels->{$wpChannelUuid};
     Percolate_Log::log("Post's original importing channel found.");
 
+    // ------------- Post status -------------
+    $postStatus = $this->getPostStatus($wp_post_id, $postPercID, $postsChannel);
+    Percolate_Log::log('Post current status:' . $postStatus);
+
+    if( $postStatus == 'draft' ) {
+      $this->transitionPost( $wp_post_id, $postPercID, $postsChannel, 'queued' );
+    }
+    $this->transitionPost( $wp_post_id, $postPercID, $postsChannel, 'live' );
+    return true;
+  }
+
+
+  /* ------------------- Post transiting functions ----------------------- */
+  private function getPostStatus($wp_post_id, $postPercID, $postsChannel)
+  {
+    /**
+     * Calls the Percolate API to get the post status by ID
+     *
+     * @param string $wp_post_id: WP post ID
+     * @param string $postPercID: Percolate post ID
+     * @param object $postsChannel: plugin's channel that's originally imported the post
+     *
+     * @return string post status
+     */
     $key    = $postsChannel->key;
-    $method = "v5/post/" . get_post_meta($wp_post_id, 'percolate_id', true);
+    $method = "v5/post/" . $postPercID;
+    $fields = array();
+
+    $res = $this->Percolate->callAPI($key, $method, $fields);
+
+    if(!isset($res['data'])) {
+      Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
+      return;
+    }
+
+    return $res['data']['status'];
+  }
+
+  private function transitionPost( $wp_post_id, $postPercID, $postsChannel, $status='live' )
+  {
+    /**
+     * Calls the Percolate API to transition the post
+     *
+     * @param string $wp_post_id: WP post ID
+     * @param string $postPercID: Percolate post ID
+     * @param object $postsChannel: plugin's channel that's originally imported the post
+     * @param string $status: status to transition the post to
+     *
+     * @return array API response
+     */
+    $key    = $postsChannel->key;
+    $method = "v5/post/" . $postPercID;
     $fields = array();
     $jsonFields = array(
       'status' => $status
@@ -563,8 +611,9 @@ class Percolate_POST_Model
     update_post_meta($wp_post_id, 'percolate_status', $res['data']['status']);
     Percolate_Log::log('Post '. $wp_post_id .' was transitioned to ' . $status);
 
-    return $res_schema;
+    return $res;
   }
+  /* ----------------- End of post transiting functions ------------------- */
 
 
   private function searchInArray($array, $key, $value) {
