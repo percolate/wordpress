@@ -59,9 +59,9 @@ class PercolateImportV4
    * Class constructor
    */
   public function __construct() {
-    if ( ! is_admin() ) {
-      return false;
-    }
+    // if ( ! is_admin() ) {
+    //   return false;
+    // }
 
     // Logging
     include_once(__DIR__ . '/models/percolate-log.php');
@@ -84,8 +84,8 @@ class PercolateImportV4
     $this->Media = PercolateMedia::instance();
 
     // GitHub updater
-    require_once( __DIR__ . '/models/percolate-updater.php' );
-    new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
+    // require_once( __DIR__ . '/models/percolate-updater.php' );
+    // new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods
     register_activation_hook(self::FILE, array($this, '__activation'));
@@ -124,15 +124,15 @@ class PercolateImportV4
 
     // Import posts for channel
     add_action( 'wp_ajax_do_import', array( $this->Post, 'importChannelPosts' ) );
-    // Action for WP-Cron
+
+    // Action for WP-Cron import
     add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
+
+    // Action for WP-Cron post transition
+    add_action('percolate_transition_posts_event', array($this->Post, 'transitionPosts'));
 
     // Import image into WP
     add_action( 'wp_ajax_image_import', array( $this->Media, 'importImageEndpoint' ) );
-
-    // Post transition hook
-    add_action(  'publish_post',  array( $this->Post, 'onPostPublish' ), 10, 2 );
-
   }
 
   /**
@@ -140,7 +140,7 @@ class PercolateImportV4
    */
   public function __activation() {
     // Activate the WP Cron task for importing posts
-    $this->Post->activateImport();
+    $this->Post->activateCron();
   }
 
   /**
@@ -148,7 +148,7 @@ class PercolateImportV4
    */
   public function __deactivation() {
     // Dectivate the WP Cron task for importing posts
-    $this->Post->deactivateImport();
+    $this->Post->deactivateCron();
   }
 
   /**

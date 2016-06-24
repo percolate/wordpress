@@ -13,6 +13,7 @@ class Percolate_POST_Model
 {
 
   protected $option = 'PercV4Opt';
+  protected $optionEvents = 'PercV4Events';
 
   protected $Percolate;
 
@@ -45,6 +46,54 @@ class Percolate_POST_Model
       // Percolate_Log::log("simple_html_dom_node isn't present");
       require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
     }
+  }
+
+  private function getEvents()
+  {
+    /**
+     * Get the saved events from the DB
+     *
+     * @return array of events
+     */
+    $events = json_decode( get_option( $this->optionEvents ) );
+    return $events;
+  }
+
+  private function setEvents( $events )
+  {
+    /**
+     * Save the saved events from the DB
+     *
+     * @param array $events: all the events
+     * @return bool true or false
+     */
+    update_option( $this->optionEvents, json_encode($events) );
+    return true;
+  }
+
+  public function addEvent( $event = array() )
+  {
+    /**
+     * Adds an event
+     *
+     * @param array $event: event to add
+     * @return array: events
+     */
+
+     $events = $this->getEvents();
+
+     if( !$events || empty($events) ) {
+       $events = array(
+         "postToTransition" => array()
+       );
+       $this->setEvents($events);
+       $events = $this->getEvents();
+     }
+
+     $events->postToTransition[$event['ID']] = $event;
+     $this->setEvents($events);
+
+     return $events;
   }
 
 
@@ -333,21 +382,19 @@ class Percolate_POST_Model
     $post_status = 'future';
     $publish_date = $post['live_at'];
 
-    // Trying to fix 1970 bug
-    if ($publish_date == NULL){
-      foreach($object['schedules'] as $schedule){
-        if ($schedule['published_at'] != NULL){
-          $publish_date = $schedule['published_at'];
-        }
-      }
-    }
-
     // Still trying to fix 1970 bug
     if ($publish_date == NULL){
+      Percolate_Log::log('Publish date bug');
       $publish_date = $object['created_at'];
       $post_status = 'draft';
     }
     $publish_date = strtotime($publish_date);
+
+
+    // GMT offset of WP
+    $gmtOffset = get_option( 'gmt_offset' );
+    $localTime = get_date_from_gmt(date('Y-m-d H:i:s', $publish_date));
+    Percolate_Log::log('Local publishing time of the post: '. $localTime . '. GMT offest: '. $gmtOffset);
 
     // ----------- Post status--------------
     if ( (isset($template->safety) && $template->safety == 'on') || $post['status'] == 'draft' ) {
@@ -362,8 +409,8 @@ class Percolate_POST_Model
       'post_status'    => $post_status, // [ 'draft' | 'publish' | 'pending'| 'future' | 'private' | custom registered status ]
       'post_type'      => $template->postType,
       'post_author'    => $channel->wpUser, // The user ID number of the author. Default is the current user ID.
-      // 'post_date'      => date('Y-m-d H:i:s', $publish_date), // [ Y-m-d H:i:s ] // The time post was made.
-      'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
+      'post_date'      => $localTime, // [ Y-m-d H:i:s ] // The time post was made.
+      // 'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
       'post_category'  => $post_category // [ array(<category id>, ...) ] // Default empty.
     );
 
@@ -379,6 +426,12 @@ class Percolate_POST_Model
       return $res;
     }
     Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true));
+
+    if(time() < $publish_date) {
+      Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
+
+      $this->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
+    }
 
     // ----------- Factory meta fields --------------
     update_post_meta($wp_post_id, 'wp_channel_uuid', $channel->uuid);
@@ -505,13 +558,47 @@ class Percolate_POST_Model
   /**
    * Methods for adding / removing the WP Cron job for importing posts
    */
-  public function activateImport(){
-    Percolate_Log::log('WP Cron: percolate_import_posts_event activeted');
+  public function activateCron(){
+    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
     wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_transition_posts_event activated');
+    wp_schedule_event(time()+1, 'every_min', 'percolate_transition_posts_event');
   }
-  public function deactivateImport(){
+  public function deactivateCron(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
     wp_clear_scheduled_hook('percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_transition_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_transition_posts_event');
+  }
+
+  /**
+   * Method for checking all future posts
+   */
+  public function transitionPosts()
+  {
+    Percolate_Log::log('Transition Posts hook.');
+
+    $events = $this->getEvents();
+    Percolate_Log::log('Events: ' . print_r($events, true) . " Current time: " . time());
+
+    if( !isset($events->postToTransition) || empty($events->postToTransition) ) {
+      return false;
+    }
+
+    foreach ($events->postToTransition as $key => $event) {
+      if( time() > $event->dateUTM ) {
+        Percolate_Log::log('Transitioning post: ' . $event->ID);
+        $this->postTransition( $event->ID );
+
+        // Remove the transitioned item from the DB
+        unset($events->postToTransition->{$key});
+        $this->setEvents($events);
+      }
+    }
+
+    return true;
   }
 
 
@@ -519,20 +606,23 @@ class Percolate_POST_Model
    * Method for catching when a post gets published
    *   -> in that case we need to tell percolate the new post status
    */
-  public function onPostPublish( $wp_post_id, $post ) {
+  public function postTransition( $post_id )
+  {
     /**
-     * @param string $wp_post_id: WP post ID
-     * @param obejct $post: WP post object
+     * @param string $post_id: WP post ID
      * @return bool success or failure
      */
-    $postPercID = get_post_meta($wp_post_id, 'percolate_id', true);
+
+    Percolate_Log::log('Post transition event, post WP ID:' . $post_id);
+
+    $postPercID = get_post_meta($post_id, 'percolate_id', true);
     if(!isset($postPercID) || empty($postPercID)) { return false; }
 
-    Percolate_Log::log('Post was published in WP. ID:' . $wp_post_id . '. Calling Percolate API to transition status.');
+    Percolate_Log::log('Post was published in WP. WP ID: ' . $post_id . '. Percolate ID:' . $postPercID . '. Calling Percolate API to transition status.');
 
     // ------------- Importing Channel -------------
     // Get the UUID of the WP-Perc channel that imported the post
-    $wpChannelUuid = get_post_meta($wp_post_id, 'wp_channel_uuid', true);
+    $wpChannelUuid = get_post_meta($post_id, 'wp_channel_uuid', true);
 
     // Get the plugin options from DB
     $option = json_decode( $this->getChannels() );
@@ -545,13 +635,24 @@ class Percolate_POST_Model
     Percolate_Log::log("Post's original importing channel found.");
 
     // ------------- Post status -------------
-    $postStatus = $this->getPostStatus($wp_post_id, $postPercID, $postsChannel);
+    $postStatus = $this->getPostStatus($post_id, $postPercID, $postsChannel);
     Percolate_Log::log('Post current status:' . $postStatus);
 
-    if( $postStatus == 'draft' ) {
-      $this->transitionPost( $wp_post_id, $postPercID, $postsChannel, 'queued' );
+    switch ($postStatus) {
+      case 'draft':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
+      case 'queued':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
+      case 'queued.publishing':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
     }
-    $this->transitionPost( $wp_post_id, $postPercID, $postsChannel, 'live' );
+    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live' );
     return true;
   }
 

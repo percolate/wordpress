@@ -74,6 +74,7 @@
               <div class="col-sm-6">
                 <select name="{{template.id}}-import" id="{{template.id}}-import" class="form-control"
                         ng-model="formData[template.id].import"
+                        ng-init="formData[template.id].import = edit.active ? formData[template.id].import : earliestImport[2].key"
                         ng-options="option.key as option.label for option in earliestImport"></select>
               </div>
             </div>
