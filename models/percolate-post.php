@@ -333,7 +333,7 @@ class Percolate_POST_Model
       $res['message'] = "Post already imported";
       return $res;
     }
-
+    Percolate_Log::log('----------------------------------');
     Percolate_Log::log('Importing post: ' . $post['id'] );
     Percolate_Log::log('Post status: ' . $post['status']);
 
