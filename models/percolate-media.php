@@ -195,6 +195,15 @@ class PercolateMedia
       $src = $imageData[0]['data']['formats'][0]['url'];
       $imageData = $imageData[0];
     }
+    elseif( isset($imageData['images']['large']['url']) ) {
+      // It's an array field, let's gran the first match
+      $src = $imageData['images']['large']['url'];
+    }
+    elseif( isset($imageData[0]['images']['large']['url']) ) {
+      // It's an array field, let's gran the first match
+      $src = $imageData[0]['images']['large']['url'];
+      $imageData = $imageData[0];
+    }
     else {
       Percolate_Log::log("Image soruce cannot be found in Percolate API response.");
       return;
@@ -238,7 +247,7 @@ class PercolateMedia
 
     $uploads = wp_upload_dir();
     // get unique file name
-    $filename = wp_unique_filename($uploads['path'], $percolate_id);
+    $filename = wp_unique_filename( $uploads['path'], basename(parse_url($src, PHP_URL_PATH)) );
     $filepath = $uploads['path'] . '/' . $filename;
 
     $url = '';

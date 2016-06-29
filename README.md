@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.0.3
+
+* Transition post upon WP publish
+
 ### 4.0.2
 
 * Draft | Queued post status support
@@ -221,4 +225,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.0.2~
+~Current Version:4.0.3~

@@ -13,6 +13,7 @@ class Percolate_POST_Model
 {
 
   protected $option = 'PercV4Opt';
+  protected $optionEvents = 'PercV4Events';
 
   protected $Percolate;
 
@@ -47,6 +48,54 @@ class Percolate_POST_Model
     }
   }
 
+  private function getEvents()
+  {
+    /**
+     * Get the saved events from the DB
+     *
+     * @return array of events
+     */
+    $events = json_decode( get_option( $this->optionEvents ) );
+    return $events;
+  }
+
+  private function setEvents( $events )
+  {
+    /**
+     * Save the saved events from the DB
+     *
+     * @param array $events: all the events
+     * @return bool true or false
+     */
+    update_option( $this->optionEvents, json_encode($events) );
+    return true;
+  }
+
+  public function addEvent( $event = array() )
+  {
+    /**
+     * Adds an event
+     *
+     * @param array $event: event to add
+     * @return array: events
+     */
+
+     $events = $this->getEvents();
+
+     if( !$events || empty($events) ) {
+       $events = array(
+         "postToTransition" => array()
+       );
+       $this->setEvents($events);
+       $events = $this->getEvents();
+     }
+
+     $events->postToTransition->{$event['ID']} = $event;
+     $this->setEvents($events);
+
+     return $events;
+  }
+
 
   /**
    * Endpoint for importing posts for the selected channel
@@ -78,8 +127,10 @@ class Percolate_POST_Model
     }
 
     foreach ($option->channels as $channel) {
-      $res = $this->processChannel( $channel );
-      Percolate_Log::log(print_r($res, true));
+      if($channel->active == 'true') {
+        $res = $this->processChannel( $channel );
+        Percolate_Log::log(print_r($res, true));
+      }
     }
 
     return;
@@ -116,12 +167,18 @@ class Percolate_POST_Model
       'success' => true,
       'messages' => array()
     );
-
-    // Percolate_Log::log(print_r($channel, true));
-
     $schemas = $this->getSchemas($channel);
 
     $posts = $this->getPosts($channel);
+
+    if( !is_array($posts) || empty($posts) ) {
+      $res = array(
+        'success' => false,
+        'messages' => 'No posts were found for this channel: ' . $channel
+      );
+      return $res;
+    }
+
     $postsBySchema = array();
     foreach ($posts as $post) {
       $postsBySchema[$post['schema_id']][] = $post;
@@ -130,11 +187,14 @@ class Percolate_POST_Model
     foreach ($schemas as $schema) {
       $template = $channel->$schema['id'];
       if( empty($template) || $template->postType !== 'false' ) {
-        Percolate_Log::log('importing posts for:');
-        Percolate_Log::log(print_r($template, true));
-        foreach ($postsBySchema[$schema['id']] as $post) {
-          $success = $this->importPost($post, $template, $schema, $channel);
-          $res['messages'][] = $success;
+        if( !is_array($postsBySchema[$schema['id']]) || empty($postsBySchema[$schema['id']]) ) {
+          Percolate_Log::log('No posts found for ' . $schema['id']);
+        } else {
+          Percolate_Log::log('Importing posts for: ' . print_r($template, true));
+          foreach ($postsBySchema[$schema['id']] as $post) {
+            $success = $this->importPost($post, $template, $schema, $channel);
+            $res['messages'][] = $success;
+          }
         }
       }
     }
@@ -142,11 +202,12 @@ class Percolate_POST_Model
     return $res;
   }
 
-  /**
-   * Call the percolate API and try to import stories
-   */
   public function getPosts($channel)
   {
+    /**
+     * Call the percolate API and try to import stories
+     */
+
     $page   = 0;
     $offset = 0;
     $batch  = 100;
@@ -228,7 +289,9 @@ class Percolate_POST_Model
     }
 
     $statusToImport = array(
-      'queued.publishing'
+      'queued.publishing',
+      'queued.published',
+      'live'
     );
 
     if( isset($template->import) ) {
@@ -247,7 +310,7 @@ class Percolate_POST_Model
     // Percolate_Log::log(print_r($statusToImport, true));
 
     // ------ Check approval status from Perc --------
-    Percolate_Log::log('Post status: ' . $post['status']);
+    $res['status'] = $post['status'];
     if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
     {
           // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
@@ -267,16 +330,16 @@ class Percolate_POST_Model
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
-      Percolate_Log::log('Post already imported.');
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
       $res['percolate_id'] = $post['id'];
-      $res['message'] = "Post alreadey imported";
+      $res['message'] = "Post already imported";
       return $res;
     }
-
+    Percolate_Log::log('----------------------------------');
     Percolate_Log::log('Importing post: ' . $post['id'] );
+    Percolate_Log::log('Post status: ' . $post['status']);
 
     // ----------- Post title --------------
     $title = "";
@@ -302,17 +365,20 @@ class Percolate_POST_Model
     if( is_string($body) ) {
       Percolate_Log::log('Body is a string, checking for images...');
       $html = str_get_html($body);
-      // Find all images
-      foreach($html->find('img') as $img) {
-        Percolate_Log::log('Image found: ' . print_r($img->src, true));
-        $newSrc = $this->Media->importImageFromUrl($img->src);
-        if( $newSrc ) {
-          Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
-          $img->src = $newSrc;
-        }
-      }
 
-      $body = $html->save();
+      if (is_object($html)) {
+        // Find all images
+        foreach($html->find('img') as $img) {
+          Percolate_Log::log('Image found: ' . print_r($img->src, true));
+          $newSrc = $this->Media->importImageFromUrl($img->src);
+          if( $newSrc ) {
+            Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
+            $img->src = $newSrc;
+          }
+        }
+
+        $body = $html->save();
+      }
     }
 
     // ----------- Categories --------------
@@ -330,21 +396,19 @@ class Percolate_POST_Model
     $post_status = 'future';
     $publish_date = $post['live_at'];
 
-    // Trying to fix 1970 bug
-    if ($publish_date == NULL){
-      foreach($object['schedules'] as $schedule){
-        if ($schedule['published_at'] != NULL){
-          $publish_date = $schedule['published_at'];
-        }
-      }
-    }
-
     // Still trying to fix 1970 bug
     if ($publish_date == NULL){
-      $publish_date = $object['created_at'];
+      Percolate_Log::log('No live_at date, using created_at.');
+      $publish_date = $post['created_at'];
       $post_status = 'draft';
     }
     $publish_date = strtotime($publish_date);
+
+
+    // GMT offset of WP
+    $gmtOffset = get_option( 'gmt_offset' );
+    $localTime = get_date_from_gmt(date('Y-m-d H:i:s', $publish_date));
+    Percolate_Log::log('Local publishing time of the post: '. $localTime . '. GMT offest: '. $gmtOffset);
 
     // ----------- Post status--------------
     if ( (isset($template->safety) && $template->safety == 'on') || $post['status'] == 'draft' ) {
@@ -359,8 +423,8 @@ class Percolate_POST_Model
       'post_status'    => $post_status, // [ 'draft' | 'publish' | 'pending'| 'future' | 'private' | custom registered status ]
       'post_type'      => $template->postType,
       'post_author'    => $channel->wpUser, // The user ID number of the author. Default is the current user ID.
-      // 'post_date'      => date('Y-m-d H:i:s', $publish_date), // [ Y-m-d H:i:s ] // The time post was made.
-      'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
+      'post_date'      => $localTime, // [ Y-m-d H:i:s ] // The time post was made.
+      // 'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
       'post_category'  => $post_category // [ array(<category id>, ...) ] // Default empty.
     );
 
@@ -375,7 +439,13 @@ class Percolate_POST_Model
       $res['message'] = 'Post cannot be inserted into WP.';
       return $res;
     }
-    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true));
+    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)));
+
+    if(time() < $publish_date || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published') {
+      Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
+
+      $this->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
+    }
 
     // ----------- Factory meta fields --------------
     update_post_meta($wp_post_id, 'wp_channel_uuid', $channel->uuid);
@@ -385,6 +455,7 @@ class Percolate_POST_Model
     update_post_meta($wp_post_id, 'percolate_channel_id', $post['channel_id']);
     update_post_meta($wp_post_id, 'percolate_schema_id', $post['schema_id']);
     update_post_meta($wp_post_id, 'percolate_name', $post['name']);
+    update_post_meta($wp_post_id, 'percolate_status', $post['status']);
 
     // ----------- Meta fields --------------
     if( isset($post['ext']) && !empty($post['ext']) ) {
@@ -491,6 +562,7 @@ class Percolate_POST_Model
     }
 
     // ----------- All done here --------------
+    update_post_meta($post['id'], 'import_done', 'yes');
     $res['success'] = true;
     $res['percolate_id'] = $post['id'];
     $res['message'] = "Post imported successfully.";
@@ -500,14 +572,167 @@ class Percolate_POST_Model
   /**
    * Methods for adding / removing the WP Cron job for importing posts
    */
-  public function activateImport(){
-    Percolate_Log::log('WP Cron: percolate_import_posts_event activeted');
+  public function activateCron(){
+    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
     wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_transition_posts_event activated');
+    wp_schedule_event(time()+1, 'every_min', 'percolate_transition_posts_event');
   }
-  public function deactivateImport(){
+  public function deactivateCron(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
     wp_clear_scheduled_hook('percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_transition_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_transition_posts_event');
   }
+
+  /**
+   * Method for checking all future posts
+   */
+  public function transitionPosts()
+  {
+    Percolate_Log::log('Transition Posts hook.');
+
+    $events = $this->getEvents();
+    Percolate_Log::log('Events: ' . print_r($events, true) . " Current time: " . time());
+
+    if( !isset($events->postToTransition) || empty($events->postToTransition) ) {
+      return false;
+    }
+
+    foreach ($events->postToTransition as $key => $event) {
+      if( time() > $event->dateUTM ) {
+        Percolate_Log::log('Transitioning post: ' . $event->ID);
+        $this->postTransition( $event );
+
+        // Remove the transitioned item from the DB
+        unset($events->postToTransition->{$key});
+        $this->setEvents($events);
+      }
+    }
+
+    return true;
+  }
+
+
+  /**
+   * Method for catching when a post gets published
+   *   -> in that case we need to tell percolate the new post status
+   */
+  public function postTransition( $event )
+  {
+    /**
+     * @param object $event: post event {ID: WP post ID, dateUTM: live_at date}
+     * @return bool success or failure
+     */
+
+    $post_id = $event->ID;
+    Percolate_Log::log('Post transition event, post WP ID:' . $post_id);
+
+    $postPercID = get_post_meta($post_id, 'percolate_id', true);
+    if(!isset($postPercID) || empty($postPercID)) { return false; }
+
+    Percolate_Log::log('Post was published in WP. WP ID: ' . $post_id . '. Percolate ID:' . $postPercID . '. Calling Percolate API to transition status.');
+
+    // ------------- Importing Channel -------------
+    // Get the UUID of the WP-Perc channel that imported the post
+    $wpChannelUuid = get_post_meta($post_id, 'wp_channel_uuid', true);
+
+    // Get the plugin options from DB
+    $option = json_decode( $this->getChannels() );
+    if( !isset($option->channels) ) {
+      Percolate_Log::log('No channels were found, exiting.');
+      return false;
+    }
+
+    $postsChannel = $option->channels->{$wpChannelUuid};
+    Percolate_Log::log("Post's original importing channel found.");
+
+    // ------------- Post status -------------
+    $postStatus = $this->getPostStatus($post_id, $postPercID, $postsChannel);
+    Percolate_Log::log('Post current status:' . $postStatus);
+
+    switch ($postStatus) {
+      case 'draft':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
+      case 'queued':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
+      case 'queued.publishing':
+        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        break;
+    }
+    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
+    return true;
+  }
+
+
+  /* ------------------- Post transiting functions ----------------------- */
+  private function getPostStatus($wp_post_id, $postPercID, $postsChannel)
+  {
+    /**
+     * Calls the Percolate API to get the post status by ID
+     *
+     * @param string $wp_post_id: WP post ID
+     * @param string $postPercID: Percolate post ID
+     * @param object $postsChannel: plugin's channel that's originally imported the post
+     *
+     * @return string post status
+     */
+    $key    = $postsChannel->key;
+    $method = "v5/post/" . $postPercID;
+    $fields = array();
+
+    $res = $this->Percolate->callAPI($key, $method, $fields);
+
+    if(!isset($res['data'])) {
+      Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
+      return;
+    }
+
+    return $res['data']['status'];
+  }
+
+  private function transitionPost( $wp_post_id, $postPercID, $postsChannel, $status='live', $dateUTM=NULL )
+  {
+    /**
+     * Calls the Percolate API to transition the post
+     *
+     * @param string $wp_post_id: WP post ID
+     * @param string $postPercID: Percolate post ID
+     * @param object $postsChannel: plugin's channel that's originally imported the post
+     * @param string $status: status to transition the post to
+     *
+     * @return array API response
+     */
+    $key    = $postsChannel->key;
+    $method = "v5/post/" . $postPercID;
+    $fields = array();
+    $jsonFields = array(
+      'status' => $status
+    );
+    if( isset($dateUTM) ) {
+      $jsonFields['live_at'] = date(DATE_RFC3339, $dateUTM);
+    }
+
+    $res = $this->Percolate->callAPI($key, $method, $fields, $jsonFields, 'PUT');
+
+    if(!isset($res['data'])) {
+      Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
+      return;
+    }
+
+    update_post_meta($wp_post_id, 'percolate_status', $res['data']['status']);
+    Percolate_Log::log('Post '. $wp_post_id .' was transitioned to ' . $status);
+
+    return $res;
+  }
+  /* ----------------- End of post transiting functions ------------------- */
 
 
   private function searchInArray($array, $key, $value) {
