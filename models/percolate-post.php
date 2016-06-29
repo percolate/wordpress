@@ -165,12 +165,18 @@ class Percolate_POST_Model
       'success' => true,
       'messages' => array()
     );
-
-    // Percolate_Log::log(print_r($channel, true));
-
     $schemas = $this->getSchemas($channel);
 
     $posts = $this->getPosts($channel);
+
+    if( !is_array($posts) || empty($posts) ) {
+      $res = array(
+        'success' => false,
+        'messages' => 'No posts were found for this channel: ' . $channel
+      );
+      return $res;
+    }
+
     $postsBySchema = array();
     foreach ($posts as $post) {
       $postsBySchema[$post['schema_id']][] = $post;
@@ -179,11 +185,14 @@ class Percolate_POST_Model
     foreach ($schemas as $schema) {
       $template = $channel->$schema['id'];
       if( empty($template) || $template->postType !== 'false' ) {
-        Percolate_Log::log('importing posts for:');
-        Percolate_Log::log(print_r($template, true));
-        foreach ($postsBySchema[$schema['id']] as $post) {
-          $success = $this->importPost($post, $template, $schema, $channel);
-          $res['messages'][] = $success;
+        if( !is_array($postsBySchema[$schema['id']]) || empty($postsBySchema[$schema['id']]) ) {
+          Percolate_Log::log('No posts found for ' . $schema['id']);
+        } else {
+          Percolate_Log::log('Importing posts for: ' . print_r($template, true));
+          foreach ($postsBySchema[$schema['id']] as $post) {
+            $success = $this->importPost($post, $template, $schema, $channel);
+            $res['messages'][] = $success;
+          }
         }
       }
     }
@@ -191,11 +200,12 @@ class Percolate_POST_Model
     return $res;
   }
 
-  /**
-   * Call the percolate API and try to import stories
-   */
   public function getPosts($channel)
   {
+    /**
+     * Call the percolate API and try to import stories
+     */
+
     $page   = 0;
     $offset = 0;
     $batch  = 100;
@@ -296,7 +306,7 @@ class Percolate_POST_Model
     // Percolate_Log::log(print_r($statusToImport, true));
 
     // ------ Check approval status from Perc --------
-    Percolate_Log::log('Post status: ' . $post['status']);
+    $res['status'] = $post['status'];
     if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
     {
           // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
@@ -316,7 +326,6 @@ class Percolate_POST_Model
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
-      Percolate_Log::log('Post already imported.');
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
@@ -326,6 +335,7 @@ class Percolate_POST_Model
     }
 
     Percolate_Log::log('Importing post: ' . $post['id'] );
+    Percolate_Log::log('Post status: ' . $post['status']);
 
     // ----------- Post title --------------
     $title = "";
@@ -384,8 +394,8 @@ class Percolate_POST_Model
 
     // Still trying to fix 1970 bug
     if ($publish_date == NULL){
-      Percolate_Log::log('Publish date bug');
-      $publish_date = $object['created_at'];
+      Percolate_Log::log('No live_at date, using created_at.');
+      $publish_date = $post['created_at'];
       $post_status = 'draft';
     }
     $publish_date = strtotime($publish_date);
