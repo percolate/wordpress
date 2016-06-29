@@ -330,7 +330,7 @@ class Percolate_POST_Model
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
       $res['percolate_id'] = $post['id'];
-      $res['message'] = "Post alreadey imported";
+      $res['message'] = "Post already imported";
       return $res;
     }
 
@@ -435,7 +435,7 @@ class Percolate_POST_Model
       $res['message'] = 'Post cannot be inserted into WP.';
       return $res;
     }
-    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true));
+    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)));
 
     if(time() < $publish_date) {
       Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
