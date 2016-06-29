@@ -67,6 +67,25 @@ angular.module('myApp')
         })
     }
 
+    $scope.restoreChannel = function (channelId) {
+      $scope.Percolate.channels[channelId].active = 'true'
+
+      console.log('Submiting data, current dataset: ', $scope.Percolate)
+      $scope.showLoader('Saving data...')
+      Api.setData($scope.Percolate)
+        .then(function (res) {
+          $scope.stopLoader()
+          console.log('Data saved', res)
+          // reset the new channel object
+          $scope.activeChannel = {}
+          // all done here
+          $state.go('manage')
+        }, function (err) {
+          $scope.stopLoader()
+          $scope.showError(err)
+        })
+    }
+
     $scope.importChannel = function (channelId) {
       $scope.showLoader('Importing channel...')
       Percolate.doImport(channelId)

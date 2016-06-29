@@ -90,7 +90,7 @@ class Percolate_POST_Model
        $events = $this->getEvents();
      }
 
-     $events->postToTransition[$event['ID']] = $event;
+     $events->postToTransition->{$event['ID']} = $event;
      $this->setEvents($events);
 
      return $events;
@@ -127,8 +127,10 @@ class Percolate_POST_Model
     }
 
     foreach ($option->channels as $channel) {
-      $res = $this->processChannel( $channel );
-      Percolate_Log::log(print_r($res, true));
+      if($channel->active == 'true') {
+        $res = $this->processChannel( $channel );
+        Percolate_Log::log(print_r($res, true));
+      }
     }
 
     return;
@@ -287,7 +289,9 @@ class Percolate_POST_Model
     }
 
     $statusToImport = array(
-      'queued.publishing'
+      'queued.publishing',
+      'queued.published',
+      'live'
     );
 
     if( isset($template->import) ) {
@@ -437,7 +441,7 @@ class Percolate_POST_Model
     }
     Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)));
 
-    if(time() < $publish_date) {
+    if(time() < $publish_date || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published') {
       Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
 
       $this->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
@@ -600,7 +604,7 @@ class Percolate_POST_Model
     foreach ($events->postToTransition as $key => $event) {
       if( time() > $event->dateUTM ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
-        $this->postTransition( $event->ID );
+        $this->postTransition( $event );
 
         // Remove the transitioned item from the DB
         unset($events->postToTransition->{$key});
@@ -616,13 +620,14 @@ class Percolate_POST_Model
    * Method for catching when a post gets published
    *   -> in that case we need to tell percolate the new post status
    */
-  public function postTransition( $post_id )
+  public function postTransition( $event )
   {
     /**
-     * @param string $post_id: WP post ID
+     * @param object $event: post event {ID: WP post ID, dateUTM: live_at date}
      * @return bool success or failure
      */
 
+    $post_id = $event->ID;
     Percolate_Log::log('Post transition event, post WP ID:' . $post_id);
 
     $postPercID = get_post_meta($post_id, 'percolate_id', true);
@@ -662,7 +667,7 @@ class Percolate_POST_Model
         $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
         break;
     }
-    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live' );
+    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
     return true;
   }
 
@@ -693,7 +698,7 @@ class Percolate_POST_Model
     return $res['data']['status'];
   }
 
-  private function transitionPost( $wp_post_id, $postPercID, $postsChannel, $status='live' )
+  private function transitionPost( $wp_post_id, $postPercID, $postsChannel, $status='live', $dateUTM=NULL )
   {
     /**
      * Calls the Percolate API to transition the post
@@ -711,6 +716,9 @@ class Percolate_POST_Model
     $jsonFields = array(
       'status' => $status
     );
+    if( isset($dateUTM) ) {
+      $jsonFields['live_at'] = date(DATE_RFC3339, $dateUTM);
+    }
 
     $res = $this->Percolate->callAPI($key, $method, $fields, $jsonFields, 'PUT');
 
