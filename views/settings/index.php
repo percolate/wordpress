@@ -13,6 +13,14 @@
     </div>
     <div class="row perc-header">
       <div class="col-sm-12">
+        <div ng-repeat="message in messages.warning" class="alert alert-warning" role="alert">
+          <button type="button" class="close" aria-label="Close" ng-click=dismissMessage($index)><span aria-hidden="true">&times;</span></button>
+          <strong>Warning!</strong> {{message.message}}
+        </div>
+      </div>
+    </div>
+    <div class="row perc-header">
+      <div class="col-sm-12">
         <hr>
       </div>
     </div>

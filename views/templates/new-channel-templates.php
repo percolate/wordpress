@@ -27,7 +27,7 @@
           </h4>
         </div>
 
-        <div id="{{template.name | safeName}}" class="panel-collapse collapse" ng-class='{in:$first}'8 role="tabpanel">
+        <div id="{{template.name | safeName}}" ng-init="formData[template.id].version = template.version.version_id" class="panel-collapse collapse" ng-class='{in:$first}'8 role="tabpanel">
           <div class="panel-body">
 
             <div class="row form-group">

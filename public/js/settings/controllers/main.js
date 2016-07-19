@@ -4,15 +4,12 @@ angular.module('myApp')
   .controller('MainCtr', function ($scope, $state, Api, $rootScope, Percolate, UUID) {
     console.log('Angular app started, setting the state...');
 
-    $state.go('manage')
-    // $state.go('add.setup')
-
     /* --------------------------
      * Public variables
      * -------------------------- */
 
      // -- Underscore --
-    $scope._ = _
+    $scope._ = window._
 
     // -- Loader --
     $scope.loader= {
@@ -34,11 +31,42 @@ angular.module('myApp')
     }
 
     /* --------------------------
+     * Extending the Scope with methods
+     * -------------------------- */
+
+    angular.extend($scope, {
+      editChannel: editChannel,
+      deleteChannel: deleteChannel,
+      restoreChannel: restoreChannel,
+      importChannel: importChannel,
+
+      showError: showError,
+      resetError: resetError,
+      showLoader: showLoader,
+      stopLoader: stopLoader,
+
+      dismissMessage: dismissMessage
+    })
+
+    /* --------------------------
+     * Startup
+     * -------------------------- */
+    $state.go('manage')
+
+    // -- Get Percolate settings
+    showLoader('Loading data...')
+    Api.getData()
+      .then(init, showError)
+
+    // -- Display messages --
+    Api.getMessages().then(updateMessages)
+
+
+    /* --------------------------
      * Public methods
      * -------------------------- */
 
-
-    $scope.editChannel = function (channelId) {
+    function editChannel (channelId) {
       angular.extend($scope.edit, {
         active : true,
         channelId : channelId,
@@ -48,7 +76,7 @@ angular.module('myApp')
       $state.go('add.topics')
     }
 
-    $scope.deleteChannel = function (channelId) {
+    function deleteChannel (channelId) {
       $scope.Percolate.channels[channelId].active = 'false'
 
       console.log('Submiting data, current dataset: ', $scope.Percolate)
@@ -67,7 +95,7 @@ angular.module('myApp')
         })
     }
 
-    $scope.restoreChannel = function (channelId) {
+    function restoreChannel (channelId) {
       $scope.Percolate.channels[channelId].active = 'true'
 
       console.log('Submiting data, current dataset: ', $scope.Percolate)
@@ -86,11 +114,12 @@ angular.module('myApp')
         })
     }
 
-    $scope.importChannel = function (channelId) {
+    function importChannel (channelId) {
       $scope.showLoader('Importing channel...')
       Percolate.doImport(channelId)
         .then(function (res) {
           $scope.stopLoader()
+          Api.getMessages().then(updateMessages)
           console.log('Import channel', res)
         }, function (err) {
           $scope.stopLoader()
@@ -98,80 +127,88 @@ angular.module('myApp')
         })
     }
 
-    /*
-     * Show & log errors
-     */
-    $scope.showError = function (error) {
+    function showError (error) {
+      /*
+       * Show & log errors
+       */
       console.info(error)
       $scope.error.active = true
       $scope.error.message = error
       return
     }
 
-    /*
-     * Reset error messages
-     */
-    $scope.resetError = function () {
+
+    function resetError () {
+      /*
+       * Reset error messages
+       */
       $scope.error.active = false
       $scope.error.message = ''
       return
     }
 
-    /*
-     * Start loader
-     */
-    $scope.showLoader = function (msg) {
+
+    function showLoader (msg) {
+      /*
+       * Start loader
+       */
       $scope.loader.active = true
       $scope.loader.message = msg
       return
     }
 
-    /*
-     * Stop loader
-     */
-    $scope.stopLoader = function () {
+
+    function stopLoader () {
+      /*
+       * Stop loader
+       */
       $scope.loader.active = false
       $scope.loader.message = ''
       return
+    }
+
+    function dismissMessage ($index) {
+      $scope.messages.warning.splice($index, 1)
+      Api.setMessages($scope.messages)
     }
 
     /* --------------------------
      * Event handlers
      * -------------------------- */
 
-    // -- Get Percolate settings
-    $scope.showLoader('Loading data...')
-    Api.getData()
-      .then(function (res) {
-        $scope.stopLoader()
-        console.log('Getting data', res);
-        if(!res.data || res.data === 'false') {
-          // Create an object for Percolate settings
-          $scope.Percolate = {
-            channels: {},
-            settings: {},
-            uuid: UUID.generate()
-          }
-          $state.go('add.setup')
-        } else {
-          // Data is already stored, populate the settings object
-          $scope.Percolate = res.data
-          if(!$scope.Percolate.channels) {
-            $scope.Percolate.channels = {}
-          }
-          if(!$scope.Percolate.settings) {
-            $scope.Percolate.settings = {}
-          }
-        }
-      }, function (err) {
-        $scope.stopLoader()
-        $scope.showError(err)
-        console.log(err);
-      })
+    $rootScope.$on('$stateChangeSuccess', resetError)
 
-    $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, from, fromParams) {
-      // Reset the error message
-      $scope.resetError()
-    })
+    /* --------------------------
+     * Private methods
+     * -------------------------- */
+
+    function init (res) {
+      $scope.stopLoader()
+      console.log('Getting data', res);
+      if(!res.data || res.data === 'false') {
+        // Create an object for Percolate settings
+        $scope.Percolate = {
+          channels: {},
+          settings: {},
+          uuid: UUID.generate()
+        }
+        $state.go('add.setup')
+      } else {
+        // Data is already stored, populate the settings object
+        $scope.Percolate = res.data
+        if(!$scope.Percolate.channels) {
+          $scope.Percolate.channels = {}
+        }
+        if(!$scope.Percolate.settings) {
+          $scope.Percolate.settings = {}
+        }
+      }
+    }
+
+    function updateMessages(res) {
+      if(!res.data) { return false }
+      $scope.messages = res.data
+      console.info('Messages', res.data)
+    }
 
   })
