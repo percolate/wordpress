@@ -198,6 +198,12 @@ You should see that:
 
 ## Changelog
 
+### 4.0.4
+
+* Percolate API calls are handled with WP HTTP API
+* Percolate's schema versioning is implemented
+* Bugfixes and optimisation
+
 ### 4.0.3
 
 * Transition post upon WP publish
@@ -225,4 +231,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.0.3~
+~Current Version:4.0.4~
