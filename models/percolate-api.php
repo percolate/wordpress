@@ -65,15 +65,14 @@ class Percolate_API_Model
     // POST: json post fields
     if ($jsonFields) {
       $req['method'] = 'POST';
-      $req['httpBody'] = json_encode($jsonFields);
-    } else {
-      $req['httpBody'] = null;
+      $req['body'] = json_encode($jsonFields);
     }
 
     // Custom CRUD
     if( $type != "" ) {
       $req['method'] = $type;
       $req['headers'] = array('Content-Type' => 'application/json', "Authorization" => $api_key, "Content-Length" => strlen(json_encode($jsonFields)));
+      Percolate_Log::log("API: Custom CRUD, url: {$url}, req: " . print_r($req, true));
     }
 
     $res = wp_remote_request( $url, $req);

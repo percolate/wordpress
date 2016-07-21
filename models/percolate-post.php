@@ -635,11 +635,13 @@ class Percolate_POST_Model
     foreach ($events->postToTransition as $key => $event) {
       if( time() > $event->dateUTM ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
-        $this->postTransition( $event );
+        $res = $this->postTransition( $event );
 
         // Remove the transitioned item from the DB
-        unset($events->postToTransition->{$key});
-        $this->setEvents($events);
+        if($res) {
+          unset($events->postToTransition->{$key});
+          $this->setEvents($events);
+        }
       }
     }
 
@@ -698,8 +700,8 @@ class Percolate_POST_Model
         $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
         break;
     }
-    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
-    return true;
+    $res = $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
+    return $res;
   }
 
 

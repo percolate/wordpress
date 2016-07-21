@@ -93,6 +93,14 @@ angular.module('wpApi', [])
           data            : jQuery.param({ action : 'set_messages', data: $data})
         })
       },
+      getLog: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_log'})
+        })
+      },
 
       /**
        * Imports image into WP */

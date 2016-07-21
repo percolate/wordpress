@@ -37,6 +37,15 @@ angular.module('myApp', [
         controller: 'SettingsCtr'
       })
 
+      .state('log', {
+        templateProvider: function (Api) {
+          return Api.getTemplate('log').then(function (res) {
+            return res.data
+          })
+        },
+        controller: 'LogCtr'
+      })
+
       .state('add', {
         templateProvider: function (Api) {
           return Api.getTemplate('new-channel').then(function (res) {

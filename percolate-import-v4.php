@@ -126,6 +126,8 @@ class PercolateImportV4
     add_action( 'wp_ajax_get_messages', array( $this->AJAX, 'getMessages' ) );
     // Set the warning messages
     add_action( 'wp_ajax_set_messages', array( $this->AJAX, 'setMessages' ) );
+    // Get the log
+    add_action( 'wp_ajax_get_log', array( $this->AJAX, 'getLog' ) );
 
 
     // Import posts for channel
@@ -307,6 +309,13 @@ class PercolateImportV4
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-SettingsCtr',
     	'src'		  => plugins_url( '/public/js/settings/controllers/settings.js', __FILE__ ),
+    	'deps'		=> array('angular'),
+      'version' => '1',
+      'footer'  => true
+    );
+    $scripts[] = array(
+    	'handle'	=> 'PerolcateWP-LogCtr',
+    	'src'		  => plugins_url( '/public/js/settings/controllers/log.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true

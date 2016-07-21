@@ -58,9 +58,8 @@ angular.module('myApp')
     Api.getData()
       .then(init, showError)
 
-    // -- Display messages --
-    Api.getMessages().then(updateMessages)
-
+    // -- Display the log --
+    Api.getLog().then(updateLog)
 
     /* --------------------------
      * Public methods
@@ -209,6 +208,11 @@ angular.module('myApp')
       if(!res.data) { return false }
       $scope.messages = res.data
       console.info('Messages', res.data)
+    }
+
+    function updateLog(res) {
+      if(!res.data || !res.data.log) { return false }
+      $scope.log = res.data.log
     }
 
   })

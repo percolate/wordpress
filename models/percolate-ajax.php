@@ -45,6 +45,10 @@ class Percolate_AJAX_Model
     // Messages
     include_once(__DIR__ . '/percolate-messages.php');
     $this->Messages = PercolateMessages::instance();
+
+    // Logging
+    include_once(__DIR__ . '/percolate-log.php');
+    $this->Log = Percolate_Log::instance();
   }
 
   /**
@@ -159,6 +163,16 @@ class Percolate_AJAX_Model
   public function setMessages()
   {
     $res = $this->Messages->setMessages();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Get the Percolate log
+   */
+  public function getLog()
+  {
+    $res = $this->Log->getLog();
     echo json_encode($res);
     wp_die();
   }
