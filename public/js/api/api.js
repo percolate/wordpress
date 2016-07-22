@@ -22,6 +22,8 @@ angular.module('wpApi', [])
         })
       },
       setData: function ($data) {
+        $data.timestamp = new Date().toUTCString()
+
         return $http({
           method          : 'POST',
           url             : _url,

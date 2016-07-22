@@ -23,7 +23,7 @@
         <div class="col-sm-8">
           <select name="{{topic.id}}" id="{{topic.id}}" class="form-control"
                   ng-model="formData.topics[topic.id]",
-                  ng-init="formData.topics[topic.id] = edit.active ? formData.topics[topic.id] : categories[0].term_id"
+                  ng-init="formData.topics[topic.id] = (edit.active && +formData.topics[topic.id]) ? +formData.topics[topic.id] : categories[0].term_id"
                   ng-options="option.term_id as option.cat_name for option in categories"></select>
         </div>
       </div>
