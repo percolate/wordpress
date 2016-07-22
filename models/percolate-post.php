@@ -135,7 +135,6 @@ class Percolate_POST_Model
     foreach ($option->channels as $channel) {
       if($channel->active == 'true') {
         $res = $this->processChannel( $channel );
-        Percolate_Log::log(print_r($res, true));
       }
     }
 
@@ -632,6 +631,32 @@ class Percolate_POST_Model
       return false;
     }
 
+    /*
+     * Check if post transitionin is in progress, b/c we don't want to send duplicate events to Perc
+     *   Also we need to count the CRON cycles, since it's running, just in case something went wrong.
+     *   It resets after 5 cycles and does the transitioning again.
+     */
+    if( isset($events->transitionInProgress) && ($events->transitionInProgress == true || $events->transitionInProgress == 'true' || $events->transitionInProgress == 1) ) {
+      if( isset($events->inTransitionCycle) ) {
+        $events->inTransitionCycle = intval($events->inTransitionCycle) + 1;
+      } else {
+        $events->inTransitionCycle = 0;
+      }
+      $this->setEvents($events);
+      if( isset($events->inTransitionCycle) && intval($events->inTransitionCycle) > 1 ) {
+        Percolate_Log::log('Transition Posts hook: oops, looks like it is stuck, restarting...');
+        $events->inTransitionCycle = 0;
+        $this->setEvents($events);
+      } else {
+        Percolate_Log::log('Transition Posts hook: posts are transitioning.');
+        return false;
+      }
+    }
+
+    // Start transitioning
+    $events->transitionInProgress = true;
+    $this->setEvents($events);
+
     foreach ($events->postToTransition as $key => $event) {
       if( time() > $event->dateUTM ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
@@ -644,6 +669,9 @@ class Percolate_POST_Model
         }
       }
     }
+
+    $events->transitionInProgress = false;
+    $this->setEvents($events);
 
     return true;
   }
@@ -671,6 +699,10 @@ class Percolate_POST_Model
     // ------------- Importing Channel -------------
     // Get the UUID of the WP-Perc channel that imported the post
     $wpChannelUuid = get_post_meta($post_id, 'wp_channel_uuid', true);
+    if( empty($wpChannelUuid)) {
+      Percolate_Log::log("No channel UUID found for post {$post_id}.");
+      return false;
+    }
 
     // Get the plugin options from DB
     $option = json_decode( $this->getChannels() );

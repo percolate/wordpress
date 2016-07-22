@@ -11,6 +11,21 @@ angular.module('myApp')
       $scope.log = res.data.log
     }
 
+    function deleteLog() {
+      $scope.log = ''
+      Api.deleteLog()
+    }
+
+    function refreshLog() {
+      $scope.log = ''
+      Api.getLog().then(updateLog)
+    }
+
+    angular.extend($scope, {
+      deleteLog : deleteLog,
+      refreshLog : refreshLog
+    })
+
   })
   .filter('trustedHtml', function ($sce) {
       return function(html) {

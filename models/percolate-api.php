@@ -48,8 +48,8 @@ class Percolate_API_Model
     $req = array(
       'method' => 'GET',
       'headers' => array("Content-type" => "application/json", "Authorization" => $api_key),
-      'timeout' => 45,
-    	'redirection' => 5,
+      'timeout' => 15,
+    	'redirection' => 3,
     	'blocking' => true
     );
 
@@ -72,7 +72,7 @@ class Percolate_API_Model
     if( $type != "" ) {
       $req['method'] = $type;
       $req['headers'] = array('Content-Type' => 'application/json', "Authorization" => $api_key, "Content-Length" => strlen(json_encode($jsonFields)));
-      Percolate_Log::log("API: Custom CRUD, url: {$url}, req: " . print_r($req, true));
+      Percolate_Log::log("API: Custom CRUD, url: {$url}");
     }
 
     $res = wp_remote_request( $url, $req);

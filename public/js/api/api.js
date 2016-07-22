@@ -101,6 +101,14 @@ angular.module('wpApi', [])
           data            : jQuery.param({ action : 'get_log'})
         })
       },
+      deleteLog: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'delete_log'})
+        })
+      },
 
       /**
        * Imports image into WP */

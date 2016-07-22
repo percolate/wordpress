@@ -128,6 +128,8 @@ class PercolateImportV4
     add_action( 'wp_ajax_set_messages', array( $this->AJAX, 'setMessages' ) );
     // Get the log
     add_action( 'wp_ajax_get_log', array( $this->AJAX, 'getLog' ) );
+    // Delete the log
+    add_action( 'wp_ajax_delete_log', array( $this->AJAX, 'deleteLog' ) );
 
 
     // Import posts for channel

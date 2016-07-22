@@ -72,7 +72,7 @@ class Percolate_AJAX_Model
       wp_cache_delete ( 'alloptions', 'options' );
 
       $update = update_option( $this->option, json_encode($_POST['data']) );
-      
+
       $res = array(
         'success' => $update
       );
@@ -178,6 +178,16 @@ class Percolate_AJAX_Model
   public function getLog()
   {
     $res = $this->Log->getLog();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Clear the Percolate log
+   */
+  public function deleteLog()
+  {
+    $res = $this->Log->deleteLog();
     echo json_encode($res);
     wp_die();
   }

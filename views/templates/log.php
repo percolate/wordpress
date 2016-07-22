@@ -12,3 +12,10 @@
     <pre class="log" ng-bind-html="log | trustedHtml"></pre>
   </div>
 </div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <a href="" class="btn" ng-click="refreshLog()">Refresh log</a>
+    <a href="" class="btn" ng-click="deleteLog()">Clear log</a>
+  </div>
+</div>

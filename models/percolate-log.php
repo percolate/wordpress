@@ -64,4 +64,11 @@ class Percolate_Log
     return $res;
   }
 
+  public static function deleteLog()
+  {
+    $uploads = wp_upload_dir();
+    $fh = fopen( $uploads['basedir'] . DIRECTORY_SEPARATOR . self::LOGS_DIRECTORY . DIRECTORY_SEPARATOR . self::LOG_FILE , 'w' );
+    fclose($fh);
+  }
+
 }
