@@ -67,7 +67,12 @@ class Percolate_AJAX_Model
   public function setData()
   {
     if( isset($_POST['data']) ) {
+
+      //  clear the options cache before trying to get or update the options
+      wp_cache_delete ( 'alloptions', 'options' );
+
       $update = update_option( $this->option, json_encode($_POST['data']) );
+      
       $res = array(
         'success' => $update
       );

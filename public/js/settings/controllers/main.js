@@ -61,6 +61,7 @@ angular.module('myApp')
     // -- Display the log --
     Api.getLog().then(updateLog)
 
+
     /* --------------------------
      * Public methods
      * -------------------------- */
@@ -77,6 +78,7 @@ angular.module('myApp')
 
     function deleteChannel (channelId) {
       $scope.Percolate.channels[channelId].active = 'false'
+      delete $scope.Percolate.channels[channelId]
 
       console.log('Submiting data, current dataset: ', $scope.Percolate)
       $scope.showLoader('Saving data...')
@@ -92,6 +94,18 @@ angular.module('myApp')
           $scope.stopLoader()
           $scope.showError(err)
         })
+    }
+
+    function deleteHiddenChannels() {
+      _.each($scope.Percolate.channels, function (channel, uuid, list) {
+        console.log(channel, uuid)
+        if(!$scope.Percolate.channels[uuid].active || $scope.Percolate.channels[uuid].active === 'false' ) {
+          console.log('delete')
+          delete $scope.Percolate.channels[uuid]
+        }
+      })
+      // console.log('Cleaned up: ', $scope.Percolate);
+      Api.setData($scope.Percolate)
     }
 
     function restoreChannel (channelId) {

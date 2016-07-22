@@ -27,6 +27,6 @@
 <div class="row">
   <div class="col-sm-12">
     <a ui-sref="add.setup" class="btn btn-primary">Add New</a>
-    <a href="" class="btn" ng-init="showAll = false" ng-click="showAll = !showAll"><span ng-show="showAll">Hide</span><span ng-show="!showAll">Show</span> Deleted</a>
+    <!-- <a href="" class="btn" ng-init="showAll = false" ng-click="showAll = !showAll"><span ng-show="showAll">Hide</span><span ng-show="!showAll">Show</span> Deleted</a> -->
   </div>
 </div>

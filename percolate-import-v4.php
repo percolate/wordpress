@@ -196,7 +196,7 @@ class PercolateImportV4
     $scripts = array();
     $scripts[] = array(
     	'handle'	=> 'underscore',
-    	'src'		  => plugins_url( '/public/lib/lodash-1.8.3/underscore-min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/public/lib/underscore-1.8.3/underscore-min.js', __FILE__ ),
     	'deps'		=> null,
       'version' => '1.8.3',
       'footer'  => true
