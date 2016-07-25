@@ -52,4 +52,23 @@ class Percolate_Log
     }
   }
 
+  public static function getLog()
+  {
+    $uploads = wp_upload_dir();
+    $file = file_get_contents( $uploads['basedir'] . DIRECTORY_SEPARATOR . self::LOGS_DIRECTORY . DIRECTORY_SEPARATOR . self::LOG_FILE );
+    if( empty($file) ) {
+      $res = array("success" => false);
+    } else {
+      $res = array("success" => true, "log" => $file);
+    }
+    return $res;
+  }
+
+  public static function deleteLog()
+  {
+    $uploads = wp_upload_dir();
+    $fh = fopen( $uploads['basedir'] . DIRECTORY_SEPARATOR . self::LOGS_DIRECTORY . DIRECTORY_SEPARATOR . self::LOG_FILE , 'w' );
+    fclose($fh);
+  }
+
 }

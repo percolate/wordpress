@@ -41,8 +41,17 @@ class Percolate_API_Model
       Percolate_Log::log($res);
       return $res;
     }
+
     // URL of the call
     $url = self::API_BASE . "$method";
+
+    $req = array(
+      'method' => 'GET',
+      'headers' => array("Content-type" => "application/json", "Authorization" => $api_key),
+      'timeout' => 15,
+    	'redirection' => 3,
+    	'blocking' => true
+    );
 
     // GET: make URL from fields
     if ($fields) {
@@ -50,34 +59,32 @@ class Percolate_API_Model
       foreach ($fields as $key=>$val) {
         $tokens[]="$key=$val";
       }
-      $url.="?" . implode('&', $tokens);
+      $url .= "?" . implode('&', $tokens);
     }
-
-    // initialize CURL
-    $curl_handle = curl_init($url);
-    curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($curl_handle, CURLOPT_HEADER, 0);
-    curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array("Content-type: application/json", "Authorization: $api_key"));
 
     // POST: json post fields
     if ($jsonFields) {
-      curl_setopt($curl_handle, CURLOPT_POSTFIELDS, json_encode($jsonFields));
-    } else {
-      // curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Expect:', "Authorization: $key"));
+      $req['method'] = 'POST';
+      $req['body'] = json_encode($jsonFields);
     }
 
     // Custom CRUD
     if( $type != "" ) {
-      curl_setopt($curl_handle, CURLOPT_HTTPHEADER, array('Content-Type: application/json', "Authorization: $api_key", "Content-Length: " . strlen(json_encode($jsonFields))));
-      curl_setopt($curl_handle, CURLOPT_CUSTOMREQUEST, $type);
+      $req['method'] = $type;
+      $req['headers'] = array('Content-Type' => 'application/json', "Authorization" => $api_key, "Content-Length" => strlen(json_encode($jsonFields)));
+      Percolate_Log::log("API: Custom CRUD, url: {$url}");
     }
 
-    $res = curl_exec($curl_handle);
-    $status = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
-    curl_close($curl_handle);
+    $res = wp_remote_request( $url, $req);
 
-    $data = json_decode( $res, true );
+    if ( is_wp_error( $res ) ) {
+       $error_message = $res->get_error_message();
+       Percolate_Log::log($error_message);
+       return;
+    }
+
+    $status = intval(wp_remote_retrieve_response_code($res));
+    $data = json_decode( wp_remote_retrieve_body($res), true );
 
     if ($status != 200) {
       $message = "An unknown error occurred communicating with Percolate ($status) - $res";
@@ -92,55 +99,34 @@ class Percolate_API_Model
         $message = "No Data received.";
       }
       Percolate_Log::log($message);
-      // throw new Exception($message, $status);
-      // return $message;
+      return $message;
     }
 
+    // error_log(print_r($data, true));
     return $data;
   }
 
   public function getImageFromServer($src, $filename)
   {
     Percolate_Log::log(print_r('Getting image from server: ' . $src . ', filename: ' . $filename, true));
-    /* get image by url */
-    $curl_handle = curl_init($src);
-    curl_setopt($curl_handle, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($curl_handle, CURLOPT_HEADER, 0);
 
-    $f = fopen($filename, 'w');
+    $permfile = $filename;
+    $tmpfile = download_url( $src, $timeout = 300 );
 
-    if($f !== false)
-    {
-      curl_setopt($curl_handle, CURLOPT_FILE, $f);
-      curl_exec($curl_handle);
-      fclose($f);
-
-      // Set correct file permissions
-      $stat = stat(dirname($filename));
-      $perms = $stat['mode'] & 0000666;
-      @ chmod( $filename, $perms );
-
-      $res = true;
-
-    } else {
-      Percolate_Log::log(print_r("fopen error for filename {$filename}", true));
+    if( is_wp_error($tmpfile) ) {
+      Percolate_Log::log(print_r("Error downloading file, filename {$filename}, src {$src}.", true));
+      return false;
     }
 
-    $status = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+    copy( $tmpfile, $permfile );
+    unlink( $tmpfile ); // must unlink afterwards
 
-    curl_close($curl_handle);
+    // Set correct file permissions
+    $stat = stat(dirname($filename));
+    $perms = $stat['mode'] & 0000666;
+    @ chmod( $filename, $perms );
 
-    if ($status != 200) {
-
-      $message = "An unknown error occurred communicating with Percolate ($status)";
-
-      $res = false;
-
-      Percolate_Log::log(print_r($message, true));
-    }
-
-    return $res;
+    return true;
   }
 
 }

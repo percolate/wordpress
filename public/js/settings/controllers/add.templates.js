@@ -154,11 +154,16 @@ angular.module('myApp')
       Api.setData($scope.Percolate)
         .then(function (res) {
           $scope.stopLoader()
-          console.log('Data saved', res)
-          // reset the new channel object
-          $scope.activeChannel = {}
-          // all done here
-          $state.go('manage')
+          if(!res.data.success) {
+            console.log('Error while saving to DB', res)
+            $scope.showError('Error while saving to DB.')
+          } else {
+            console.log('Data saved', res)
+            // reset the new channel object
+            $scope.activeChannel = {}
+            // all done here
+            $state.go('manage')
+          }
         }, function (err) {
           $scope.stopLoader()
           $scope.showError(err)

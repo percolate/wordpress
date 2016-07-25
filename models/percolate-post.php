@@ -17,6 +17,8 @@ class Percolate_POST_Model
 
   protected $Percolate;
 
+  const SCHEMA_MISMATCH_MSG = "Alternative schema versions have been found for the channel's posts. Please check your mapping and update if needed!";
+
   // Singleton instance
   private static $instance = false;
 
@@ -41,6 +43,10 @@ class Percolate_POST_Model
     // Media library
     include_once(__DIR__ . '/percolate-media.php');
     $this->Media = PercolateMedia::instance();
+    // Messages
+    include_once(__DIR__ . '/percolate-messages.php');
+    $this->Messages = PercolateMessages::instance();
+
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {
       // Percolate_Log::log("simple_html_dom_node isn't present");
@@ -62,7 +68,7 @@ class Percolate_POST_Model
   private function setEvents( $events )
   {
     /**
-     * Save the saved events from the DB
+     * Save the events to the DB
      *
      * @param array $events: all the events
      * @return bool true or false
@@ -129,7 +135,6 @@ class Percolate_POST_Model
     foreach ($option->channels as $channel) {
       if($channel->active == 'true') {
         $res = $this->processChannel( $channel );
-        Percolate_Log::log(print_r($res, true));
       }
     }
 
@@ -158,6 +163,7 @@ class Percolate_POST_Model
 
     $res_schema = $this->Percolate->callAPI($key, $method, $fields);
     // Percolate_Log::log(print_r($res_schema, true));
+
     return $schemas = $res_schema["data"];
   }
 
@@ -181,18 +187,42 @@ class Percolate_POST_Model
 
     $postsBySchema = array();
     foreach ($posts as $post) {
-      $postsBySchema[$post['schema_id']][] = $post;
+      /* we have schema versioning now, and post[schema_id] contains the version too
+       *  eg. schema:00000000_11111111
+       */
+      $postSchema = explode("_", $post['schema_id']);
+      $postSchemaRoot = $postSchema[0];
+      $postsBySchema[$postSchemaRoot][] = $post;
     }
 
     foreach ($schemas as $schema) {
+
+      // Get the plugin's template (called channel on the frontend)
       $template = $channel->$schema['id'];
+
+      // Flag if there are multiple versions of the schame has been found
+      $schemaVersionMismatch = false;
+
       if( empty($template) || $template->postType !== 'false' ) {
+
         if( !is_array($postsBySchema[$schema['id']]) || empty($postsBySchema[$schema['id']]) ) {
           Percolate_Log::log('No posts found for ' . $schema['id']);
         } else {
           Percolate_Log::log('Importing posts for: ' . print_r($template, true));
+
           foreach ($postsBySchema[$schema['id']] as $post) {
             $success = $this->importPost($post, $template, $schema, $channel);
+
+            // Check if there is an updated template
+            if( $success['success'] == true
+                && isset($tempate->version)
+                && $tempate->version != $post['schema_id']
+                && !$schemaVersionMismatch )
+            {
+              $schemaVersionMismatch = true;
+              $this->Messages->addMessage(SCHEMA_MISMATCH_MSG, $res_schema["data"]);
+            }
+
             $res['messages'][] = $success;
           }
         }
@@ -601,16 +631,47 @@ class Percolate_POST_Model
       return false;
     }
 
+    /*
+     * Check if post transitionin is in progress, b/c we don't want to send duplicate events to Perc
+     *   Also we need to count the CRON cycles, since it's running, just in case something went wrong.
+     *   It resets after 5 cycles and does the transitioning again.
+     */
+    if( isset($events->transitionInProgress) && ($events->transitionInProgress == true || $events->transitionInProgress == 'true' || $events->transitionInProgress == 1) ) {
+      if( isset($events->inTransitionCycle) ) {
+        $events->inTransitionCycle = intval($events->inTransitionCycle) + 1;
+      } else {
+        $events->inTransitionCycle = 0;
+      }
+      $this->setEvents($events);
+      if( isset($events->inTransitionCycle) && intval($events->inTransitionCycle) > 1 ) {
+        Percolate_Log::log('Transition Posts hook: oops, looks like it is stuck, restarting...');
+        $events->inTransitionCycle = 0;
+        $this->setEvents($events);
+      } else {
+        Percolate_Log::log('Transition Posts hook: posts are transitioning.');
+        return false;
+      }
+    }
+
+    // Start transitioning
+    $events->transitionInProgress = true;
+    $this->setEvents($events);
+
     foreach ($events->postToTransition as $key => $event) {
       if( time() > $event->dateUTM ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
-        $this->postTransition( $event );
+        $res = $this->postTransition( $event );
 
         // Remove the transitioned item from the DB
-        unset($events->postToTransition->{$key});
-        $this->setEvents($events);
+        if($res) {
+          unset($events->postToTransition->{$key});
+          $this->setEvents($events);
+        }
       }
     }
+
+    $events->transitionInProgress = false;
+    $this->setEvents($events);
 
     return true;
   }
@@ -638,6 +699,10 @@ class Percolate_POST_Model
     // ------------- Importing Channel -------------
     // Get the UUID of the WP-Perc channel that imported the post
     $wpChannelUuid = get_post_meta($post_id, 'wp_channel_uuid', true);
+    if( empty($wpChannelUuid)) {
+      Percolate_Log::log("No channel UUID found for post {$post_id}.");
+      return false;
+    }
 
     // Get the plugin options from DB
     $option = json_decode( $this->getChannels() );
@@ -667,8 +732,8 @@ class Percolate_POST_Model
         $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
         break;
     }
-    $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
-    return true;
+    $res = $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
+    return $res;
   }
 
 

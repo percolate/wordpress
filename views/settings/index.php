@@ -8,9 +8,20 @@
         <h1>Percolate WP Importer</h1>
       </div>
       <div class="col-sm-6 text-right">
+        <a ui-sref="log" class="btn btn-default">Log</a>
         <a ui-sref="settings" class="btn btn-default">Settings</a>
       </div>
     </div>
+
+    <div class="row perc-header hidden" ng-show="messages">
+      <div class="col-sm-12">
+        <div ng-repeat="message in messages.warning" class="alert alert-warning" role="alert">
+          <button type="button" class="close" aria-label="Close" ng-click=dismissMessage($index)><span aria-hidden="true">&times;</span></button>
+          <strong>Warning!</strong> {{message.message}}
+        </div>
+      </div>
+    </div>
+
     <div class="row perc-header">
       <div class="col-sm-12">
         <hr>

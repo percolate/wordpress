@@ -7,7 +7,7 @@ Plugin Name: WP Percolate v4
 Plugin URI: https://github.com/percolate/wordpress
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.0.3
+Version: 4.0.4
 Author URI: http://percolate.com
 
 */
@@ -103,6 +103,7 @@ class PercolateImportV4
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
 
+
     // Serve templates to Angular
     add_action( 'wp_ajax_template', array( $this->AJAX, 'getTemplate' ) );
     // Get the Percolate data model
@@ -121,6 +122,15 @@ class PercolateImportV4
     add_action( 'wp_ajax_get_acf_data', array( $this->AJAX, 'getAcfData' ) );
     // Call the Percolate API
     add_action( 'wp_ajax_call_percolate', array( $this->AJAX, 'callPercolateApi' ) );
+    // Get the warning messages
+    add_action( 'wp_ajax_get_messages', array( $this->AJAX, 'getMessages' ) );
+    // Set the warning messages
+    add_action( 'wp_ajax_set_messages', array( $this->AJAX, 'setMessages' ) );
+    // Get the log
+    add_action( 'wp_ajax_get_log', array( $this->AJAX, 'getLog' ) );
+    // Delete the log
+    add_action( 'wp_ajax_delete_log', array( $this->AJAX, 'deleteLog' ) );
+
 
     // Import posts for channel
     add_action( 'wp_ajax_do_import', array( $this->Post, 'importChannelPosts' ) );
@@ -188,7 +198,7 @@ class PercolateImportV4
     $scripts = array();
     $scripts[] = array(
     	'handle'	=> 'underscore',
-    	'src'		  => plugins_url( '/public/lib/lodash-1.8.3/underscore-min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/public/lib/underscore-1.8.3/underscore-min.js', __FILE__ ),
     	'deps'		=> null,
       'version' => '1.8.3',
       'footer'  => true
@@ -251,7 +261,7 @@ class PercolateImportV4
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-UuidSrv',
-    	'src'		  => plugins_url( '/public/js/settings/services/uuid.js', __FILE__ ),
+    	'src'		  => plugins_url( '/public/js/settings/services/uuid.service.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
@@ -301,6 +311,13 @@ class PercolateImportV4
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-SettingsCtr',
     	'src'		  => plugins_url( '/public/js/settings/controllers/settings.js', __FILE__ ),
+    	'deps'		=> array('angular'),
+      'version' => '1',
+      'footer'  => true
+    );
+    $scripts[] = array(
+    	'handle'	=> 'PerolcateWP-LogCtr',
+    	'src'		  => plugins_url( '/public/js/settings/controllers/log.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true

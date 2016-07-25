@@ -17,6 +17,8 @@ class Percolate_AJAX_Model
 
   protected $Percolate;
 
+  protected $Messages;
+
   // Singleton instance
   private static $instance = false;
 
@@ -39,6 +41,14 @@ class Percolate_AJAX_Model
     // Percolate API methods
     include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
+
+    // Messages
+    include_once(__DIR__ . '/percolate-messages.php');
+    $this->Messages = PercolateMessages::instance();
+
+    // Logging
+    include_once(__DIR__ . '/percolate-log.php');
+    $this->Log = Percolate_Log::instance();
   }
 
   /**
@@ -57,7 +67,12 @@ class Percolate_AJAX_Model
   public function setData()
   {
     if( isset($_POST['data']) ) {
+
+      //  clear the options cache before trying to get or update the options
+      wp_cache_delete ( 'alloptions', 'options' );
+
       $update = update_option( $this->option, json_encode($_POST['data']) );
+
       $res = array(
         'success' => $update
       );
@@ -133,6 +148,46 @@ class Percolate_AJAX_Model
   public function getAcfData()
   {
     $res = $this->ACF->getAcfData();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Get the warning messages
+   */
+  public function getMessages()
+  {
+    $res = $this->Messages->getMessages();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Save the warning messages
+   */
+  public function setMessages()
+  {
+    $res = $this->Messages->setMessages();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Get the Percolate log
+   */
+  public function getLog()
+  {
+    $res = $this->Log->getLog();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Clear the Percolate log
+   */
+  public function deleteLog()
+  {
+    $res = $this->Log->deleteLog();
     echo json_encode($res);
     wp_die();
   }

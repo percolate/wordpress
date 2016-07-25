@@ -22,6 +22,8 @@ angular.module('wpApi', [])
         })
       },
       setData: function ($data) {
+        $data.timestamp = new Date().toUTCString()
+
         return $http({
           method          : 'POST',
           url             : _url,
@@ -75,6 +77,38 @@ angular.module('wpApi', [])
           url             : _url,
           headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
           data            : jQuery.param({ action : 'get_acf_data'})
+        })
+      },
+      getMessages: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_messages'})
+        })
+      },
+      setMessages: function ($data) {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'set_messages', data: $data})
+        })
+      },
+      getLog: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_log'})
+        })
+      },
+      deleteLog: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'delete_log'})
         })
       },
 
