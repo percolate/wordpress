@@ -32,7 +32,7 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
-                <label for="{{template.id}}-postType">Wordpress Post Type</label>
+                <label for="{{template.id}}-postType">WordPress Post Type</label>
               </div>
               <div class="col-sm-6">
                 <select name="{{template.id}}-postType" id="{{template.id}}-postType" class="form-control"
@@ -44,7 +44,7 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
-                <label for="{{template.id}}-safety">Set status to Draft in WP</label>
+                <label for="{{template.id}}-safety">Set status to Draft in WordPress</label>
               </div>
               <div class="col-sm-6">
                 <div class="switch">
@@ -81,7 +81,7 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
-                <label for="{{template.id}}-postTitle">Wordpress Post Title</label>
+                <label for="{{template.id}}-postTitle">WordPress Post Title</label>
               </div>
               <div class="col-sm-6">
                 <select name="{{template.id}}-postTitle" id="{{template.id}}-postTitle" class="form-control"
@@ -93,7 +93,7 @@
 
             <div class="row form-group">
               <div class="col-sm-6">
-                <label for="{{template.id}}-postBody">Wordpress Post Body</label>
+                <label for="{{template.id}}-postBody">WordPress Post Body</label>
               </div>
               <div class="col-sm-6">
                 <select name="{{template.id}}-postBody" id="{{template.id}}-postBody" class="form-control"
@@ -117,7 +117,7 @@
             </div>
             <div class="row form-group" ng-show="formData[template.id].image === 'on'">
               <div class="col-sm-6">
-                <label for="{{template.id}}-postImage">Wordpress Featured Image</label>
+                <label for="{{template.id}}-postImage">WordPress Featured Image</label>
               </div>
               <div class="col-sm-6">
                 <select name="{{template.id}}-postImage" id="{{template.id}}-postImage" class="form-control"

@@ -112,7 +112,7 @@ class Percolate_AJAX_Model
   public function getUsers()
   {
     $args = array(
-    	'role' => 'Administrator'
+    	// 'role' => 'Administrator'
     );
     $res = get_users( $args );
     echo json_encode($res);

@@ -5,7 +5,7 @@
 
     <div class="row perc-header">
       <div class="col-sm-6">
-        <h1>Percolate WP Importer</h1>
+        <h1>Percolate WordPress Importer</h1>
       </div>
       <div class="col-sm-6 text-right">
         <a ui-sref="log" class="btn btn-default">Log</a>

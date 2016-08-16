@@ -168,7 +168,7 @@ class PercolateImportV4
     if (current_user_can('manage_options')) { // admin management options
 
       add_menu_page(
-        'Percolate WP Importer',
+        'Percolate WordPress Importer',
         'Percolate',
         'administrator', // or 'manage_options'
         'percolate-settings',
