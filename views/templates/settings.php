@@ -74,3 +74,9 @@
     <a href="" class="btn" ng-click="deleteLog()">Clear log</a>
   </div>
 </div>
+
+<hr>
+
+<p>
+  <small>Plugin Version 4.0.5</small>
+</p>

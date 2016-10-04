@@ -471,10 +471,12 @@ class Percolate_POST_Model
     }
     Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)));
 
-    if(time() < $publish_date || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published') {
+    if(time() < $publish_date && ($post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published')) {
       Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
-
       $this->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
+    } else if ($post['status'] == 'draft' || (isset($template->safety) && $template->safety == 'on')) {
+      Percolate_Log::log('Create event for transitioning post status, currently draft state.');
+      $this->addEvent( array( "ID" => $wp_post_id, 'draft' => 'yes') );
     }
 
     // ----------- Factory meta fields --------------
@@ -658,7 +660,8 @@ class Percolate_POST_Model
     $this->setEvents($events);
 
     foreach ($events->postToTransition as $key => $event) {
-      if( time() > $event->dateUTM ) {
+      Percolate_Log::log('Current post status in WP: ' . get_post_status($event->ID) . ($event->draft == 'yes' && get_post_status($event->ID) == 'publish'));
+      if( (isset($event->dateUTM) && time() > $event->dateUTM) || ($event->draft == 'yes' && get_post_status($event->ID) == 'publish') ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
         $res = $this->postTransition( $event );
 

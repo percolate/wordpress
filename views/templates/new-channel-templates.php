@@ -21,9 +21,7 @@
 
         <div class="panel-heading" role="tab" id="heading-{{template.name | safeName}}">
           <h4 class="panel-title">
-            <a role="button" data-toggle="collapse" data-parent="#accordion" href="#{{template.name | safeName}}">
-              {{template.name}}
-            </a>
+            {{template.name}}
           </h4>
         </div>
 
