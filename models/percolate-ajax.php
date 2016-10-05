@@ -49,6 +49,10 @@ class Percolate_AJAX_Model
     // Logging
     include_once(__DIR__ . '/percolate-log.php');
     $this->Log = Percolate_Log::instance();
+
+    // Queue
+    include_once(__DIR__ . '/percolate-queue.php');
+    $this->Queue = Percolate_Queue::instance();
   }
 
   /**
@@ -188,6 +192,26 @@ class Percolate_AJAX_Model
   public function deleteLog()
   {
     $res = $this->Log->deleteLog();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Get the Percolate queue
+   */
+  public function getQueue()
+  {
+    $res = $this->Queue->getEvents();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * Clear the Percolate queue
+   */
+  public function deleteQueue()
+  {
+    $res = $this->Queue->deleteEvents();
     echo json_encode($res);
     wp_die();
   }

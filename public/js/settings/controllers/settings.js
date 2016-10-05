@@ -90,15 +90,40 @@ angular.module('myApp')
         }, apiError)
     }
 
+    // ------- Queu --------
+
+    function updateQueue (res) {
+      if( !res.data ) {
+        $scope.showError('There was an error.')
+        return
+      }
+      $scope.queue = res.data
+    }
+
+    function deleteQueue() {
+      $scope.queue = null
+      Api.deleteQueue()
+    }
+
+    function refreshQueue() {
+      Api.getQueue().then(updateQueue, apiError)
+    }
+
+    // ------- Bootstrap --------
 
     if( $scope.Percolate.settings ) {
       $scope.formData = $scope.Percolate.settings
       checkKey()
     }
 
+    Api.getQueue()
+      .then(updateQueue, apiError)
+
     angular.extend($scope, {
       checkKey: checkKey,
-      submitForm: submitForm
+      submitForm: submitForm,
+      refreshQueue: refreshQueue,
+      deleteQueue: deleteQueue
     })
 
   })

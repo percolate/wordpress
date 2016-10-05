@@ -52,6 +52,29 @@
   </div>
 </form>
 
+<hr>
+
+<div class="row">
+  <div class="col-sm-12">
+    <h3>Transition Queue</h3>
+    <pre class="log">
+      <span ng-repeat="item in queue.postToTransition">
+        ID: {{item.ID}}
+        Draft: {{item.draft}}
+        Date UTM: {{item.dateUTM}}
+        ------------------------
+      </span>
+    </pre>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <a href="" class="btn" ng-click="refreshQueue()">Refresh queue</a>
+    <a href="" class="btn" ng-click="deleteQueue()">Clear queue</a>
+  </div>
+</div>
+
 
 <hr>
 
