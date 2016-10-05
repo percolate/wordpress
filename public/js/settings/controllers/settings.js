@@ -7,62 +7,64 @@ angular.module('myApp')
     /*
      * Check the API key and retrieve data from Percolata
      */
-    $scope.checkKey = function() {
+    function checkKey() {
       if($scope.formData.key && $scope.formData.key.length === 40) {
         console.info('API key has been entered, looking for User...')
         $scope.resetError()
         $scope.showLoader('Searching for the user in Percolate...')
+
         Percolate.getUser({key: $scope.formData.key})
-          .then(function (res) {
-            $scope.stopLoader()
-
-            if( res.data ) {
-              $scope.userFound = true
-              $scope.formData.user = res.data
-            } else {
-              $scope.userFound = false
-              $scope.showError('No user found.')
-              return
-            }
-            $scope.resetError()
-            $scope.showLoader('Loading licenses...')
-            return Percolate.getLicenses({
-              key    : $scope.formData.key,
-              fields : {
-                user_id: $scope.formData.user.id,
-                limit: 100
-              }
-            })
-
-          }, function (err) {
-            $scope.stopLoader()
-            $scope.showError(err)
-            return
-          })
-          .then(function (res) {
-            $scope.stopLoader()
-            if( !res.data || !res.data.data ) {
-              $scope.showError('There was an error.')
-              return
-            }
-
-            $scope.licenses = res.data.data
-            if( !$scope.formData.license ) {
-              $scope.formData.license = $scope.licenses[0].id
-            } else {
-              $scope.formData.license = +$scope.formData.license
-            }
-            return
-
-          }, function (err) {
-            $scope.stopLoader()
-            $scope.showError(err.statusText)
-            return
-          })
+          .then(userUpdate, apiError)
+          .then(showLicenses, apiError)
       }
     }
 
-    $scope.submitForm = function (form) {
+    function userUpdate(res) {
+      $scope.stopLoader()
+
+      if( res.data ) {
+        $scope.userFound = true
+        $scope.formData.user = res.data
+      } else {
+        $scope.userFound = false
+        $scope.showError('No user found.')
+        return
+      }
+      $scope.resetError()
+      $scope.showLoader('Loading licenses...')
+      return Percolate.getLicenses({
+        key    : $scope.formData.key,
+        fields : {
+          user_id: $scope.formData.user.id,
+          limit: 100
+        }
+      })
+    }
+
+    function showLicenses(res) {
+      $scope.stopLoader()
+      if( !res.data || !res.data.data ) {
+        $scope.showError('There was an error.')
+        return
+      }
+
+      $scope.licenses = res.data.data
+      if( !$scope.formData.license ) {
+        $scope.formData.license = $scope.licenses[0].id
+      } else {
+        $scope.formData.license = +$scope.formData.license
+      }
+      return
+
+    }
+
+    function apiError(err) {
+      $scope.stopLoader()
+      $scope.showError(err)
+      return
+    }
+
+    function submitForm (form) {
       // Trigger validation flag.
       $scope.submitted = true
 
@@ -85,16 +87,43 @@ angular.module('myApp')
           $scope.activeChannel = {}
           // all done here
           $state.go('manage')
-        }, function (err) {
-          $scope.stopLoader()
-          $scope.showError(err)
-        })
+        }, apiError)
     }
 
+    // ------- Queu --------
+
+    function updateQueue (res) {
+      if( !res.data ) {
+        $scope.showError('There was an error.')
+        return
+      }
+      $scope.queue = res.data
+    }
+
+    function deleteQueue() {
+      $scope.queue = null
+      Api.deleteQueue()
+    }
+
+    function refreshQueue() {
+      Api.getQueue().then(updateQueue, apiError)
+    }
+
+    // ------- Bootstrap --------
 
     if( $scope.Percolate.settings ) {
       $scope.formData = $scope.Percolate.settings
-      $scope.checkKey()
+      checkKey()
     }
+
+    Api.getQueue()
+      .then(updateQueue, apiError)
+
+    angular.extend($scope, {
+      checkKey: checkKey,
+      submitForm: submitForm,
+      refreshQueue: refreshQueue,
+      deleteQueue: deleteQueue
+    })
 
   })

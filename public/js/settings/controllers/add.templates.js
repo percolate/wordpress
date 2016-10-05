@@ -68,10 +68,7 @@ angular.module('myApp')
     /**
      * ACF groups
      */
-    $scope.acfGroups = [{
-      post_title: "Don't map",
-      ID: 'false'
-    }]
+    $scope.acfGroups = []
 
     /**
      * Populate fields
@@ -103,7 +100,7 @@ angular.module('myApp')
         if( $scope.isAcfActive ) {
           console.log('ACF data', res)
 
-          $scope.acfGroups = $scope.acfGroups.concat(res.data.groups)
+          $scope.acfGroups = res.data.groups
           $scope.acfFields = res.data.fields
 
           // Set default valus if new channel

@@ -7,7 +7,7 @@ Plugin Name: WP Percolate v4
 Plugin URI: https://github.com/percolate/wordpress
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.0.4
+Version: 4.0.5
 Author URI: http://percolate.com
 
 */
@@ -79,6 +79,10 @@ class PercolateImportV4
     include_once(__DIR__ . '/models/percolate-post.php');
     $this->Post = Percolate_POST_Model::instance();
 
+    // Queue model
+    include_once(__DIR__ . '/models/percolate-queue.php');
+    $this->Queue = Percolate_Queue::instance();
+
     // Media library
     include_once(__DIR__ . '/models/percolate-media.php');
     $this->Media = PercolateMedia::instance();
@@ -130,6 +134,10 @@ class PercolateImportV4
     add_action( 'wp_ajax_get_log', array( $this->AJAX, 'getLog' ) );
     // Delete the log
     add_action( 'wp_ajax_delete_log', array( $this->AJAX, 'deleteLog' ) );
+    // Get the queue
+    add_action( 'wp_ajax_get_queue', array( $this->AJAX, 'getQueue' ) );
+    // Delete the queue
+    add_action( 'wp_ajax_delete_queue', array( $this->AJAX, 'deleteQueue' ) );
 
 
     // Import posts for channel
@@ -139,7 +147,7 @@ class PercolateImportV4
     add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
 
     // Action for WP-Cron post transition
-    add_action('percolate_transition_posts_event', array($this->Post, 'transitionPosts'));
+    add_action('percolate_transition_posts_event', array($this->Queue, 'transitionPosts'));
 
     // Import image into WP
     add_action( 'wp_ajax_image_import', array( $this->Media, 'importImageEndpoint' ) );
@@ -168,7 +176,7 @@ class PercolateImportV4
     if (current_user_can('manage_options')) { // admin management options
 
       add_menu_page(
-        'Percolate WP Importer',
+        'Percolate WordPress Importer',
         'Percolate',
         'administrator', // or 'manage_options'
         'percolate-settings',

@@ -111,6 +111,22 @@ angular.module('wpApi', [])
           data            : jQuery.param({ action : 'delete_log'})
         })
       },
+      getQueue: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_queue'})
+        })
+      },
+      deleteQueue: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'delete_queue'})
+        })
+      },
 
       /**
        * Imports image into WP */

@@ -3,7 +3,7 @@
     <h2>Settings</h2>
   </div>
   <div class="col-sm-4 text-right">
-    <a class="btn btn-default" ui-sref="manage">Cancel</a>
+    <a class="btn btn-default" ui-sref="manage">Back</a>
   </div>
 </div>
 
@@ -41,10 +41,6 @@
       </div>
     </div>
 
-    <div class="form-group">
-      <hr>
-    </div>
-
     <div class="row-group" ng-show="settingsForm.$invalid && (!settingsForm.$pristine || submitted)">
       <p class="error">Please fill out all the required fields!</p>
     </div>
@@ -56,6 +52,32 @@
   </div>
 </form>
 
-<pre>
-  {{formData}}
-</pre>
+<hr>
+
+<div class="row">
+  <div class="col-sm-12">
+    <h3>Transition Queue</h3>
+    <pre class="log">
+      <span ng-repeat="item in queue.postToTransition">
+        ID: {{item.ID}}
+        Draft: {{item.draft}}
+        Date UTM: {{item.dateUTM}}
+        ------------------------
+      </span>
+    </pre>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <a href="" class="btn" ng-click="refreshQueue()">Refresh queue</a>
+    <a href="" class="btn" ng-click="deleteQueue()">Clear queue</a>
+  </div>
+</div>
+
+
+<hr>
+
+<p>
+  <small>Plugin Version 4.0.5</small>
+</p>

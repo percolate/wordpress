@@ -4,15 +4,22 @@
   </div>
 </div>
 
-<div class="row">
-  <div class="col-sm-12 text-center">
-    <h3>Map topics / subtopics</h3>
-    <p class="info">Here you can map your Percolate topics and subtopics to Wordpress categories</p>
-  </div>
-</div>
-
 <form ng-submit="submitForm( topicsForm )" name="topicsForm" class="row topics" novalidate>
   <div class="col-sm-6 col-sm-offset-3 col-lg-4 col-lg-offset-4">
+
+    <div class="form-group" ng-if="edit.active">
+      <label for="name">Name of the channel</label>
+      <input  type="text" name="name" id="name" class="form-control"
+              ng-model="formData.name"
+              ng-class="{ 'has-error' : setupForm.name.$invalid && (!setupForm.name.$pristine || submitted) }" required>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12 text-center">
+        <h3>Map topics / subtopics</h3>
+        <p class="info">Here you can map your Percolate topics and subtopics to WordPress categories</p>
+      </div>
+    </div>
 
     <!-- Main topics -->
     <div class="main-topic" ng-repeat="topic in topics">
@@ -48,7 +55,7 @@
     <hr>
 
     <!-- WP settings -->
-    <h4 class="text-center">Configure how the posts will appear in Wordpress</h4>
+    <h4 class="text-center">Configure how the posts will appear in WordPress</h4>
 
     <div class="row form-group">
       <div class="col-sm-4">
@@ -85,6 +92,6 @@
   </div>
 </form>
 
-<pre>
+<!-- <pre>
   {{formData}}
-</pre>
+</pre> -->
