@@ -198,6 +198,12 @@ You should see that:
 
 ## Changelog
 
+### 4.0.5
+
+* Post transitioning fixes 
+* UI optimisations for ACF
+* Bugfixes
+
 ### 4.0.4
 
 * Percolate API calls are handled with WP HTTP API
