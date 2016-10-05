@@ -8,6 +8,7 @@
         <h1>Percolate WordPress Importer</h1>
       </div>
       <div class="col-sm-6 text-right">
+        <a ui-sref="log" class="btn btn-default">Log</a>
         <a ui-sref="settings" class="btn btn-default">Settings</a>
       </div>
     </div>

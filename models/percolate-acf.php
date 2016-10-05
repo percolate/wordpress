@@ -103,9 +103,11 @@ class Percolate_ACF_Model
         $fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $group->ID));
 
         foreach ($fields as $field) {
+          // Percolate_Log::log('Fields: ' . print_r(unserialize( $field->post_content  ), true));
           $all_existing_acf[$group->ID][] = array(
             'key'   => $field->post_name,
-            'label' => $field->post_title
+            'label' => $field->post_title,
+            'data'  => unserialize($field->post_content)
           );
   			}
     	}

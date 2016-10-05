@@ -146,9 +146,11 @@
                   </div>
                   <div class="col-sm-6">
                     <select name="{{template.id}}-acfSet" id="{{template.id}}-acfSet" class="form-control"
-                            ng-model="formData[template.id].acfSet",
-                            ng-init="formData[template.id].acfSet = edit.active ? formData[template.id].acfSet : acfGroups.ID"
-                            ng-options="option.ID as option.post_title for option in acfGroups"></select>
+                            ng-model="formData[template.id].acfSet"
+                            ng-selected="edit.active ? formData[template.id].acfSet : false">
+                      <option value="">Don't map</option>
+                      <option value="{{option.ID}}" ng-repeat="option in acfGroups">{{option.post_title}}</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -176,7 +178,10 @@
                   <select name="acfkey" class="form-control"
                           ng-model="formData[template.id].mapping[field.key]"
                           ng-if="formData[template.id].acf == 'on'"
-                          ng-options="option.key as option.label for option in acfFields[formData[template.id].acfSet]"></select>
+                          ng-selected="edit.active ? formData[template.id].mapping[field.key] : false">
+                    <option value="">Don't map</option>
+                    <option value="{{option.key}}" ng-repeat="option in acfFields[formData[template.id].acfSet]">{{option.label}}  ({{option.data.type}})</option>
+                  </select>
                 </div>
                 <p class="small" ng-show="field.description">{{field.description}}</p>
               </div>
