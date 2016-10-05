@@ -200,7 +200,7 @@ You should see that:
 
 ### 4.0.5
 
-* Post transitioning fixes 
+* Post transitioning fixes
 * UI optimisations for ACF
 * Bugfixes
 
