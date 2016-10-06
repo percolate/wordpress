@@ -128,6 +128,7 @@ angular.module('wpApi', [])
         })
       },
 
+
       /**
        * Imports image into WP */
       importImage: function (data) {

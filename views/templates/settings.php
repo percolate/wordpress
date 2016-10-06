@@ -79,5 +79,5 @@
 <hr>
 
 <p>
-  <small>Plugin Version 4.0.5</small>
+  <small>Plugin Version 4.0.6</small>
 </p>

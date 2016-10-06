@@ -325,6 +325,13 @@ class Percolate_POST_Model
     Percolate_Log::log('Importing post: ' . $post['id'] );
     Percolate_Log::log('Post status: ' . $post['status']);
 
+    // ----------- Post Author --------------
+    $postAuthor = $channel->wpUser;
+    if (isset($channel->userMapping->{$post['user_id']}) && !empty($channel->userMapping->{$post['user_id']})) {
+      Percolate_Log::log('User mapping found for ' . $post['user_id']);
+      $postAuthor = $channel->userMapping->{$post['user_id']};
+    }
+
     // ----------- Post title --------------
     $title = "";
     if ( isset($template->postTitle) && !empty($template->postTitle) ) {
@@ -406,7 +413,7 @@ class Percolate_POST_Model
       'post_title'     => $title, // The title of your post.
       'post_status'    => $post_status, // [ 'draft' | 'publish' | 'pending'| 'future' | 'private' | custom registered status ]
       'post_type'      => $template->postType,
-      'post_author'    => $channel->wpUser, // The user ID number of the author. Default is the current user ID.
+      'post_author'    => $postAuthor, // The user ID number of the author. Default is the current user ID.
       'post_date'      => $localTime, // [ Y-m-d H:i:s ] // The time post was made.
       // 'post_date_gmt'  => date('Y-m-d H:i:s', $publish_date), // The time post was made, in GMT.
       'post_category'  => $post_category // [ array(<category id>, ...) ] // Default empty.

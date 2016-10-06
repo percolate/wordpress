@@ -55,19 +55,43 @@
     <hr>
 
     <!-- WP settings -->
-    <h4 class="text-center">Configure how the posts will appear in WordPress</h4>
+    <h4 class="text-center">User mapping</h4>
 
     <div class="row form-group">
-      <div class="col-sm-4">
-        <label for="user">Wordpress user</label>
+      <div class="col-sm-6">
+        <label for="user">Default Wordpress user</label>
       </div>
-      <div class="col-sm-8">
+      <div class="col-sm-6">
         <select name="wpUser" id="wpUser" class="form-control"
                 ng-model="formData.wpUser"
                 ng-disabled="!wpUsers"
                 ng-options="option.ID as option.data.user_nicename for option in wpUsers" required></select>
       </div>
     </div>
+
+    <div class="row form-group">
+      <div class="col-sm-12">
+        <h4>Selective mapping for Percolate users</h4>
+      </div>
+    </div>
+    <div class="form-group row" ng-repeat="percolateUser in percolateUsers">
+      <div class="col-sm-6">
+        <label for="userMapping-{{$index}}">{{percolateUser.user.name}}</label>
+      </div>
+      <div class="col-sm-6">
+        <select name="userMapping[percolateUser.id]"
+                id="userMapping-{{$index}}"
+                class="form-control"
+                ng-model="formData.userMapping['user:' + percolateUser.id]">
+          <option value="">Use default user</option>
+          <option value="{{option.ID}}" ng-repeat="option in wpUsers">{{option.data.user_nicename}}</option>
+        </select>
+      </div>
+    </div>
+
+    <hr>
+
+    <h4 class="text-center">Configure how the posts will appear in WordPress</h4>
 
     <div class="form-group">
       <div class="checkbox">
