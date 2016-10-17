@@ -89,6 +89,7 @@ angular.module('myApp')
         }
         return Api.getAcfStatus()
       })
+      // Get ACF status
       .then(function (res) {
         if(res.data === '1') {
           console.log('ACF is found')
@@ -96,6 +97,7 @@ angular.module('myApp')
           return Api.getAcfData()
         }
       })
+      // Get ACF fields
       .then(function (res) {
         if( $scope.isAcfActive ) {
           console.log('ACF data', res)
