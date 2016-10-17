@@ -198,9 +198,10 @@ You should see that:
 
 ## Changelog
 
-### 4.0.6
+### 4.1.0
 
 * User mapping added
+* Percolate fields can be mapped to multiple ACF groups' fields
 
 ### 4.0.5
 
@@ -241,4 +242,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.0.6~
+~Current Version:4.1.0~
