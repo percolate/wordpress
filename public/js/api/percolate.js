@@ -92,6 +92,22 @@ angular.module('wpPercolate', [])
         })
       },
 
+      /**
+       * Get user role by license
+       */
+      getUsersByLicense: function (data){
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action: 'call_percolate', data: {
+            key     : data.key,
+            method  : 'v3/licenses/' + data.license + '/users',
+            fields  : data.fields
+          }})
+        })
+      },
+
       /* ------------------------------------
        * Templates screen
        * ------------------------------------ */

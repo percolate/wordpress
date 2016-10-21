@@ -35,8 +35,10 @@
               <div class="col-sm-6">
                 <select name="{{template.id}}-postType" id="{{template.id}}-postType" class="form-control"
                         ng-model="formData[template.id].postType"
-                        ng-init="formData[template.id].postType = edit.active ? formData[template.id].postType : postTypes[0].name"
-                        ng-options="option.name as option.label for option in postTypes"></select>
+                        ng-init="formData[template.id].postType = edit.active && formData[template.id].postType ? formData[template.id].postType : 'false'">
+                  <option value="false">Don't map</option>
+                  <option value="{{option.name}}" ng-repeat="option in postTypes">{{option.label}}</option>
+                </select>
               </div>
             </div>
 
@@ -48,24 +50,12 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-safety-on" name="{{template.id}}-safety" value="on" ng-model="formData[template.id].safety">
-                    <input type="radio" id="{{template.id}}-safety-off" name="{{template.id}}-safety" value="off" ng-model="formData[template.id].safety" ng-checked="true" ng-init="formData[template.id].safety = edit.active ? formData[template.id].safety : 'off'">
+                    <input type="radio" id="{{template.id}}-safety-off" name="{{template.id}}-safety" value="off" ng-model="formData[template.id].safety" ng-checked="true" ng-init="formData[template.id].safety = edit.active && formData[template.id].safety ? formData[template.id].safety : 'off'">
                     <span class="toggle"></span>
                   </div>
                 </div>
               </div>
 
-              <!--div class="row form-group">
-                <div class="col-sm-6">
-                  <label for="{{template.id}}-approved">Import approved drafts</label>
-                </div>
-                <div class="col-sm-6">
-                  <div class="switch">
-                    <input type="radio" id="{{template.id}}-approved-on" name="{{template.id}}-approved" value="on" ng-model="formData[template.id].approved">
-                    <input type="radio" id="{{template.id}}-approved-off" name="{{template.id}}-approved" value="off" ng-model="formData[template.id].approved" ng-checked="true" ng-init="formData[template.id].approved = edit.active ? formData[template.id].approved : 'off'">
-                    <span class="toggle"></span>
-                  </div>
-                </div>
-              </div-->
               <div class="row form-group">
                 <div class="col-sm-6">
                   <label for="{{template.id}}-import">Earliest import</label>
@@ -73,7 +63,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-import" id="{{template.id}}-import" class="form-control"
                           ng-model="formData[template.id].import"
-                          ng-init="formData[template.id].import = edit.active ? formData[template.id].import : earliestImport[2].key"
+                          ng-init="formData[template.id].import = edit.active && formData[template.id].import ? formData[template.id].import : earliestImport[2].key"
                           ng-options="option.key as option.label for option in earliestImport"></select>
                 </div>
               </div>
@@ -85,7 +75,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-postTitle" id="{{template.id}}-postTitle" class="form-control"
                           ng-model="formData[template.id].postTitle"
-                          ng-init="formData[template.id].postTitle = edit.active ? formData[template.id].postTitle : template.fields[0].key"
+                          ng-init="formData[template.id].postTitle = edit.active && formData[template.id].postTitle ? formData[template.id].postTitle : template.fields[0].key"
                           ng-options="option.key as option.label for option in template.fields"></select>
                 </div>
               </div>
@@ -97,7 +87,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-postBody" id="{{template.id}}-postBody" class="form-control"
                           ng-model="formData[template.id].postBody"
-                          ng-init="formData[template.id].postBody = edit.active ? formData[template.id].postBody : template.fields[0].key"
+                          ng-init="formData[template.id].postBody = edit.active && formData[template.id].postBody ? formData[template.id].postBody : template.fields[0].key"
                           ng-options="option.key as option.label for option in template.fields"></select>
                 </div>
               </div>
@@ -109,7 +99,7 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-image-on" name="{{template.id}}-image" value="on" ng-model="formData[template.id].image">
-                    <input type="radio" id="{{template.id}}-image-off" name="{{template.id}}-image" value="off" ng-model="formData[template.id].image" ng-checked="true" ng-init="formData[template.id].image = edit.active ? formData[template.id].image : 'off'">
+                    <input type="radio" id="{{template.id}}-image-off" name="{{template.id}}-image" value="off" ng-model="formData[template.id].image" ng-checked="true" ng-init="formData[template.id].image = edit.active && formData[template.id].image ? formData[template.id].image : 'off'">
                     <span class="toggle"></span>
                   </div>
                 </div>
@@ -132,25 +122,8 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-acf-on" name="{{template.id}}-acf" value="on" ng-model="formData[template.id].acf">
-                    <input type="radio" id="{{template.id}}-acf-off" name="{{template.id}}-acf" value="off" ng-model="formData[template.id].acf" ng-checked="true" ng-init="formData[template.id].acf = edit.active ? formData[template.id].acf : 'off'">
+                    <input type="radio" id="{{template.id}}-acf-off" name="{{template.id}}-acf" value="off" ng-model="formData[template.id].acf" ng-checked="true" ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'">
                     <span class="toggle"></span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- ::::: ACF :::::: -->
-              <div class="acf" ng-show="formData[template.id].acf === 'on'">
-                <div class="row form-group">
-                  <div class="col-sm-6">
-                    <label for="{{template.id}}-acfSet">Field Group</label>
-                  </div>
-                  <div class="col-sm-6">
-                    <select name="{{template.id}}-acfSet" id="{{template.id}}-acfSet" class="form-control"
-                            ng-model="formData[template.id].acfSet"
-                            ng-selected="edit.active ? formData[template.id].acfSet : false">
-                      <option value="">Don't map</option>
-                      <option value="{{option.ID}}" ng-repeat="option in acfGroups">{{option.post_title}}</option>
-                    </select>
                   </div>
                 </div>
               </div>
@@ -166,26 +139,51 @@
               </div>
 
               <!-- ::::: CPM :::::  -->
-              <div class="form-group"
-                    ng-repeat="field in template.fields"
-                    ng-hide="field.key == formData[template.id].postBody || field.key == formData[template.id].postImage || field.key == formData[template.id].postTitle">
-                <div class="input-group">
-                  <span class="input-group-addon">{{field.label}}</span>
-                  <span class="input-group-addon">{{field.type}}</span>
-                  <input  type="text" name="key" class="form-control"
-                          ng-model="formData[template.id].mapping[field.key]"
-                          ng-if="formData[template.id].acf !== 'on'">
-                  <select name="acfkey" class="form-control"
-                          ng-model="formData[template.id].mapping[field.key]"
-                          ng-if="formData[template.id].acf == 'on'"
-                          ng-selected="edit.active ? formData[template.id].mapping[field.key] : false">
-                    <option value="">Don't map</option>
-                    <option value="{{option.key}}" ng-repeat="option in acfFields[formData[template.id].acfSet]">{{option.label}}  ({{option.data.type}})</option>
-                  </select>
-                </div>
-                <p class="small" ng-show="field.description">{{field.description}}</p>
-              </div>
-            </div>
+              <table class="table">
+                <thead>
+                  <td>Label</td>
+                  <td>Type</td>
+                  <td ng-if="formData[template.id].acf !== 'on'">Custom field</td>
+                  <td ng-if="formData[template.id].acf == 'on'">ACF group</td>
+                  <td ng-if="formData[template.id].acf == 'on'">ACF field (type)</td>
+                </thead>
+
+                <tbody>
+
+                  <tr class="form-group"
+                        ng-repeat="field in template.fields"
+                        ng-hide="field.key == formData[template.id].postBody || field.key == formData[template.id].postImage || field.key == formData[template.id].postTitle">
+                    <div class="input-group">
+                      <td><span cclass="input-group-addon">{{field.label}}</span></td>
+                      <td><span cclass="input-group-addon">{{field.type}}</span></td>
+                      <td ng-if="formData[template.id].acf !== 'on'">
+                        <input  type="text" name="key" class="form-control"
+                              ng-model="formData[template.id].mapping[field.key]">
+                      </td>
+                      <td ng-if="formData[template.id].acf == 'on'">
+                        <select name="{{template.id}}-acfSet" id="{{template.id}}-acfSet" class="form-control"
+                                ng-model="formData[template.id].acfGroup[field.key]"
+                                ng-selected="edit.active ? formData[template.id].acfGroup[field.key] : false">
+                          <option value="">Don't map</option>
+                          <option value="{{option.ID}}" ng-repeat="option in acfGroups">{{option.post_title}}</option>
+                        </select>
+                      </td>
+                      <td ng-if="formData[template.id].acf == 'on'">
+                        <select name="acfkey" class="form-control"
+                              ng-model="formData[template.id].mapping[field.key]"
+                              ng-selected="edit.active ? formData[template.id].mapping[field.key] : false">
+                          <option value="">Don't map</option>
+                          <option value="{{option.key}}" ng-repeat="option in acfFields[formData[template.id].acfGroup[field.key]]">{{option.label}}  ({{option.data.type}})</option>
+                        </select>
+                      </td>
+                    </div>
+                    <p class="small" ng-show="field.description">{{field.description}}</p>
+                  </tr>
+
+                </tbody>
+              </table>
+
+            </div><!-- Details -->
 
           </div><!-- Panel body -->
         </div>
