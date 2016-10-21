@@ -260,7 +260,7 @@ class Percolate_Queue
     $res = $this->Percolate->callAPI($key, $method, $fields);
 
     if(!isset($res['data'])) {
-      Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
+      Percolate_Log::log('There was an error, check the API response.');
       return;
     }
 
