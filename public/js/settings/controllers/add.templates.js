@@ -16,6 +16,16 @@ angular.module('myApp')
       $scope.formData = $scope.edit.channel
     }
 
+    $scope.earliestImport = [
+      {key: 'draft', label: 'Draft'},
+      {key: 'queued', label: 'Queued'},
+      {key: 'queued.publishing', label: 'On Schedule'}
+    ];
+
+    $scope.postTypes = []
+    $scope.acfGroups = []
+
+
     /**
      * Data for templates
      */
@@ -49,28 +59,6 @@ angular.module('myApp')
 
 
     /**
-     * Earliest import
-     */
-    $scope.earliestImport = [
-      {key: 'draft', label: 'Draft'},
-      {key: 'queued', label: 'Queued'},
-      {key: 'queued.publishing', label: 'On Schedule'}
-    ];
-
-    /**
-     * Post types
-     */
-    $scope.postTypes = [{
-      label: "Don't import",
-      name: 'false'
-    }]
-
-    /**
-     * ACF groups
-     */
-    $scope.acfGroups = []
-
-    /**
      * Populate fields
      */
     Api.getCpts()
@@ -78,9 +66,8 @@ angular.module('myApp')
         console.log('Post types', res.data)
         delete res.data.page
         delete res.data.attachment
-        $scope._.each(res.data, function (obj) {
-          $scope.postTypes.push(obj)
-        })
+        $scope.postTypes = res.data
+
         // Set default valus if new channel
         if( !$scope.edit.active ) {
           $scope._.each($scope.templates, function(obj) {
