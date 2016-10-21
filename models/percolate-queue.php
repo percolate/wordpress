@@ -156,7 +156,7 @@ class Percolate_Queue
     foreach ($events->postToTransition as $key => $event) {
       Percolate_Log::log('Current post status in WP: ' . get_post_status($event->ID) . ($event->draft == 'yes' && get_post_status($event->ID) == 'publish'));
 
-      if (get_post_status($event->ID) == 'trash') {
+      if (get_post_status($event->ID) == 'trash' || get_post_status($event->ID) == false) {
         Percolate_Log::log('Removed trashed post from queue, WP ID: ' . $event->ID);
         unset($events->postToTransition->{$key});
         $this->setEvents($events);

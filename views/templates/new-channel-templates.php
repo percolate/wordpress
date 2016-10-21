@@ -35,8 +35,10 @@
               <div class="col-sm-6">
                 <select name="{{template.id}}-postType" id="{{template.id}}-postType" class="form-control"
                         ng-model="formData[template.id].postType"
-                        ng-init="formData[template.id].postType = edit.active ? formData[template.id].postType : postTypes[0].name"
-                        ng-options="option.name as option.label for option in postTypes"></select>
+                        ng-init="formData[template.id].postType = edit.active && formData[template.id].postType ? formData[template.id].postType : 'false'">
+                  <option value="false">Don't map</option>
+                  <option value="{{option.name}}" ng-repeat="option in postTypes">{{option.label}}</option>
+                </select>
               </div>
             </div>
 
@@ -48,7 +50,7 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-safety-on" name="{{template.id}}-safety" value="on" ng-model="formData[template.id].safety">
-                    <input type="radio" id="{{template.id}}-safety-off" name="{{template.id}}-safety" value="off" ng-model="formData[template.id].safety" ng-checked="true" ng-init="formData[template.id].safety = edit.active ? formData[template.id].safety : 'off'">
+                    <input type="radio" id="{{template.id}}-safety-off" name="{{template.id}}-safety" value="off" ng-model="formData[template.id].safety" ng-checked="true" ng-init="formData[template.id].safety = edit.active && formData[template.id].safety ? formData[template.id].safety : 'off'">
                     <span class="toggle"></span>
                   </div>
                 </div>
@@ -61,7 +63,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-import" id="{{template.id}}-import" class="form-control"
                           ng-model="formData[template.id].import"
-                          ng-init="formData[template.id].import = edit.active ? formData[template.id].import : earliestImport[2].key"
+                          ng-init="formData[template.id].import = edit.active && formData[template.id].import ? formData[template.id].import : earliestImport[2].key"
                           ng-options="option.key as option.label for option in earliestImport"></select>
                 </div>
               </div>
@@ -73,7 +75,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-postTitle" id="{{template.id}}-postTitle" class="form-control"
                           ng-model="formData[template.id].postTitle"
-                          ng-init="formData[template.id].postTitle = edit.active ? formData[template.id].postTitle : template.fields[0].key"
+                          ng-init="formData[template.id].postTitle = edit.active && formData[template.id].postTitle ? formData[template.id].postTitle : template.fields[0].key"
                           ng-options="option.key as option.label for option in template.fields"></select>
                 </div>
               </div>
@@ -85,7 +87,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-postBody" id="{{template.id}}-postBody" class="form-control"
                           ng-model="formData[template.id].postBody"
-                          ng-init="formData[template.id].postBody = edit.active ? formData[template.id].postBody : template.fields[0].key"
+                          ng-init="formData[template.id].postBody = edit.active && formData[template.id].postBody ? formData[template.id].postBody : template.fields[0].key"
                           ng-options="option.key as option.label for option in template.fields"></select>
                 </div>
               </div>
@@ -97,7 +99,7 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-image-on" name="{{template.id}}-image" value="on" ng-model="formData[template.id].image">
-                    <input type="radio" id="{{template.id}}-image-off" name="{{template.id}}-image" value="off" ng-model="formData[template.id].image" ng-checked="true" ng-init="formData[template.id].image = edit.active ? formData[template.id].image : 'off'">
+                    <input type="radio" id="{{template.id}}-image-off" name="{{template.id}}-image" value="off" ng-model="formData[template.id].image" ng-checked="true" ng-init="formData[template.id].image = edit.active && formData[template.id].image ? formData[template.id].image : 'off'">
                     <span class="toggle"></span>
                   </div>
                 </div>
@@ -120,7 +122,7 @@
                 <div class="col-sm-6">
                   <div class="switch">
                     <input type="radio" id="{{template.id}}-acf-on" name="{{template.id}}-acf" value="on" ng-model="formData[template.id].acf">
-                    <input type="radio" id="{{template.id}}-acf-off" name="{{template.id}}-acf" value="off" ng-model="formData[template.id].acf" ng-checked="true" ng-init="formData[template.id].acf = edit.active ? formData[template.id].acf : 'off'">
+                    <input type="radio" id="{{template.id}}-acf-off" name="{{template.id}}-acf" value="off" ng-model="formData[template.id].acf" ng-checked="true" ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'">
                     <span class="toggle"></span>
                   </div>
                 </div>
