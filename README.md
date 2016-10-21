@@ -198,40 +198,41 @@ You should see that:
 
 ## Changelog
 
-### 4.1.0
+### 4.x-1.1.0
 
 * User mapping added
 * Percolate fields can be mapped to multiple ACF groups' fields
+* Bugfixes
 
-### 4.0.5
+### 4.x-1.0.5
 
 * Post transitioning fixes
 * UI optimisations for ACF
 * Bugfixes
 
-### 4.0.4
+### 4.x-1.0.4
 
 * Percolate API calls are handled with WP HTTP API
 * Percolate's schema versioning is implemented
 * Bugfixes and optimisation
 
-### 4.0.3
+### 4.x-1.0.3
 
 * Transition post upon WP publish
 
-### 4.0.2
+### 4.x-1.0.2
 
 * Draft | Queued post status support
 * Draft posts from Percolate will become drafts in WP
 * Percolate's Select field can be mapped to ACF True/False field
 
-### 4.0.1
+### 4.x-1.0.1
 
 * Custom approvals workflow support
 * 5 minute CRON interval
 * Bugfixes / improved compatibility with other plugins
 
-### 4.0.0
+### 4.x-1.0.0
 
 * Initial release with support for custom platforms/templates.
 
@@ -242,4 +243,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.1.0~
+~Current Version:4.x-1.1.0~
