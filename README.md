@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.1.1
+
+* Bugfixes for post transitioning
+
 ### 4.x-1.1.0
 
 * User mapping added
@@ -243,4 +247,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.1.0~
+~Current Version:4.x-1.1.1~
