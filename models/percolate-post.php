@@ -430,13 +430,13 @@ class Percolate_POST_Model
       $res['message'] = 'Post cannot be inserted into WP.';
       return $res;
     }
-    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)));
+    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) . ' Current time: ' . time());
 
     if ($post['status'] == 'draft' || (isset($template->safety) && $template->safety == 'on')) {
       Percolate_Log::log('Create event for transitioning post status, currently draft state.');
       $this->Queue->addEvent( array( "ID" => $wp_post_id, 'draft' => 'yes') );
     }
-    else if(time() < $publish_date && ($post['status'] == 'queued' || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published')) {
+    else if($post['status'] == 'queued' || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published') {
       Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
       $this->Queue->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
     }

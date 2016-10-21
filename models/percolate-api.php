@@ -87,7 +87,7 @@ class Percolate_API_Model
     $data = json_decode( wp_remote_retrieve_body($res), true );
 
     if ($status != 200) {
-      $message = "An unknown error occurred communicating with Percolate ($status) - $res";
+      $message = "An unknown error occurred communicating with Percolate ($status): " . print_r($res, true);
       if ($data) {
         if ($data['error']) {
           $message = $data['error'];
