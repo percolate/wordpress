@@ -76,9 +76,11 @@ angular.module('myApp')
       $state.go('add.topics')
     }
 
-    function deleteChannel (channelId) {
+    function deleteChannel (channelId, isDeleted) {
       $scope.Percolate.channels[channelId].active = 'false'
-      delete $scope.Percolate.channels[channelId]
+      if (isDeleted) {
+        delete $scope.Percolate.channels[channelId]
+      }
 
       console.log('Submiting data, current dataset: ', $scope.Percolate)
       $scope.showLoader('Saving data...')
