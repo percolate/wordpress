@@ -48,7 +48,7 @@ class Percolate_API_Model
     $req = array(
       'method' => 'GET',
       'headers' => array("Content-type" => "application/json", "Authorization" => $api_key),
-      'timeout' => 15,
+      'timeout' => 30,
     	'redirection' => 3,
     	'blocking' => true
     );
