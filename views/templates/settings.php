@@ -79,5 +79,5 @@
 <hr>
 
 <p>
-  <small>Plugin version: 4.x-1.1.2 (<i>Supported WordPress version - Plugin version</i>)</small>
+  <small>Plugin version: 4.x-1.1.3 (<i>Supported WordPress version - Plugin version</i>)</small>
 </p>
