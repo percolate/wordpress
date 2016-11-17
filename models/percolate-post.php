@@ -480,17 +480,14 @@ class Percolate_POST_Model
          *  If it is, we're correctly converting this to be ACF True/False field compatible
          */
         if(is_array($value)){
-          $value = array_shift($value);
-          $value = strtolower($value);
-          switch($value){
-            case true:
-            case 'true':
-              $value = 1;
-              break;
-            case false:
-            case 'false':
-              $value = 0;
-              break;
+          $valueTemp = $value[0];
+          $valueTemp = strtolower($valueTemp);
+
+          if($valueTemp === true || $valueTemp === 'true') {
+            $value = 1;
+          }
+          if($valueTemp === false || $valueTemp === 'false') {
+            $value = 0;
           }
         }
 
