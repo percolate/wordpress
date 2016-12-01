@@ -34,9 +34,17 @@ class Percolate_Log
     $uploads = wp_upload_dir();
     $dir = $uploads['basedir'] . DIRECTORY_SEPARATOR . self::LOGS_DIRECTORY;
 
-    if ( !is_dir($dir)) wp_mkdir_p($dir);
+    if ( !is_dir($dir)) {
+      wp_mkdir_p($dir);
+    }
 
-    if ( ! @file_exists($dir . DIRECTORY_SEPARATOR . 'index.php') ) @touch( $dir . DIRECTORY_SEPARATOR . 'index.php' );
+    if ( ! @file_exists($dir . DIRECTORY_SEPARATOR . 'index.php') ) {
+      @touch( $dir . DIRECTORY_SEPARATOR . 'index.php' );
+    }
+
+    if ( ! @file_exists($dir . DIRECTORY_SEPARATOR . 'log') ) {
+      @touch( $dir . DIRECTORY_SEPARATOR . 'log' );
+    }
   }
 
   public static function log($msg='')
