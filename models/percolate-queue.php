@@ -219,30 +219,30 @@ class Percolate_Queue
     Percolate_Log::log("Post's original importing channel found.");
 
     // ------------- Post status -------------
-    $postStatus = $this->getPostStatus($post_id, $postPercID, $postsChannel);
-    Percolate_Log::log('Post current status:' . $postStatus);
+    $postPerc = $this->getPost($post_id, $postPercID, $postsChannel);
+    Percolate_Log::log('Post current status:' . $post['status']);
 
-    switch ($postStatus) {
+    switch ($postPerc['status']) {
       case 'draft':
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued' );
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
       case 'queued':
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.publishing' );
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
       case 'queued.publishing':
-        $this->transitionPost( $post_id, $postPercID, $postsChannel, 'queued.published' );
+        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
     }
-    $res = $this->transitionPost( $post_id, $postPercID, $postsChannel, 'live', $event->dateUTM );
+    $res = $this->transitionPost( $post_id, $postPerc, $postsChannel, 'live', $event->dateUTM );
     return $res;
   }
 
 
   /* ------------------- Post transiting functions ----------------------- */
-  private function getPostStatus($wp_post_id, $postPercID, $postsChannel)
+  private function getPost($wp_post_id, $postPercID, $postsChannel)
   {
     /**
      * Calls the Percolate API to get the post status by ID
@@ -264,25 +264,30 @@ class Percolate_Queue
       return;
     }
 
-    return $res['data']['status'];
+    return $res['data'];
   }
 
-  private function transitionPost( $wp_post_id, $postPercID, $postsChannel, $status='live', $dateUTM=NULL )
+  private function transitionPost( $wp_post_id, $postPerc, $postsChannel, $status='live', $dateUTM=NULL )
   {
     /**
      * Calls the Percolate API to transition the post
      *
      * @param string $wp_post_id: WP post ID
-     * @param string $postPercID: Percolate post ID
+     * @param array $postPerc: Percolate post
      * @param object $postsChannel: plugin's channel that's originally imported the post
      * @param string $status: status to transition the post to
      *
      * @return array API response
      */
     $key    = $postsChannel->key;
-    $method = "v5/post/" . $postPercID;
+    $method = "v5/post/" . $postPerc['id'];
     $fields = array();
     $jsonFields = array(
+      'topic_ids' => $postPerc['topic_ids'],
+      'term_ids' => $postPerc['term_ids'],
+      'ext' => $postPerc['ext'],
+      'description' => $postPerc['description'],
+      'name' => $postPerc['name'],
       'status' => $status
     );
     if( isset($dateUTM) ) {
