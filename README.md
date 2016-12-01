@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.1.4
+
+* Fixing post transitioning & logs
+
 ### 4.x-1.1.3
 
 * ACF multi-select support
@@ -255,4 +259,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.1.3~
+~Current Version:4.x-1.1.4~
