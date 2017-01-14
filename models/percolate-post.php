@@ -54,6 +54,10 @@ class Percolate_POST_Model
       // Percolate_Log::log("simple_html_dom_node isn't present");
       require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
     }
+
+    // AJAX endpoint
+    add_action( 'wp_ajax_do_import', array( $this, 'importChannelPosts' ) );
+
   }
 
 

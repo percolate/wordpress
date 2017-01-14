@@ -53,6 +53,37 @@ class Percolate_AJAX_Model
     // Queue
     include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
+
+    // Serve templates to Angular
+    add_action( 'wp_ajax_template', array( $this, 'getTemplate' ) );
+    // Get the Percolate data model
+    add_action( 'wp_ajax_get_data', array( $this, 'getData' ) );
+    // Save the Percolate data model
+    add_action( 'wp_ajax_set_data', array( $this, 'setData' ) );
+    // Get WP categories
+    add_action( 'wp_ajax_get_cpts', array( $this, 'getCpts' ) );
+    // Get WP post types
+    add_action( 'wp_ajax_get_categories', array( $this, 'getCategories' ) );
+    // Get WP users
+    add_action( 'wp_ajax_get_users', array( $this, 'getUsers' ) );
+    // Is ACF active
+    add_action( 'wp_ajax_get_acf_status', array( $this, 'getAcfStatus' ) );
+    // Get ACF data
+    add_action( 'wp_ajax_get_acf_data', array( $this, 'getAcfData' ) );
+    // Call the Percolate API
+    add_action( 'wp_ajax_call_percolate', array( $this, 'callPercolateApi' ) );
+    // Get the warning messages
+    add_action( 'wp_ajax_get_messages', array( $this, 'getMessages' ) );
+    // Set the warning messages
+    add_action( 'wp_ajax_set_messages', array( $this, 'setMessages' ) );
+    // Get the log
+    add_action( 'wp_ajax_get_log', array( $this, 'getLog' ) );
+    // Delete the log
+    add_action( 'wp_ajax_delete_log', array( $this, 'deleteLog' ) );
+    // Get the queue
+    add_action( 'wp_ajax_get_queue', array( $this, 'getQueue' ) );
+    // Delete the queue
+    add_action( 'wp_ajax_delete_queue', array( $this, 'deleteQueue' ) );
   }
 
   /**

@@ -1,18 +1,18 @@
 <?php
 /**
- * @package Percolate_Import_4
+ * @package Percolate_Importer
  */
 /*
-Plugin Name: WP Percolate v4
+Plugin Name: WP Percolate Importer
 Plugin URI: https://github.com/percolate/wordpress
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.x-1.1.4
+Version: 4.x-1.2.0
 Author URI: http://percolate.com
 
 */
 
-class PercolateImportV4
+class PercolateSync
 {
   /* ---------------------------------
    *
@@ -46,11 +46,11 @@ class PercolateImportV4
 
   /**
    * Return singleton instance
-   * @return PercolateImportV4
+   * @return PercolateSync
    */
 	public static function instance() {
 		if( !self::$instance )
-			self::$instance = new PercolateImportV4;
+			self::$instance = new PercolateSync;
 
 		return self::$instance;
 	}
@@ -96,10 +96,10 @@ class PercolateImportV4
     register_deactivation_hook(self::FILE, array($this, '__deactivation'));
 
     // Add settings page
-    add_action( 'admin_menu', array($this, 'register_settings_page') );
+    add_action('admin_menu', array($this, 'register_settings_page'));
 
     // Add admin scripts
-    add_action( 'admin_enqueue_scripts', array( $this, 'addAdminScripts' ) );
+    add_action('admin_enqueue_scripts', array( $this, 'addAdminScripts' ));
 
     // Add Angular's tags to header
     add_action('wp_head', array( $this, 'setupHeader' ));
@@ -107,50 +107,12 @@ class PercolateImportV4
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
 
-
-    // Serve templates to Angular
-    add_action( 'wp_ajax_template', array( $this->AJAX, 'getTemplate' ) );
-    // Get the Percolate data model
-    add_action( 'wp_ajax_get_data', array( $this->AJAX, 'getData' ) );
-    // Save the Percolate data model
-    add_action( 'wp_ajax_set_data', array( $this->AJAX, 'setData' ) );
-    // Get WP categories
-    add_action( 'wp_ajax_get_cpts', array( $this->AJAX, 'getCpts' ) );
-    // Get WP post types
-    add_action( 'wp_ajax_get_categories', array( $this->AJAX, 'getCategories' ) );
-    // Get WP users
-    add_action( 'wp_ajax_get_users', array( $this->AJAX, 'getUsers' ) );
-    // Is ACF active
-    add_action( 'wp_ajax_get_acf_status', array( $this->AJAX, 'getAcfStatus' ) );
-    // Get ACF data
-    add_action( 'wp_ajax_get_acf_data', array( $this->AJAX, 'getAcfData' ) );
-    // Call the Percolate API
-    add_action( 'wp_ajax_call_percolate', array( $this->AJAX, 'callPercolateApi' ) );
-    // Get the warning messages
-    add_action( 'wp_ajax_get_messages', array( $this->AJAX, 'getMessages' ) );
-    // Set the warning messages
-    add_action( 'wp_ajax_set_messages', array( $this->AJAX, 'setMessages' ) );
-    // Get the log
-    add_action( 'wp_ajax_get_log', array( $this->AJAX, 'getLog' ) );
-    // Delete the log
-    add_action( 'wp_ajax_delete_log', array( $this->AJAX, 'deleteLog' ) );
-    // Get the queue
-    add_action( 'wp_ajax_get_queue', array( $this->AJAX, 'getQueue' ) );
-    // Delete the queue
-    add_action( 'wp_ajax_delete_queue', array( $this->AJAX, 'deleteQueue' ) );
-
-
-    // Import posts for channel
-    add_action( 'wp_ajax_do_import', array( $this->Post, 'importChannelPosts' ) );
-
     // Action for WP-Cron import
     add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
 
     // Action for WP-Cron post transition
     add_action('percolate_transition_posts_event', array($this->Queue, 'transitionPosts'));
 
-    // Import image into WP
-    add_action( 'wp_ajax_image_import', array( $this->Media, 'importImageEndpoint' ) );
   }
 
   /**
@@ -373,6 +335,6 @@ class PercolateImportV4
   }
 }
 
-PercolateImportV4::instance();
+PercolateSync::instance();
 
 ?>
