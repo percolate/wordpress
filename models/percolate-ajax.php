@@ -38,6 +38,10 @@ class Percolate_AJAX_Model
     include_once(__DIR__ . '/percolate-acf.php');
     $this->ACF = Percolate_ACF_Model::instance();
 
+    // WPML methods
+    include_once(__DIR__ . '/percolate-wpml.php');
+    $this->Wpml = Percolate_WPML::instance();
+
     // Percolate API methods
     include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
@@ -70,6 +74,10 @@ class Percolate_AJAX_Model
     add_action( 'wp_ajax_get_acf_status', array( $this, 'getAcfStatus' ) );
     // Get ACF data
     add_action( 'wp_ajax_get_acf_data', array( $this, 'getAcfData' ) );
+    // Is WPML active
+    add_action( 'wp_ajax_get_wpml_status', array( $this, 'getWpmlStatus' ) );
+    // Get WPML default language
+    add_action( 'wp_ajax_get_wpml_language', array( $this, 'getWpmlDefaultLanguage' ) );
     // Call the Percolate API
     add_action( 'wp_ajax_call_percolate', array( $this, 'callPercolateApi' ) );
     // Get the warning messages
@@ -183,6 +191,36 @@ class Percolate_AJAX_Model
   public function getAcfData()
   {
     $res = $this->ACF->getAcfData();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: check if plugin is active
+   */
+  public function getWpmlStatus()
+  {
+    $res = $this->Wpml->isActive();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: check if plugin is active
+   */
+  public function getWpmlDefaultLanguage()
+  {
+    $res = $this->Wpml->getDefaultLanguage();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: get available languages
+   */
+  public function getWpmlLanguages()
+  {
+    $res = $this->Wpml->getLanguages();
     echo json_encode($res);
     wp_die();
   }
