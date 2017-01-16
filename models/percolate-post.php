@@ -313,14 +313,16 @@ class Percolate_POST_Model
 
     // ------ Check if imported already --------
     $args = array(
-    	'post_type'		=>	$template->postType,
-      'post_status'	=>	'any',
-      'meta_key'    => 'percolate_id',
-	    'meta_value'  => $post['id']
+      'post_type'		     =>	$template->postType,
+      'post_status'	     =>	'any',
+      'meta_key'         => 'percolate_id',
+      'meta_value'       => $post['id'],
+      'suppress_filters' => true // need to bypass the WPML language filter
     );
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
+      Percolate_Log::log('Post already imported: ' . $post['id']);
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
