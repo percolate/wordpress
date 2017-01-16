@@ -92,6 +92,7 @@
                 </div>
               </div>
 
+              <!-- Images -->
               <div class="row form-group">
                 <div class="col-sm-6">
                   <label for="{{template.id}}-image">Import Images</label>
@@ -111,7 +112,31 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-postImage" id="{{template.id}}-postImage" class="form-control"
                           ng-model="formData[template.id].postImage"
-                          ng-options="option.key as option.label for option in template.fields | filterAsset "></select>
+                          ng-options="option.key as option.label for option in template.fields | filterType: 'asset' "></select>
+                </div>
+              </div>
+
+              <!-- WPML -->
+              <div class="row form-group" ng-if="isWpmlActive">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-wpmlStatus">Define WPML language</label>
+                </div>
+                <div class="col-sm-6">
+                  <div class="switch">
+                    <input type="radio" id="{{template.id}}-wpmlStatus-on" name="{{template.id}}-wpmlStatus" value="on" ng-model="formData[template.id].wpmlStatus">
+                    <input type="radio" id="{{template.id}}-wpmlStatus-off" name="{{template.id}}-wpmlStatus" value="off" ng-model="formData[template.id].wpmlStatus" ng-checked="true" ng-init="formData[template.id].wpmlStatus = edit.active && formData[template.id].wpmlStatus ? formData[template.id].wpmlStatus : 'off'">
+                    <span class="toggle"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row form-group" ng-if="formData[template.id].wpmlStatus === 'on'">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-wpmlField">Field of the language</label>
+                </div>
+                <div class="col-sm-6">
+                  <select name="{{template.id}}-wpmlField" id="{{template.id}}-wpmlField" class="form-control"
+                          ng-model="formData[template.id].wpmlField"
+                          ng-options="option.key as option.label for option in template.fields | filterType: 'select' "></select>
                 </div>
               </div>
 

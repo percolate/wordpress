@@ -48,6 +48,9 @@ class Percolate_POST_Model
     // Queue
     include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
+    // WPML
+    include_once(__DIR__ . '/percolate-wpml.php');
+    $this->Wpml = Percolate_WPML::instance();
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {
@@ -554,6 +557,26 @@ class Percolate_POST_Model
       // Gegt image ID from the imported fields array
       $imageID = $importedFields[$template->postImage];
       set_post_thumbnail( $wp_post_id, $imageID );
+    }
+
+    // ----------- WPML --------------
+    if ($this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField)) {
+      Percolate_Log::log('Post WPML - handling translations for ' . print_r($wp_post_id, true) . '. Language field: ' . $template->wpmlField);
+
+      // Get the language from Percolate
+      $postLang = $post['ext'][$template->wpmlField];
+      Percolate_Log::log('Post WPML - language: ' . $postLang);
+
+      // Set the language code in WPML's table
+      $set_language_args = array(
+        'element_id'      => $wp_post_id,
+        'language_code'   => $postLang,
+        'trid'            => FALSE // If set to FALSE it will create a new trid for the element
+      );
+      do_action( 'wpml_set_element_language_details', $set_language_args );
+
+      // Add the original language code, so we can check if it's changed when syncing content
+      update_post_meta($wp_post_id, 'percolate_language', $postLang);
     }
 
     // ----------- All done here --------------
