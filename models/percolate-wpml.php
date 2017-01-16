@@ -45,8 +45,7 @@ class Percolate_WPML
       $this->isWpmlActive = false;
     }
 
-    Percolate_Log::log('WPML get status: ' . $this->isWpmlActive);
-
+    // Percolate_Log::log('WPML get status: ' . $this->isWpmlActive);
     return $this->isWpmlActive;
   }
 
