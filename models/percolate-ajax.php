@@ -155,7 +155,6 @@ class Percolate_AJAX_Model
         do_action( 'wpml_switch_language', $key );
 
         $categoriesPerLang = get_categories( $args );
-        $categories[$key] = array();
 
         // add language property to categories
         foreach ($categoriesPerLang as $category) {
@@ -165,7 +164,7 @@ class Percolate_AJAX_Model
           ));
           $category->language = $language_code;
 
-          $categories[$key][] = $category;
+          $categories[] = $category;
         }
       }
 
