@@ -79,16 +79,31 @@ angular.module('myApp')
       // var tree = _unflatten(res.data)
       $scope.categories = $scope.categories.concat(res.data)
       console.log('WP categories', $scope.categories)
+
+      return Api.getWpmlStatus()
+    }
+
+    function processWpCategoriesByLanguage () {
+      $scope.categoriesByLanguage = {}
+      _.each($scope.categories, function(cat) {
+        if (cat.language) {
+          if (!$scope.categoriesByLanguage[cat.language]) {
+            $scope.categoriesByLanguage[cat.language] = []
+          }
+          $scope.categoriesByLanguage[cat.language].push(cat)
+        }
+      })
+
+      console.log($scope.categoriesByLanguage);
     }
 
     function getWpmlStatus (res) {
       console.log('WPML status', res)
       $scope.isWpmlActive = res
-    }
 
-    function getCategoriesByLanguage (res) {
-      $scope.categories = res.data
-      console.log('WP categories by language', $scope.categories)
+      if (res) {
+        processWpCategoriesByLanguage()
+      }
     }
 
 
@@ -163,12 +178,11 @@ angular.module('myApp')
       }
     }).then(processPercolateUsers, apiError)
 
-    // Check if WPML is active
-    Api.getWpmlStatus().then(getWpmlStatus, apiError)
-
     // Get WP users
     Api.getUsers().then(processWpUsers, apiError)
 
     // Categories from WP
-    Api.getCategories().then(processWpCategories, apiError)
+    Api.getCategories()
+      .then(processWpCategories, apiError)
+      .then(getWpmlStatus, apiError)
   })
