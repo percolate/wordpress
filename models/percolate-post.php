@@ -71,7 +71,7 @@ class Percolate_POST_Model
   {
     if( isset($_POST['data']) ) {
       $option = json_decode( $this->getChannels() );
-      $channel = $option->channels->$_POST['data'];
+      $channel = $option->channels->{$_POST['data']};
 
       $res = $this->processChannel( $channel );
     }
@@ -159,7 +159,7 @@ class Percolate_POST_Model
     foreach ($schemas as $schema) {
 
       // Get the plugin's template (called channel on the frontend)
-      $template = $channel->$schema['id'];
+      $template = $channel->{$schema['id']};
 
       // Flag if there are multiple versions of the schame has been found
       $schemaVersionMismatch = false;
@@ -313,14 +313,16 @@ class Percolate_POST_Model
 
     // ------ Check if imported already --------
     $args = array(
-    	'post_type'		=>	$template->postType,
-      'post_status'	=>	'any',
-      'meta_key'    => 'percolate_id',
-	    'meta_value'  => $post['id']
+      'post_type'		     =>	$template->postType,
+      'post_status'	     =>	'any',
+      'meta_key'         => 'percolate_id',
+      'meta_value'       => $post['id'],
+      'suppress_filters' => true // need to bypass the WPML language filter
     );
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
+      Percolate_Log::log('Post already imported: ' . $post['id']);
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
@@ -385,7 +387,7 @@ class Percolate_POST_Model
     if( isset($post['topic_ids']) && !empty($post['topic_ids']) ) {
       foreach ($post['topic_ids'] as $topic_id) {
         $topic_id = str_replace( 'topic:', '', $topic_id );
-        $category_wp = $channel->topics->$topic_id;
+        $category_wp = $channel->topics->{$topic_id};
         $post_category[] = $category_wp;
       }
     }
@@ -502,8 +504,8 @@ class Percolate_POST_Model
         // ----- ACF -----
         if( isset($template->acf) && $template->acf == 'on' ) {
           // Check for mapping
-          if( isset($template->mapping->$key) && !empty($template->mapping->$key) ) {
-            $_fieldname = $template->mapping->$key;
+          if( isset($template->mapping->{$key}) && !empty($template->mapping->{$key}) ) {
+            $_fieldname = $template->mapping->{$key};
           } else {
             $_fieldname = false;
           }
@@ -513,8 +515,8 @@ class Percolate_POST_Model
         else {
 
           // Check for mapping
-          if( isset($template->mapping->$key) && !empty($template->mapping->$key) ) {
-            $_fieldname = $template->mapping->$key;
+          if( isset($template->mapping->{$key}) && !empty($template->mapping->{$key}) ) {
+            $_fieldname = $template->mapping->{$key};
           } else {
             $_fieldname = $key;
           }
