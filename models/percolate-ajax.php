@@ -140,34 +140,43 @@ class Percolate_AJAX_Model
    */
   public function getCategories()
   {
-    global $sitepress;
-    if ($sitepress) {
-      // if WPML is active, remove its filter for querying in active language only
-      remove_filter('terms_clauses', array($sitepress, 'terms_clauses'));
-      remove_filter('get_terms', array($SitePress,'get_terms_filter'));
-    }
     $args = array(
     	'hide_empty'               => 0,
     	'hierarchical'             => 1,
     	'taxonomy'                 => 'category'
     );
-    $res = get_categories( $args );
 
-    if ($sitepress) {
-      // add language property to categories
-      foreach ($res as $category) {
-        $language_code = apply_filters( 'wpml_element_language_code', null, array(
-          'element_id'=> (int)$category->term_id,
-          'element_type'=> 'category'
-        ));
-        $category->language = $language_code;
+    if ($this->Wpml->isActive()) {
+
+      $categories = array();
+      $languages = $this->Wpml->getLanguages();
+
+      foreach ($languages as $key => $language) {
+        do_action( 'wpml_switch_language', $key );
+
+        $categoriesPerLang = get_categories( $args );
+        $categories[$key] = array();
+
+        // add language property to categories
+        foreach ($categoriesPerLang as $category) {
+          $language_code = apply_filters( 'wpml_element_language_code', null, array(
+            'element_id'=> (int)$category->term_id,
+            'element_type'=> 'category'
+          ));
+          $category->language = $language_code;
+
+          $categories[$key][] = $category;
+        }
       }
-      // re-enable the filter
-      add_filter('terms_clauses', array($sitepress, 'terms_clauses'));
-      add_filter('get_terms', array($SitePress,'get_terms_filter'));
+
+    } else {
+
+      $categories = get_categories( $args );
+
     }
-    Percolate_Log::log('Categroies: ' . print_r($res, true));
-    echo json_encode($res);
+
+    Percolate_Log::log('Categroies: ' . print_r($categories, true));
+    echo json_encode($categories);
     wp_die();
   }
   /**
