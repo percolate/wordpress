@@ -144,6 +144,7 @@ class Percolate_AJAX_Model
     if ($sitepress) {
       // if WPML is active, remove its filter for querying in active language only
       remove_filter('terms_clauses', array($sitepress, 'terms_clauses'));
+      remove_filter('get_terms', array($SitePress,'get_terms_filter'));
     }
     $args = array(
     	'hide_empty'               => 0,
@@ -163,6 +164,7 @@ class Percolate_AJAX_Model
       }
       // re-enable the filter
       add_filter('terms_clauses', array($sitepress, 'terms_clauses'));
+      add_filter('get_terms', array($SitePress,'get_terms_filter'));
     }
     Percolate_Log::log('Categroies: ' . print_r($res, true));
     echo json_encode($res);
