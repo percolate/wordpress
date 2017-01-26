@@ -169,12 +169,10 @@ class Percolate_AJAX_Model
       }
 
     } else {
-
       $categories = get_categories( $args );
-
     }
 
-    Percolate_Log::log('Categroies: ' . print_r($categories, true));
+    // Percolate_Log::log('Categroies: ' . print_r($categories, true));
     echo json_encode($categories);
     wp_die();
   }

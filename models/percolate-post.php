@@ -391,9 +391,10 @@ class Percolate_POST_Model
         if ($this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' &&
             isset($template->wpmlField) && $channel->topicsWpml == 'on')
         {
-          // Percolate_Log::log('Post with WPML categories' . print_r($channel->{'topicsWPML'.$postLang}, true));
+          Percolate_Log::log('Post with WPML categories' . print_r($channel->{'topicsWPML'.$postLang}, true));
           $postLang = $post['ext'][$template->wpmlField];
           $category_wp = $channel->{'topicsWPML'.$postLang}->{$topic_id};
+          $post_category[] = $category_wp;
         } else {
           $category_wp = $channel->topics->{$topic_id};
           $post_category[] = $category_wp;
