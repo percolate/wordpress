@@ -140,12 +140,30 @@ class Percolate_AJAX_Model
    */
   public function getCategories()
   {
+    global $sitepress;
+    if ($sitepress) {
+      // if WPML is active, remove its filter for querying in active language only
+      remove_filter('terms_clauses', array($sitepress, 'terms_clauses'));
+    }
     $args = array(
     	'hide_empty'               => 0,
     	'hierarchical'             => 1,
     	'taxonomy'                 => 'category'
     );
     $res = get_categories( $args );
+
+    if ($sitepress) {
+      // add language property to categories
+      foreach ($res as $category) {
+        $language_code = apply_filters( 'wpml_element_language_code', null, array(
+          'element_id'=> (int)$category->term_id,
+          'element_type'=> 'category'
+        ));
+        $category->language = $language_code;
+      }
+      // re-enable the filter
+      add_filter('terms_clauses', array($sitepress, 'terms_clauses'));
+    }
     echo json_encode($res);
     wp_die();
   }

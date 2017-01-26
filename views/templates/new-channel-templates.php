@@ -177,7 +177,10 @@
 
                   <tr class="form-group"
                         ng-repeat="field in template.fields"
-                        ng-hide="field.key == formData[template.id].postBody || field.key == formData[template.id].postImage || field.key == formData[template.id].postTitle">
+                        ng-hide="field.key == formData[template.id].postBody ||
+                                field.key == formData[template.id].postImage ||
+                                field.key == formData[template.id].postTitle ||
+                                field.key == formData[template.id].wpmlField">
                     <div class="input-group">
                       <td><span cclass="input-group-addon">{{field.label}}</span></td>
                       <td><span cclass="input-group-addon">{{field.type}}</span></td>
