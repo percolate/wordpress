@@ -164,6 +164,7 @@ class Percolate_AJAX_Model
       // re-enable the filter
       add_filter('terms_clauses', array($sitepress, 'terms_clauses'));
     }
+    Percolate_Log::log('Categroies: ' . print_r($res, true));
     echo json_encode($res);
     wp_die();
   }
