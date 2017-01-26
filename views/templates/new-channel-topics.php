@@ -86,8 +86,8 @@
               </div>
               <div class="col-sm-8">
                 <select name="{{topic.id}}" id="{{topic.id}}" class="form-control"
-                        ng-model="formData.topics[topic.id]",
-                        ng-init="formData.topics[topic.id] = (edit.active && +formData.topics[topic.id]) ? +formData.topics[topic.id] : categories[0].term_id"
+                        ng-model="formData['topicsWPML' + lang][topic.id]",
+                        ng-init="formData['topicsWPML' + lang][topic.id] = (edit.active && +formData['topicsWPML' + lang][topic.id]) ? +formData['topicsWPML' + lang][topic.id] : categories[0].term_id"
                         ng-options="option.term_id as option.cat_name for option in categories"></select>
               </div>
             </div>
@@ -100,8 +100,8 @@
                 </div>
                 <div class="col-sm-8">
                   <select name="{{subtopic.id}}" id="{{subtopic.id}}" class="form-control"
-                        ng-model="formData.topics[subtopic.id]"
-                        ng-init="formData.topics[subtopic.id] =  edit.active ? formData.topics[subtopic.id] : categories[0].term_id"
+                        ng-model="formData['topicsWPML' + lang][subtopic.id]"
+                        ng-init="formData['topicsWPML' + lang][subtopic.id] =  edit.active ? formData['topicsWPML' + lang][subtopic.id] : categories[0].term_id"
                         ng-options="option.term_id as option.cat_name for option in categories"></select>
                 </div>
               </div>
