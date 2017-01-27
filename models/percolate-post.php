@@ -388,10 +388,9 @@ class Percolate_POST_Model
       foreach ($post['topic_ids'] as $topic_id) {
         $topic_id = str_replace( 'topic:', '', $topic_id );
 
-        if ($this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' &&
-            isset($template->wpmlField) && $channel->topicsWpml == 'on')
+        if ($this->checkWpml($template) && $channel->topicsWpml == 'on')
         {
-          Percolate_Log::log('Post with WPML categories' . print_r($channel->{'topicsWPML'.$postLang}, true));
+          // Percolate_Log::log('Post with WPML categories' . print_r($channel->{'topicsWPML'.$postLang}, true));
           $postLang = $post['ext'][$template->wpmlField];
           $category_wp = $channel->{'topicsWPML'.$postLang}->{$topic_id};
           $post_category[] = $category_wp;
@@ -544,7 +543,7 @@ class Percolate_POST_Model
     if( isset($post['term_ids']) && !empty($post['term_ids']) ) {
       $res['terms'] = array();
       foreach ($post['term_ids'] as $term) {
-
+        // Percolate_Log::log('term_id: ' . $term);
         // Get term from Percolate
         // https://percolate.com/api/v5/term/?ids=term%3A2030798
         $key    = $channel->key;
@@ -555,9 +554,16 @@ class Percolate_POST_Model
         $res_tag = $this->Percolate->callAPI($key, $method, $fields);
 
         if( isset($res_tag['data']) && isset($res_tag['data'][0]['name']) ) {
-          wp_set_post_tags( $wp_post_id, $res_tag['data'][0]['name'], true );
+          $termName = $res_tag['data'][0]['name'];
+          // Percolate_Log::log('term_name: ' . $termName);
 
-          $meta_success = update_post_meta($wp_post_id, $_fieldname, $value);
+          // if ($this->checkWpml($template)) {
+          //   $postLang = $post['ext'][$template->wpmlField];
+          //   Percolate_Log::log('Swithcing to: ' . $postLang);
+          //   do_action( 'wpml_switch_language', $postLang);
+          // }
+          wp_set_post_tags( $wp_post_id, $termName, true );
+
           $res['term'][] = 'Adding term: ' . $term;
         } else {
           $res['term'][] = 'Cannot add term: ' . $term;
@@ -573,7 +579,7 @@ class Percolate_POST_Model
     }
 
     // ----------- WPML --------------
-    if ($this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField)) {
+    if ($this->checkWpml($template)) {
       Percolate_Log::log('Post WPML - handling translations for ' . print_r($wp_post_id, true) . '. Language field: ' . $template->wpmlField);
 
       // Get the language from Percolate
@@ -618,6 +624,10 @@ class Percolate_POST_Model
     wp_clear_scheduled_hook('percolate_transition_posts_event');
   }
 
+  private function checkWpml($template)
+  {
+    return $this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField);
+  }
 
   private function searchInArray($array, $key, $value) {
     $results = array();
