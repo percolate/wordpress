@@ -129,7 +129,7 @@
                   </div>
                 </div>
               </div>
-              <div class="row form-group" ng-if="formData[template.id].wpmlStatus === 'on'">
+              <div class="row form-group" ng-if="formData[template.id].wpmlStatus === 'on' && isWpmlActive">
                 <div class="col-sm-6">
                   <label for="{{template.id}}-wpmlField">Field of the language</label>
                 </div>

@@ -25,6 +25,8 @@ angular.module('myApp')
       }
     ]
 
+    $scope.isWpmlActive = false
+
     // Edit mode
     if( $scope.edit.active && $scope.edit.channel ) {
       angular.extend($scope.activeChannel, $scope.edit.channel)
@@ -99,7 +101,7 @@ angular.module('myApp')
 
     function getWpmlStatus (res) {
       console.log('WPML status', res)
-      $scope.isWpmlActive = res
+      $scope.isWpmlActive = (res.data === 'true')
 
       if (res) {
         processWpCategoriesByLanguage()

@@ -41,7 +41,7 @@
 
 
     <!-- Main topics -->
-    <div class="main-topic" ng-repeat="topic in topics" ng-if="formData.topicsWpml !== 'on'">
+    <div class="main-topic" ng-repeat="topic in topics" ng-if="formData.topicsWpml !== 'on' || !isWpmlActive">
       <div class="row form-group">
         <div class="col-sm-4">
           <label for="license">{{topic.name}}</label>
@@ -72,7 +72,7 @@
     </div>
 
 
-    <div ng-if="formData.topicsWpml === 'on'">
+    <div ng-if="formData.topicsWpml === 'on' && isWpmlActive">
       <div class="panel panel-default" ng-repeat="(lang, categories) in categoriesByLanguage">
         <div class="panel-heading">
           <h3 class="panel-title">{{lang}}</h3>

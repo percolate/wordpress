@@ -97,7 +97,7 @@ angular.module('myApp')
 
     function getWpmlStatus (res) {
       console.log('WPML status', res)
-      $scope.isWpmlActive = res
+      $scope.isWpmlActive = (res.data === 'true')
     }
 
 
