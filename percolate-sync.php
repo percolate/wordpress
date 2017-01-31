@@ -111,7 +111,7 @@ class PercolateSync
     add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
 
     // Action for WP-Cron post transition
-    add_action('percolate_transition_posts_event', array($this->Queue, 'transitionPosts'));
+    add_action('percolate_sync_posts_event', array($this->Queue, 'syncPosts'));
 
   }
 

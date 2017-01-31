@@ -648,15 +648,15 @@ class Percolate_POST_Model
     Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
     wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
 
-    Percolate_Log::log('WP Cron: percolate_transition_posts_event activated');
-    wp_schedule_event(time()+1, 'every_min', 'percolate_transition_posts_event');
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event activated');
+    wp_schedule_event(time()+1, 'every_min', 'percolate_sync_posts_event');
   }
   public function deactivateCron(){
     Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
     wp_clear_scheduled_hook('percolate_import_posts_event');
 
-    Percolate_Log::log('WP Cron: percolate_transition_posts_event deactiveted');
-    wp_clear_scheduled_hook('percolate_transition_posts_event');
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_sync_posts_event');
   }
 
 
