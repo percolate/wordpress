@@ -48,6 +48,9 @@ class PercolateMedia
     include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
 
+    // AJAX endpoint
+    add_action( 'wp_ajax_image_import', array( $this, 'importImageEndpoint' ) );
+
 		// Add the media button
 		add_action( 'media_buttons', array( $this, 'mediaButtons' ), 20 );
 

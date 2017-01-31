@@ -38,6 +38,10 @@ class Percolate_AJAX_Model
     include_once(__DIR__ . '/percolate-acf.php');
     $this->ACF = Percolate_ACF_Model::instance();
 
+    // WPML methods
+    include_once(__DIR__ . '/percolate-wpml.php');
+    $this->Wpml = Percolate_WPML::instance();
+
     // Percolate API methods
     include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
@@ -53,6 +57,41 @@ class Percolate_AJAX_Model
     // Queue
     include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
+
+    // Serve templates to Angular
+    add_action( 'wp_ajax_template', array( $this, 'getTemplate' ) );
+    // Get the Percolate data model
+    add_action( 'wp_ajax_get_data', array( $this, 'getData' ) );
+    // Save the Percolate data model
+    add_action( 'wp_ajax_set_data', array( $this, 'setData' ) );
+    // Get WP categories
+    add_action( 'wp_ajax_get_cpts', array( $this, 'getCpts' ) );
+    // Get WP post types
+    add_action( 'wp_ajax_get_categories', array( $this, 'getCategories' ) );
+    // Get WP users
+    add_action( 'wp_ajax_get_users', array( $this, 'getUsers' ) );
+    // Is ACF active
+    add_action( 'wp_ajax_get_acf_status', array( $this, 'getAcfStatus' ) );
+    // Get ACF data
+    add_action( 'wp_ajax_get_acf_data', array( $this, 'getAcfData' ) );
+    // Is WPML active
+    add_action( 'wp_ajax_get_wpml_status', array( $this, 'getWpmlStatus' ) );
+    // Get WPML default language
+    add_action( 'wp_ajax_get_wpml_language', array( $this, 'getWpmlDefaultLanguage' ) );
+    // Call the Percolate API
+    add_action( 'wp_ajax_call_percolate', array( $this, 'callPercolateApi' ) );
+    // Get the warning messages
+    add_action( 'wp_ajax_get_messages', array( $this, 'getMessages' ) );
+    // Set the warning messages
+    add_action( 'wp_ajax_set_messages', array( $this, 'setMessages' ) );
+    // Get the log
+    add_action( 'wp_ajax_get_log', array( $this, 'getLog' ) );
+    // Delete the log
+    add_action( 'wp_ajax_delete_log', array( $this, 'deleteLog' ) );
+    // Get the queue
+    add_action( 'wp_ajax_get_queue', array( $this, 'getQueue' ) );
+    // Delete the queue
+    add_action( 'wp_ajax_delete_queue', array( $this, 'deleteQueue' ) );
   }
 
   /**
@@ -106,8 +145,35 @@ class Percolate_AJAX_Model
     	'hierarchical'             => 1,
     	'taxonomy'                 => 'category'
     );
-    $res = get_categories( $args );
-    echo json_encode($res);
+
+    if ($this->Wpml->isActive()) {
+
+      $categories = array();
+      $languages = $this->Wpml->getLanguages();
+
+      foreach ($languages as $key => $language) {
+        do_action( 'wpml_switch_language', $key );
+
+        $categoriesPerLang = get_categories( $args );
+
+        // add language property to categories
+        foreach ($categoriesPerLang as $category) {
+          $language_code = apply_filters( 'wpml_element_language_code', null, array(
+            'element_id'=> (int)$category->term_id,
+            'element_type'=> 'category'
+          ));
+          $category->language = $language_code;
+
+          $categories[] = $category;
+        }
+      }
+
+    } else {
+      $categories = get_categories( $args );
+    }
+
+    // Percolate_Log::log('Categroies: ' . print_r($categories, true));
+    echo json_encode($categories);
     wp_die();
   }
   /**
@@ -152,6 +218,36 @@ class Percolate_AJAX_Model
   public function getAcfData()
   {
     $res = $this->ACF->getAcfData();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: check if plugin is active
+   */
+  public function getWpmlStatus()
+  {
+    $res = $this->Wpml->isActive();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: check if plugin is active
+   */
+  public function getWpmlDefaultLanguage()
+  {
+    $res = $this->Wpml->getDefaultLanguage();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * WPML: get available languages
+   */
+  public function getWpmlLanguages()
+  {
+    $res = $this->Wpml->getLanguages();
     echo json_encode($res);
     wp_die();
   }

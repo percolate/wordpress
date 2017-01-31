@@ -25,6 +25,8 @@ angular.module('myApp')
       }
     ]
 
+    $scope.isWpmlActive = false
+
     // Edit mode
     if( $scope.edit.active && $scope.edit.channel ) {
       angular.extend($scope.activeChannel, $scope.edit.channel)
@@ -63,12 +65,6 @@ angular.module('myApp')
       return $scope.topics = res.data.data
     }
 
-    function processWpCategories(res) {
-      // var tree = _unflatten(res.data)
-      $scope.categories = $scope.categories.concat(res.data)
-      console.log('WP categories', $scope.categories)
-    }
-
     function processPercolateUsers(res){
       console.log('Percolate users: ', res)
       if ($scope.topics) $scope.stopLoader()
@@ -81,8 +77,39 @@ angular.module('myApp')
       $scope.percolateUsers = res.data.data
     }
 
+    function processWpCategories(res) {
+      // var tree = _unflatten(res.data)
+      $scope.categories = $scope.categories.concat(res.data)
+      console.log('WP categories', $scope.categories)
 
-   function _unflatten( array, parent, tree ){
+      return Api.getWpmlStatus()
+    }
+
+    function processWpCategoriesByLanguage () {
+      $scope.categoriesByLanguage = {}
+      _.each($scope.categories, function(cat) {
+        if (cat.language) {
+          if (!$scope.categoriesByLanguage[cat.language]) {
+            $scope.categoriesByLanguage[cat.language] = []
+          }
+          $scope.categoriesByLanguage[cat.language].push(cat)
+        }
+      })
+
+      console.log($scope.categoriesByLanguage);
+    }
+
+    function getWpmlStatus (res) {
+      console.log('WPML status', res)
+      $scope.isWpmlActive = (res.data === 'true')
+
+      if (res) {
+        processWpCategoriesByLanguage()
+      }
+    }
+
+
+    function _unflatten( array, parent, tree ){
 
       tree = typeof tree !== 'undefined' ? tree : [];
       parent = typeof parent !== 'undefined' ? parent : { id: 0 };
@@ -99,7 +126,7 @@ angular.module('myApp')
       }
 
       return tree;
-  }
+    }
 
     /* --------------------------------------
      * Public methods
@@ -153,11 +180,11 @@ angular.module('myApp')
       }
     }).then(processPercolateUsers, apiError)
 
-
     // Get WP users
     Api.getUsers().then(processWpUsers, apiError)
 
     // Categories from WP
-    Api.getCategories().then(processWpCategories, apiError)
-
+    Api.getCategories()
+      .then(processWpCategories, apiError)
+      .then(getWpmlStatus, apiError)
   })

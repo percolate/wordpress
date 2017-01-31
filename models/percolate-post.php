@@ -48,12 +48,19 @@ class Percolate_POST_Model
     // Queue
     include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
+    // WPML
+    include_once(__DIR__ . '/percolate-wpml.php');
+    $this->Wpml = Percolate_WPML::instance();
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {
       // Percolate_Log::log("simple_html_dom_node isn't present");
       require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
     }
+
+    // AJAX endpoint
+    add_action( 'wp_ajax_do_import', array( $this, 'importChannelPosts' ) );
+
   }
 
 
@@ -64,7 +71,7 @@ class Percolate_POST_Model
   {
     if( isset($_POST['data']) ) {
       $option = json_decode( $this->getChannels() );
-      $channel = $option->channels->$_POST['data'];
+      $channel = $option->channels->{$_POST['data']};
 
       $res = $this->processChannel( $channel );
     }
@@ -152,7 +159,7 @@ class Percolate_POST_Model
     foreach ($schemas as $schema) {
 
       // Get the plugin's template (called channel on the frontend)
-      $template = $channel->$schema['id'];
+      $template = $channel->{$schema['id']};
 
       // Flag if there are multiple versions of the schame has been found
       $schemaVersionMismatch = false;
@@ -306,14 +313,16 @@ class Percolate_POST_Model
 
     // ------ Check if imported already --------
     $args = array(
-    	'post_type'		=>	$template->postType,
-      'post_status'	=>	'any',
-      'meta_key'    => 'percolate_id',
-	    'meta_value'  => $post['id']
+      'post_type'		     =>	$template->postType,
+      'post_status'	     =>	'any',
+      'meta_key'         => 'percolate_id',
+      'meta_value'       => $post['id'],
+      'suppress_filters' => true // need to bypass the WPML language filter
     );
     // ----------- Post basics --------------
     $posts = new WP_Query( $args );
     if ( $posts->post_count > 0) {
+      Percolate_Log::log('Post already imported: ' . $post['id']);
       // Delete post if any
       // wp_delete_post($posts->posts[0]->ID, true);
       $res['success'] = false;
@@ -378,8 +387,18 @@ class Percolate_POST_Model
     if( isset($post['topic_ids']) && !empty($post['topic_ids']) ) {
       foreach ($post['topic_ids'] as $topic_id) {
         $topic_id = str_replace( 'topic:', '', $topic_id );
-        $category_wp = $channel->topics->$topic_id;
-        $post_category[] = $category_wp;
+
+        if ($this->checkWpml($template) && $channel->topicsWpml == 'on')
+        {
+          // Percolate_Log::log('Post with WPML categories' . print_r($channel->{'topicsWPML'.$postLang}, true));
+          $postLang = $post['ext'][$template->wpmlField];
+          $category_wp = $channel->{'topicsWPML'.$postLang}->{$topic_id};
+          $post_category[] = $category_wp;
+        } else {
+          $category_wp = $channel->topics->{$topic_id};
+          $post_category[] = $category_wp;
+        }
+
       }
     }
 
@@ -495,8 +514,8 @@ class Percolate_POST_Model
         // ----- ACF -----
         if( isset($template->acf) && $template->acf == 'on' ) {
           // Check for mapping
-          if( isset($template->mapping->$key) && !empty($template->mapping->$key) ) {
-            $_fieldname = $template->mapping->$key;
+          if( isset($template->mapping->{$key}) && !empty($template->mapping->{$key}) ) {
+            $_fieldname = $template->mapping->{$key};
           } else {
             $_fieldname = false;
           }
@@ -506,8 +525,8 @@ class Percolate_POST_Model
         else {
 
           // Check for mapping
-          if( isset($template->mapping->$key) && !empty($template->mapping->$key) ) {
-            $_fieldname = $template->mapping->$key;
+          if( isset($template->mapping->{$key}) && !empty($template->mapping->{$key}) ) {
+            $_fieldname = $template->mapping->{$key};
           } else {
             $_fieldname = $key;
           }
@@ -524,7 +543,7 @@ class Percolate_POST_Model
     if( isset($post['term_ids']) && !empty($post['term_ids']) ) {
       $res['terms'] = array();
       foreach ($post['term_ids'] as $term) {
-
+        // Percolate_Log::log('term_id: ' . $term);
         // Get term from Percolate
         // https://percolate.com/api/v5/term/?ids=term%3A2030798
         $key    = $channel->key;
@@ -535,9 +554,16 @@ class Percolate_POST_Model
         $res_tag = $this->Percolate->callAPI($key, $method, $fields);
 
         if( isset($res_tag['data']) && isset($res_tag['data'][0]['name']) ) {
-          wp_set_post_tags( $wp_post_id, $res_tag['data'][0]['name'], true );
+          $termName = $res_tag['data'][0]['name'];
+          // Percolate_Log::log('term_name: ' . $termName);
 
-          $meta_success = update_post_meta($wp_post_id, $_fieldname, $value);
+          // if ($this->checkWpml($template)) {
+          //   $postLang = $post['ext'][$template->wpmlField];
+          //   Percolate_Log::log('Swithcing to: ' . $postLang);
+          //   do_action( 'wpml_switch_language', $postLang);
+          // }
+          wp_set_post_tags( $wp_post_id, $termName, true );
+
           $res['term'][] = 'Adding term: ' . $term;
         } else {
           $res['term'][] = 'Cannot add term: ' . $term;
@@ -550,6 +576,26 @@ class Percolate_POST_Model
       // Gegt image ID from the imported fields array
       $imageID = $importedFields[$template->postImage];
       set_post_thumbnail( $wp_post_id, $imageID );
+    }
+
+    // ----------- WPML --------------
+    if ($this->checkWpml($template)) {
+      Percolate_Log::log('Post WPML - handling translations for ' . print_r($wp_post_id, true) . '. Language field: ' . $template->wpmlField);
+
+      // Get the language from Percolate
+      $postLang = $post['ext'][$template->wpmlField];
+      Percolate_Log::log('Post WPML - language: ' . $postLang);
+
+      // Set the language code in WPML's table
+      $set_language_args = array(
+        'element_id'      => $wp_post_id,
+        'language_code'   => $postLang,
+        'trid'            => FALSE // If set to FALSE it will create a new trid for the element
+      );
+      do_action( 'wpml_set_element_language_details', $set_language_args );
+
+      // Add the original language code, so we can check if it's changed when syncing content
+      update_post_meta($wp_post_id, 'percolate_language', $postLang);
     }
 
     // ----------- All done here --------------
@@ -578,6 +624,10 @@ class Percolate_POST_Model
     wp_clear_scheduled_hook('percolate_transition_posts_event');
   }
 
+  private function checkWpml($template)
+  {
+    return $this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField);
+  }
 
   private function searchInArray($array, $key, $value) {
     $results = array();
