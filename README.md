@@ -198,6 +198,12 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.0
+
+* WPML support
+* PHP 7 support
+* Code refactoring
+
 ### 4.x-1.1.4
 
 * Fixing post transitioning & logs
