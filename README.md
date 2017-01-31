@@ -33,7 +33,7 @@ available to Percolate clients. The plugin is designed specifically for
 WordPress, and includes support for common WordPress concepts like
 Custom Post Types, post categories, Media Library, and Featured Images.
 
-It is tested up to WordPress 4.6.1, and is hosted on Github.
+It is tested up to WordPress 4.7.2, and is hosted on Github.
 
 #### How it works
 
@@ -265,4 +265,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.1.4~
+~Current Version:4.x-1.2.0~
