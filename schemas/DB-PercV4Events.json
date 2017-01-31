@@ -1,0 +1,12 @@
+{
+  "postToTransition": {
+    "0": {
+      "idWp": 0,
+      "idPerc": "",
+      "statusPerc": "queued",
+      "statusWP": "draft",
+      "sync": true,
+      "dateUTM": false
+    }
+  }
+}

@@ -63,8 +63,31 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-import" id="{{template.id}}-import" class="form-control"
                           ng-model="formData[template.id].import"
-                          ng-init="formData[template.id].import = edit.active && formData[template.id].import ? formData[template.id].import : earliestImport[2].key"
-                          ng-options="option.key as option.label for option in earliestImport"></select>
+                          ng-init="formData[template.id].import = edit.active && formData[template.id].import ? formData[template.id].import : postStatuses[2].key"
+                          ng-options="option.key as option.label for option in postStatuses">
+                    <!-- <option ng-repeat="option in postStatuses"
+                            value="{{option.key}}">
+                      {{option.label}}
+                    </option> -->
+                  </select>
+                </div>
+              </div>
+
+              <div class="row form-group">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-import">Final handoff from Percolate</label>
+                </div>
+                <div class="col-sm-6">
+                  <select name="{{template.id}}-handoff" id="{{template.id}}-handoff" class="form-control"
+                          ng-model="formData[template.id].handoff"
+                          ng-init="formData[template.id].handoff = edit.active && formData[template.id].handoff ? formData[template.id].handoff : postStatuses[2].key"
+                          ng-options="option.key as option.label for option in getHandoffStatuses(formData[template.id].import, template.id)">
+                    <!-- <option ng-repeat="option in postStatuses"
+                            value="{{option.key}}"
+                            ng-disabled="checkHandoff(option, formData[template.id].import)">
+                      {{option.label}}
+                    </option> -->
+                  </select>
                 </div>
               </div>
 

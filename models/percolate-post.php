@@ -451,13 +451,35 @@ class Percolate_POST_Model
     }
     Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) . ' Current time: ' . time());
 
-    if ($post['status'] == 'draft' || (isset($template->safety) && $template->safety == 'on')) {
-      Percolate_Log::log('Create event for transitioning post status, currently draft state.');
-      $this->Queue->addEvent( array( "ID" => $wp_post_id, 'draft' => 'yes') );
-    }
-    else if($post['status'] == 'queued' || $post['status'] == 'queued.publishing' ||  $post['status'] == 'queued.published') {
-      Percolate_Log::log('Create event for transitioning post status, at:  ' .get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) );
-      $this->Queue->addEvent( array( "ID" => $wp_post_id, 'dateUTM' => $publish_date) );
+
+    // ----------- Queue & Syncing --------------
+    if ($post['status'] != 'live') {
+      $event = array(
+        "ID" => $wp_post_id,
+        "idPerc" => $post['id'],
+        "statusPerc" => $post['status'], // draft || queued || queued.publishing
+        "statusWP" => $post_status, // draft || future
+      );
+
+      // if ($post['status'] == 'draft' || (isset($template->safety) && $template->safety == 'on')) {
+      //   Percolate_Log::log('Create event for transitioning post status, currently draft state.');
+      // }
+
+      // Post has a live_at date
+      if ($post['status'] == 'queued' || $post['status'] == 'queued.publishing') {
+        $event['dateUTM'] = $publish_date;
+      }
+
+      // Handoff is at a later state, so we'll need to keep content in sync
+      if ($transitionWeight[$handoff] > $transitionWeight[$earlisetImport]) {
+        $event['sync'] = true;
+      }
+
+      Percolate_Log::log('Adding post to the Sync queue: ' . print_r($event, true));
+      $this->Queue->addEvent( $event );
+
+      // Can I edit 'queued' posts in Perco?
+      // Can I update tags or categories?
     }
 
     // ----------- Factory meta fields --------------
@@ -556,12 +578,6 @@ class Percolate_POST_Model
         if( isset($res_tag['data']) && isset($res_tag['data'][0]['name']) ) {
           $termName = $res_tag['data'][0]['name'];
           // Percolate_Log::log('term_name: ' . $termName);
-
-          // if ($this->checkWpml($template)) {
-          //   $postLang = $post['ext'][$template->wpmlField];
-          //   Percolate_Log::log('Swithcing to: ' . $postLang);
-          //   do_action( 'wpml_switch_language', $postLang);
-          // }
           wp_set_post_tags( $wp_post_id, $termName, true );
 
           $res['term'][] = 'Adding term: ' . $term;

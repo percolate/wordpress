@@ -60,8 +60,11 @@
     <pre class="log">
       <span ng-repeat="item in queue.postToTransition">
         ID: {{item.ID}}
-        Draft: {{item.draft}}
-        Date UTM: {{item.dateUTM}}
+        ID Percolate: {{item.idPerc}}
+        status Percolate: {{item.statusPerc}}
+        status WP: {{item.statusWP}}
+        sync: {{item.sync}}
+        date UTM: {{item.dateUTM}}
         ------------------------
       </span>
     </pre>

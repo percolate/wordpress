@@ -12,10 +12,10 @@ angular.module('myApp')
 
     angular.extend($scope, {
       formData : {},
-      earliestImport : [
-        {key: 'draft', label: 'Draft'},
-        {key: 'queued', label: 'Queued'},
-        {key: 'queued.publishing', label: 'On Schedule'}
+      postStatuses : [
+        {key: 'draft', label: 'Draft', weight: 0},
+        {key: 'queued', label: 'Queued', weight: 1},
+        {key: 'queued.publishing', label: 'On Schedule', weight: 2}
       ],
       postTypes : [],
       isAcfActive : false,
@@ -34,6 +34,22 @@ angular.module('myApp')
       $scope.stopLoader()
       $scope.showError(err)
       return
+    }
+
+    function getHandoffStatuses (importKey, templateId) {
+      var _statusImport = _.find($scope.postStatuses, {key: importKey})
+      var _statuses = []
+      _.each($scope.postStatuses, function(status) {
+        if (status.weight >= _statusImport.weight) {
+          _statuses.push(status)
+        }
+      })
+      // reset the handoff value, if it's earlier then importKey
+      var _currentHandoff = _.find($scope.postStatuses, {key: $scope.formData[templateId].handoff})
+      if (!_currentHandoff || (_currentHandoff && _currentHandoff.weight < _statuses[0].weight)) {
+        $scope.formData[templateId].handoff = _statuses[0].key
+      }
+      return _statuses
     }
 
 
@@ -190,7 +206,8 @@ angular.module('myApp')
      * Exports
      */
     angular.extend($scope, {
-      submitForm : submitForm
+      submitForm : submitForm,
+      getHandoffStatuses : getHandoffStatuses
     })
 
   })

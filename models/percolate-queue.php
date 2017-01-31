@@ -164,7 +164,7 @@ class Percolate_Queue
 
       if( (isset($event->dateUTM) && time() > $event->dateUTM) || ($event->draft == 'yes' && get_post_status($event->ID) == 'publish') ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
-        $res = $this->postTransition( $event );
+        $res = $this->transitionSinglePost( $event );
 
         // Remove the transitioned item from the DB
         if($res) {
@@ -185,7 +185,7 @@ class Percolate_Queue
    * Method for catching when a post gets published
    *   -> in that case we need to tell percolate the new post status
    */
-  public function postTransition( $event )
+  public function transitionSinglePost( $event )
   {
     /**
      * @param object $event: post event {ID: WP post ID, dateUTM: live_at date}
@@ -224,20 +224,26 @@ class Percolate_Queue
 
     switch ($postPerc['status']) {
       case 'draft':
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued' );
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
       case 'queued':
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued.publishing' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
       case 'queued.publishing':
-        $this->transitionPost( $post_id, $postPerc, $postsChannel, 'queued.published' );
+        $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'queued.published' );
         break;
     }
-    $res = $this->transitionPost( $post_id, $postPerc, $postsChannel, 'live', $event->dateUTM );
+    $res = $this->transitionPostApiCall( $post_id, $postPerc, $postsChannel, 'live', $event->dateUTM );
     return $res;
+  }
+
+
+  public function updatePreviewLinks( $event )
+  {
+    # code...
   }
 
 
@@ -267,7 +273,7 @@ class Percolate_Queue
     return $res['data'];
   }
 
-  private function transitionPost( $wp_post_id, $postPerc, $postsChannel, $status='live', $dateUTM=NULL )
+  private function transitionPostApiCall( $wp_post_id, $postPerc, $postsChannel, $status='live', $dateUTM=NULL )
   {
     /**
      * Calls the Percolate API to transition the post
