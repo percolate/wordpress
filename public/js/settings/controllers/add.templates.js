@@ -35,8 +35,10 @@ angular.module('myApp')
       $scope.showError(err)
       return
     }
+    
 
     function getHandoffStatuses (importKey, templateId) {
+      // get the valid states for handoff
       var _statusImport = _.find($scope.postStatuses, {key: importKey})
       var _statuses = []
       _.each($scope.postStatuses, function(status) {
@@ -44,7 +46,7 @@ angular.module('myApp')
           _statuses.push(status)
         }
       })
-      // reset the handoff value, if it's earlier then importKey
+      // reset the handoff value, if it's earlier then import
       var _currentHandoff = _.find($scope.postStatuses, {key: $scope.formData[templateId].handoff})
       if (!_currentHandoff || (_currentHandoff && _currentHandoff.weight < _statuses[0].weight)) {
         $scope.formData[templateId].handoff = _statuses[0].key

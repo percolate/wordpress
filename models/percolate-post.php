@@ -18,6 +18,24 @@ class Percolate_POST_Model
 
   const SCHEMA_MISMATCH_MSG = "Alternative schema versions have been found for the channel's posts. Please check your mapping and update if needed!";
 
+  private $postStatuses = array(
+    'draft' => array(
+      'key'     => 'draft',
+      'label'   => 'Draft',
+      'weight'  => 0
+    ),
+    'queued' => array(
+      'key'     => 'queued',
+      'label'   => 'Queued',
+      'weight'  => 1
+    ),
+    'queued.publishing' => array(
+      'key'     => 'queued.publishing',
+      'label'   => 'On Schedule',
+      'weight'  => 2
+    )
+  );
+
   // Singleton instance
   private static $instance = false;
 
@@ -471,9 +489,7 @@ class Percolate_POST_Model
       }
 
       // Handoff is at a later state, so we'll need to keep content in sync
-      if ($transitionWeight[$handoff] > $transitionWeight[$earlisetImport]) {
-        $event['sync'] = true;
-      }
+      $event['sync'] = $this->checkHandoff($template->import, $template->handoff);
 
       Percolate_Log::log('Adding post to the Sync queue: ' . print_r($event, true));
       $this->Queue->addEvent( $event );
@@ -622,6 +638,9 @@ class Percolate_POST_Model
     return $res;
   }
 
+
+
+
   /**
    * Methods for adding / removing the WP Cron job for importing posts
    */
@@ -638,6 +657,17 @@ class Percolate_POST_Model
 
     Percolate_Log::log('WP Cron: percolate_transition_posts_event deactiveted');
     wp_clear_scheduled_hook('percolate_transition_posts_event');
+  }
+
+
+  private function checkHandoff($import, $handoff)
+  {
+    Percolate_Log::log('checkHandoff: ' . $import . " -> " . $handoff);
+    if ($this->postStatuses[$handoff]['weight'] > $this->postStatuses[$import]['weight']){
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private function checkWpml($template)
