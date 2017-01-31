@@ -7,12 +7,15 @@
 <form ng-submit="submitForm( topicsForm )" name="topicsForm" class="row topics" novalidate>
   <div class="col-sm-6 col-sm-offset-3 col-lg-4 col-lg-offset-4">
 
+
     <div class="form-group" ng-if="edit.active">
       <label for="name">Name of the channel</label>
       <input  type="text" name="name" id="name" class="form-control"
               ng-model="formData.name"
               ng-class="{ 'has-error' : setupForm.name.$invalid && (!setupForm.name.$pristine || submitted) }" required>
     </div>
+
+
 
     <div class="row">
       <div class="col-sm-12 text-center">
@@ -21,8 +24,24 @@
       </div>
     </div>
 
+    <!-- WPML -->
+    <div class="row form-group" ng-if="isWpmlActive">
+      <div class="col-sm-9">
+        <label for="wpmlStatus">Define category per language</label>
+      </div>
+      <div class="col-sm-3">
+        <div class="switch pull-right">
+          <input type="radio" id="wpmlStatus-on" name="wpmlStatus" value="on" ng-model="formData.topicsWpml">
+          <input type="radio" id="wpmlStatus-off" name="wpmlStatus" value="off" ng-model="formData.topicsWpml" ng-checked="true" ng-init="formData.topicsWpml = edit.active && formData.topicsWpml ? formData.topicsWpml : 'off'">
+          <span class="toggle"></span>
+        </div>
+      </div>
+    </div>
+
+
+
     <!-- Main topics -->
-    <div class="main-topic" ng-repeat="topic in topics">
+    <div class="main-topic" ng-repeat="topic in topics" ng-if="formData.topicsWpml !== 'on' || !isWpmlActive">
       <div class="row form-group">
         <div class="col-sm-4">
           <label for="license">{{topic.name}}</label>
@@ -52,7 +71,52 @@
 
     </div>
 
+
+    <div ng-if="formData.topicsWpml === 'on' && isWpmlActive">
+      <div class="panel panel-default" ng-repeat="(lang, categories) in categoriesByLanguage">
+        <div class="panel-heading">
+          <h3 class="panel-title">{{lang}}</h3>
+        </div>
+        <div class="panel-body">
+          <!-- Main topics -->
+          <div class="main-topic" ng-repeat="topic in topics">
+            <div class="row form-group">
+              <div class="col-sm-4">
+                <label for="license">{{topic.name}}</label>
+              </div>
+              <div class="col-sm-8">
+                <select name="{{topic.id}}" id="{{topic.id}}" class="form-control"
+                        ng-model="formData['topicsWPML' + lang][topic.id]",
+                        ng-init="formData['topicsWPML' + lang][topic.id] = (edit.active && +formData['topicsWPML' + lang][topic.id]) ? +formData['topicsWPML' + lang][topic.id] : categories[0].term_id"
+                        ng-options="option.term_id as option.cat_name for option in categories"></select>
+              </div>
+            </div>
+
+            <!-- Sub topics -->
+            <div class="subtopics" ng-repeat="subtopic in topic.subtopics">
+              <div class="row form-group">
+                <div class="col-sm-4">
+                  <label for="license">– {{subtopic.name}}</label>
+                </div>
+                <div class="col-sm-8">
+                  <select name="{{subtopic.id}}" id="{{subtopic.id}}" class="form-control"
+                        ng-model="formData['topicsWPML' + lang][subtopic.id]"
+                        ng-init="formData['topicsWPML' + lang][subtopic.id] =  edit.active ? formData['topicsWPML' + lang][subtopic.id] : categories[0].term_id"
+                        ng-options="option.term_id as option.cat_name for option in categories"></select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
     <hr>
+
+
 
     <!-- WP settings -->
     <h4 class="text-center">User mapping</h4>
@@ -89,7 +153,11 @@
       </div>
     </div>
 
+
+
     <hr>
+
+
 
     <h4 class="text-center">Configure how the posts will appear in WordPress</h4>
 
@@ -107,7 +175,11 @@
         <p class="error">Please fill out all the required fields!</p>
     </div>
 
+
+
     <hr>
+
+
 
     <div class="form-group text-center">
       <button type="submit" class="btn btn-primary btn-block">Continue</button>
