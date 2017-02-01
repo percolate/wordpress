@@ -43,11 +43,13 @@ class Percolate_Post_Model
     Percolate_Queue $percolate_Queue,
     Percolate_WPML_Model $percolate_WPML_Model
   ) {
+    Percolate_Log::log('Percolate_Post_Model construct');
     $this->Percolate = $percolate_API_Model;
     $this->Media = $percolateMedia;
     $this->Messages = $percolate_Messages;
-    $this->Queue = $percolate_Queue;
     $this->Wpml = $percolate_WPML_Model;
+    $this->Queue = $percolate_Queue;
+    $this->Queue->setPostModel($this);
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {
@@ -56,7 +58,10 @@ class Percolate_Post_Model
     }
 
     // AJAX endpoint
-    add_action( 'wp_ajax_do_import', array( $this, 'importChannelPosts' ) );
+    add_action('wp_ajax_do_import', array( $this, 'importChannelPosts' ));
+
+    // Action for WP-Cron import
+    add_action('percolate_import_posts_event', array($this, 'importStories'));
 
   }
 

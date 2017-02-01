@@ -9,73 +9,40 @@ Description: Percolate integration for Wordpress, which includes the ability to 
 Author: Percolate Industries, Inc.
 Version: 4.x-1.2.0
 Author URI: http://percolate.com
-
 */
 
-class PercolateSync
+require_once(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/models/percolate-acf.php');
+require_once(__DIR__ . '/models/percolate-log.php');
+require_once(__DIR__ . '/models/percolate-api.php');
+require_once(__DIR__ . '/models/percolate-messages.php');
+require_once(__DIR__ . '/models/percolate-ajax.php');
+require_once(__DIR__ . '/models/percolate-post.php');
+require_once(__DIR__ . '/models/percolate-queue.php');
+require_once(__DIR__ . '/models/percolate-media.php');
+require_once(__DIR__ . '/models/percolate-updater.php');
+require_once(__DIR__ . '/models/percolate-wpml.php');
+
+class Percolate_Setup
 {
-  /* ---------------------------------
-   *
-   * Private and public variables
-   *
-   * --------------------------------- */
-
-  protected $container;
-
-  // API methods
-  protected $API;
-
-  // AJAX interface
-  protected $AJAX;
-
-  // ACF interface
-  protected $acf;
-
-  // Media library
-  protected $Media;
-
-
-  //Plugin file path
-  const FILE = __FILE__;
-
-
   /**
    * Class constructor
    */
-  public function __construct() {
+  public function __construct(Percolate_Log $percolate_Log, Percolate_Post_Model $percolate_Post_Model) {
 
-
-    require_once(__DIR__ . '/vendor/autoload.php');
-    require_once(__DIR__ . '/models/percolate-acf.php');
-    require_once(__DIR__ . '/models/percolate-log.php');
-    require_once(__DIR__ . '/models/percolate-api.php');
-    require_once(__DIR__ . '/models/percolate-messages.php');
-    require_once(__DIR__ . '/models/percolate-ajax.php');
-    require_once(__DIR__ . '/models/percolate-post.php');
-    require_once(__DIR__ . '/models/percolate-queue.php');
-    require_once(__DIR__ . '/models/percolate-media.php');
-    require_once(__DIR__ . '/models/percolate-updater.php');
-    require_once(__DIR__ . '/models/percolate-wpml.php');
-
-    $this->container = DI\ContainerBuilder::buildDevContainer();
-
-    // Logging
-    $this->Log = $this->container->get('Percolate_Log');
-    // AJAX
-    $this->AJAX = $this->container->get('Percolate_AJAX_Model');
     // Post model
-    $this->Post = $this->container->get('Percolate_Post_Model');
-    // Queue model
-    $this->Queue = $this->container->get('Percolate_Queue');
+    $this->Post = $percolate_Post_Model;
+    $this->Log = $percolate_Log;
+
     // Media library
-    $this->Media = $this->container->get('PercolateMedia');
+    // $this->Media = $container->get('PercolateMedia');
 
     // GitHub updater
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods
-    register_activation_hook(self::FILE, array($this, '__activation'));
-    register_deactivation_hook(self::FILE, array($this, '__deactivation'));
+    register_activation_hook(__FILE__, array($this, '__activation'));
+    register_deactivation_hook(__FILE__, array($this, '__deactivation'));
 
     // Add settings page
     add_action('admin_menu', array($this, 'register_settings_page'));
@@ -88,12 +55,6 @@ class PercolateSync
 
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
-
-    // Action for WP-Cron import
-    add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
-
-    // Action for WP-Cron post transition
-    add_action('percolate_sync_posts_event', array($this->Queue, 'syncPosts'));
 
     Percolate_Log::log('Percolate Importer constructed');
   }
@@ -313,6 +274,15 @@ class PercolateSync
   }
 }
 
-new PercolateSync;
+$container = DI\ContainerBuilder::buildDevContainer();
+
+add_action( 'plugins_loaded', function()
+{
+  global $container;
+  $container->get('Percolate_Setup');
+  $container->get('Percolate_AJAX_Model');
+})
+
+
 
 ?>

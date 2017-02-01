@@ -22,6 +22,21 @@ class Percolate_Queue
     Percolate_Log::log('Percolate_Queue construct');
     // Percolate API methods
     $this->Percolate = $percolate_API_Model;
+
+    // Action for WP-Cron post transition
+    add_action('percolate_sync_posts_event', array($this, 'syncPosts'));
+  }
+
+  /**
+   * Set the Post model so we can access its methods
+   *
+   * @param Percolate_Post_Model $model
+   * @return void
+   */
+  public function setPostModel($model)
+  {
+    $this->Post = $model;
+    Percolate_Log::log('$percolate_Post_Model set');
   }
 
 
