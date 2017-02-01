@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @package Percolate_Import_4
+ * @package Percolate_Importer
  *  POST methods
  */
 
@@ -154,7 +154,7 @@ class Percolate_POST_Model
     );
     $schemas = $this->getSchemas($channel);
 
-    $posts = $this->getPosts($channel);
+    $posts = $this->getAllPosts($channel);
 
     if( !is_array($posts) || empty($posts) ) {
       $res = array(
@@ -211,7 +211,7 @@ class Percolate_POST_Model
     return $res;
   }
 
-  public function getPosts($channel)
+  public function getAllPosts($channel)
   {
     /**
      * Call the percolate API and try to import stories
@@ -458,22 +458,22 @@ class Percolate_POST_Model
 
     // Percolate_Log::log('Post object:');
     // Percolate_Log::log(print_r($post_args, true));
-    $wp_post_id = wp_insert_post($post_args);
+    $wpPostID = wp_insert_post($post_args);
 
-    if( !$wp_post_id ) {
+    if( !$wpPostID ) {
       Percolate_Log::log('Post cannot be inserted.');
       $res['success'] = false;
       $res['percolate_id'] = $post['id'];
       $res['message'] = 'Post cannot be inserted into WP.';
       return $res;
     }
-    Percolate_Log::log('Post imported: ' . print_r($wp_post_id, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) . ' Current time: ' . time());
+    Percolate_Log::log('Post imported: ' . print_r($wpPostID, true) . '. Publish date: UTM' . $publish_date . ', GMT: ' . get_date_from_gmt(date('Y-m-d H:i:s', $publish_date)) . ' Current time: ' . time());
 
 
     // ----------- Queue & Syncing --------------
     if ($post['status'] != 'live') {
       $event = array(
-        "ID" => $wp_post_id,
+        "ID" => $wpPostID,
         "idPerc" => $post['id'],
         "statusPerc" => $post['status'], // draft || queued || queued.publishing
         "statusWP" => $post_status, // draft || future
@@ -499,14 +499,14 @@ class Percolate_POST_Model
     }
 
     // ----------- Factory meta fields --------------
-    update_post_meta($wp_post_id, 'wp_channel_uuid', $channel->uuid);
-    update_post_meta($wp_post_id, 'percolate_id', $post['id']);
-    update_post_meta($wp_post_id, 'percolate_created_at', strtotime($post['created_at']));
-    update_post_meta($wp_post_id, 'percolate_platform_id', $post['platform_id']);
-    update_post_meta($wp_post_id, 'percolate_channel_id', $post['channel_id']);
-    update_post_meta($wp_post_id, 'percolate_schema_id', $post['schema_id']);
-    update_post_meta($wp_post_id, 'percolate_name', $post['name']);
-    update_post_meta($wp_post_id, 'percolate_status', $post['status']);
+    update_post_meta($wpPostID, 'wp_channel_uuid', $channel->uuid);
+    update_post_meta($wpPostID, 'percolate_id', $post['id']);
+    update_post_meta($wpPostID, 'percolate_created_at', strtotime($post['created_at']));
+    update_post_meta($wpPostID, 'percolate_platform_id', $post['platform_id']);
+    update_post_meta($wpPostID, 'percolate_channel_id', $post['channel_id']);
+    update_post_meta($wpPostID, 'percolate_schema_id', $post['schema_id']);
+    update_post_meta($wpPostID, 'percolate_name', $post['name']);
+    update_post_meta($wpPostID, 'percolate_status', $post['status']);
 
     // ----------- Meta fields --------------
     if( isset($post['ext']) && !empty($post['ext']) ) {
@@ -557,7 +557,7 @@ class Percolate_POST_Model
           } else {
             $_fieldname = false;
           }
-          $meta_success = update_field($_fieldname, $value, $wp_post_id);
+          $meta_success = update_field($_fieldname, $value, $wpPostID);
         }
         // ----- No ACF -----
         else {
@@ -568,7 +568,7 @@ class Percolate_POST_Model
           } else {
             $_fieldname = $key;
           }
-          $meta_success = update_post_meta($wp_post_id, $_fieldname, $value);
+          $meta_success = update_post_meta($wpPostID, $_fieldname, $value);
         }
 
         $res['meta'][] = 'Adding meta field: ' . $key . ', mapped to: ' . $_fieldname . '. WP ID: ' . $meta_success;
@@ -594,7 +594,7 @@ class Percolate_POST_Model
         if( isset($res_tag['data']) && isset($res_tag['data'][0]['name']) ) {
           $termName = $res_tag['data'][0]['name'];
           // Percolate_Log::log('term_name: ' . $termName);
-          wp_set_post_tags( $wp_post_id, $termName, true );
+          wp_set_post_tags( $wpPostID, $termName, true );
 
           $res['term'][] = 'Adding term: ' . $term;
         } else {
@@ -607,12 +607,12 @@ class Percolate_POST_Model
     if ( isset($template->image) && $template->image == 'on' && isset($template->postImage) && isset($importedFields[$template->postImage]) ) {
       // Gegt image ID from the imported fields array
       $imageID = $importedFields[$template->postImage];
-      set_post_thumbnail( $wp_post_id, $imageID );
+      set_post_thumbnail( $wpPostID, $imageID );
     }
 
     // ----------- WPML --------------
     if ($this->checkWpml($template)) {
-      Percolate_Log::log('Post WPML - handling translations for ' . print_r($wp_post_id, true) . '. Language field: ' . $template->wpmlField);
+      Percolate_Log::log('Post WPML - handling translations for ' . print_r($wpPostID, true) . '. Language field: ' . $template->wpmlField);
 
       // Get the language from Percolate
       $postLang = $post['ext'][$template->wpmlField];
@@ -620,14 +620,14 @@ class Percolate_POST_Model
 
       // Set the language code in WPML's table
       $set_language_args = array(
-        'element_id'      => $wp_post_id,
+        'element_id'      => $wpPostID,
         'language_code'   => $postLang,
         'trid'            => FALSE // If set to FALSE it will create a new trid for the element
       );
       do_action( 'wpml_set_element_language_details', $set_language_args );
 
       // Add the original language code, so we can check if it's changed when syncing content
-      update_post_meta($wp_post_id, 'percolate_language', $postLang);
+      update_post_meta($wpPostID, 'percolate_language', $postLang);
     }
 
     // ----------- All done here --------------
@@ -639,7 +639,10 @@ class Percolate_POST_Model
   }
 
 
-
+  public static function updateExistingPost($wpPostID, $percolatePost)
+  {
+    # code...
+  }
 
   /**
    * Methods for adding / removing the WP Cron job for importing posts

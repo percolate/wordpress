@@ -1,13 +1,13 @@
 <?php
 
 /**
- * @package Percolate_Import_4
+ * @package Percolate_Importer
  *  API methods
  */
 
 /**
  * Class Percolate_Queue
- * Model to handle queues for CRON jobs
+ * Model to handle post syncing and transitioning
  */
 class Percolate_Queue
 {
@@ -21,7 +21,7 @@ class Percolate_Queue
 
   /**
    * Return singleton instance
-   * @return Percolate_Log
+   * @return Percolate_Queue
    */
 	public static function instance()
   {
@@ -42,13 +42,15 @@ class Percolate_Queue
     include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
 
+    // Post model
+    include_once(__DIR__ . '/percolate-post.php');
   }
 
 
   /**
    * Get the saved events from the DB
    *
-   * @return array of events
+   * @return array Events
    */
   public function getEvents()
   {
@@ -62,7 +64,7 @@ class Percolate_Queue
    * Save the events to the DB
    *
    * @param array $events all the events
-   * @return bool true or false
+   * @return bool true
    */
   private function setEvents( $events )
   {
@@ -211,27 +213,26 @@ class Percolate_Queue
    */
   public function transitionSinglePost( $event )
   {
-    $post_id = $event->ID;
-    Percolate_Log::log('Post transition event, post WP ID:' . $post_id);
+    Percolate_Log::log('Post transition event, post WP ID:' . $event->ID);
 
-    $postPerc = $this->getPost($post_id);
+    $postPercolate = $this->getExistingPost($event->ID);
     Percolate_Log::log('Post current status:' . $post['status']);
 
-    switch ($postPerc['status']) {
+    switch ($postPercolate['status']) {
       case 'draft':
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued' );
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued.publishing' );
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued.published' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.publishing' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.published' );
         break;
       case 'queued':
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued.publishing' );
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued.published' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.publishing' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.published' );
         break;
       case 'queued.publishing':
-        $this->transitionPostApiCall( $post_id, $postPerc, 'queued.published' );
+        $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.published' );
         break;
     }
-    $res = $this->transitionPostApiCall( $post_id, $postPerc, 'live', $event->dateUTM );
+    $res = $this->transitionPostApiCall( $event->ID, $postPercolate, 'live', $event->dateUTM );
     return $res;
   }
 
@@ -244,22 +245,22 @@ class Percolate_Queue
    */
   public function syncSinglePost($event)
   {
-
-
+    $post = $this->getExistingPost($event->ID);
+    Percolate_POST_Model::updateExistingPost($event->ID, $post);
   }
 
   /**
    * Get the channel's API key
    *
-   * @param string $wp_post_id WP post ID
-   * @return string Percolate API key
+   * @param string $wpPostID WP post ID
+   * @return stdObject Stored WP channel data
    */
-  private function getChannelKey($wp_post_id)
+  private function getChannel($wpPostID)
   {
     // Get the UUID of the WP-Perc channel that imported the post
-    $wpChannelUuid = get_post_meta($wp_post_id, 'wp_channel_uuid', true);
+    $wpChannelUuid = get_post_meta($wpPostID, 'wp_channel_uuid', true);
     if( empty($wpChannelUuid)) {
-      Percolate_Log::log("No channel UUID found for post {$wp_post_id}.");
+      Percolate_Log::log("No channel UUID found for post {$wpPostID}.");
       return false;
     }
 
@@ -271,26 +272,26 @@ class Percolate_Queue
     }
 
     Percolate_Log::log("Post's original importing channel found.");
-    return $option->channels->{$wpChannelUuid}->key;
+    return $option->channels->{$wpChannelUuid};
   }
 
 
   /**
    * Calls the Percolate API to get the post status by ID
    *
-   * @param string $wp_post_id WP post ID
+   * @param string $wpPostID WP post ID
    * @return arrray|false Post object from Percolate
    */
-  private function getPost($wp_post_id)
+  private function getExistingPost($wpPostID)
   {
-    $postPercID = get_post_meta($wp_post_id, 'percolate_id', true);
-    if(!isset($postPercID) || empty($postPercID)) {
-      Percolate_Log::log('No Percolate ID found for this post. ' . $wp_post_id);
+    $postPercolateID = get_post_meta($wpPostID, 'percolate_id', true);
+    if(!isset($postPercolateID) || empty($postPercolateID)) {
+      Percolate_Log::log('No Percolate ID found for this post. ' . $wpPostID);
       return false;
     }
 
-    $key    = $this->getChannelKey($wp_post_id);
-    $method = "v5/post/" . $postPercID;
+    $key    = $this->getChannel($wpPostID)->key;
+    $method = "v5/post/" . $postPercolateID;
     $fields = array();
 
     $res = $this->Percolate->callAPI($key, $method, $fields);
@@ -307,24 +308,24 @@ class Percolate_Queue
   /**
    * Calls the Percolate API to transition the post
    *
-   * @param string $wp_post_id WP post ID
-   * @param array $postPerc Percolate post
-   * @param object $postsChannel Plugin's channel that's originally imported the post
+   * @param string $wpPostID WP post ID
+   * @param array $postPercolate Percolate post data
    * @param string $status Status to transition the post to
+   * @param string $dateUTM live_at date in UTM, optional - if WP draft post goes live
    *
    * @return array API response
    */
-  private function transitionPostApiCall( $wp_post_id, $postPerc, $status='live', $dateUTM=NULL )
+  private function transitionPostApiCall( $wpPostID, $postPercolate, $status='live', $dateUTM=NULL )
   {
-    $key    = $this->getChannelKey($wp_post_id);
-    $method = "v5/post/" . $postPerc['id'];
+    $key    = $this->getChannel($wpPostID)->key;
+    $method = "v5/post/" . $postPercolate['id'];
     $fields = array();
     $jsonFields = array(
-      'topic_ids' => $postPerc['topic_ids'],
-      'term_ids' => $postPerc['term_ids'],
-      'ext' => $postPerc['ext'],
-      'description' => $postPerc['description'],
-      'name' => $postPerc['name'],
+      'topic_ids' => $postPercolate['topic_ids'],
+      'term_ids' => $postPercolate['term_ids'],
+      'ext' => $postPercolate['ext'],
+      'description' => $postPercolate['description'],
+      'name' => $postPercolate['name'],
       'status' => $status
     );
     if( isset($dateUTM) ) {
@@ -338,8 +339,8 @@ class Percolate_Queue
       return;
     }
 
-    update_post_meta($wp_post_id, 'percolate_status', $res['data']['status']);
-    Percolate_Log::log('Post '. $wp_post_id .' was transitioned to ' . $status);
+    update_post_meta($wpPostID, 'percolate_status', $res['data']['status']);
+    Percolate_Log::log('Post '. $wpPostID .' was transitioned to ' . $status);
 
     return $res;
   }

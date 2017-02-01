@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Percolate_Import_4
+ * @package Percolate_Importer
  *   Media Library
  */
 
