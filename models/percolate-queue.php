@@ -61,7 +61,7 @@ class Percolate_Queue
   /**
    * Save the events to the DB
    *
-   * @param array $events: all the events
+   * @param array $events all the events
    * @return bool true or false
    */
   private function setEvents( $events )
@@ -74,8 +74,8 @@ class Percolate_Queue
   /**
    * Adds an event
    *
-   * @param array $event: event to add
-   * @return array: events
+   * @param array $event event to add
+   * @return array events
    */
   public function addEvent( $event = array() )
   {
@@ -98,7 +98,7 @@ class Percolate_Queue
   /**
    * Delete all event
    *
-   * @return array: success
+   * @return array success
    */
   public function deleteEvents()
   {
@@ -114,7 +114,7 @@ class Percolate_Queue
   /**
    * Get the plugin's saved channels
    *
-   * @return string: JSON string of channels
+   * @return string JSON string of channels
    */
   public function getChannels()
   {
@@ -203,10 +203,10 @@ class Percolate_Queue
 
 
   /**
-   * Method for catching when a post gets published
+   * Catching when a post gets published
    *   -> it updates the status in Percolate
    *
-   * @param object $event: post event - schemas/DB-PercV4Events.json
+   * @param object $event post event - schemas/DB-PercV4Events.json
    * @return bool success or failure
    */
   public function transitionSinglePost( $event )
@@ -214,11 +214,7 @@ class Percolate_Queue
     $post_id = $event->ID;
     Percolate_Log::log('Post transition event, post WP ID:' . $post_id);
 
-    $postPercID = get_post_meta($post_id, 'percolate_id', true);
-    if(!isset($postPercID) || empty($postPercID)) { return false; }
-
-    // ------------- Post status -------------
-    $postPerc = $this->getPost($post_id, $postPercID);
+    $postPerc = $this->getPost($post_id);
     Percolate_Log::log('Post current status:' . $post['status']);
 
     switch ($postPerc['status']) {
@@ -241,9 +237,9 @@ class Percolate_Queue
 
 
   /**
-   * Method for syncing post data from Percolate to WP
+   * Syncing post data from Percolate to WP
    *
-   * @param object $event: post event - schemas/DB-PercV4Events.json
+   * @param object $event post event - schemas/DB-PercV4Events.json
    * @return bool success or failure
    */
   public function syncSinglePost($event)
@@ -253,10 +249,10 @@ class Percolate_Queue
   }
 
   /**
-   * Method for syncing post data from Percolate to WP
+   * Get the channel's API key
    *
-   * @param object $event: post event - schemas/DB-PercV4Events.json
-   * @return string: Percolate API key
+   * @param string $wp_post_id WP post ID
+   * @return string Percolate API key
    */
   private function getChannelKey($wp_post_id)
   {
@@ -282,14 +278,17 @@ class Percolate_Queue
   /**
    * Calls the Percolate API to get the post status by ID
    *
-   * @param string $wp_post_id: WP post ID
-   * @param string $postPercID: Percolate post ID
-   * @param object $postsChannel: plugin's channel that's originally imported the post
-   *
-   * @return arrray post status
+   * @param string $wp_post_id WP post ID
+   * @return arrray|false Post object from Percolate
    */
-  private function getPost($wp_post_id, $postPercID)
+  private function getPost($wp_post_id)
   {
+    $postPercID = get_post_meta($wp_post_id, 'percolate_id', true);
+    if(!isset($postPercID) || empty($postPercID)) {
+      Percolate_Log::log('No Percolate ID found for this post. ' . $wp_post_id);
+      return false;
+    }
+
     $key    = $this->getChannelKey($wp_post_id);
     $method = "v5/post/" . $postPercID;
     $fields = array();
@@ -308,10 +307,10 @@ class Percolate_Queue
   /**
    * Calls the Percolate API to transition the post
    *
-   * @param string $wp_post_id: WP post ID
-   * @param array $postPerc: Percolate post
-   * @param object $postsChannel: plugin's channel that's originally imported the post
-   * @param string $status: status to transition the post to
+   * @param string $wp_post_id WP post ID
+   * @param array $postPerc Percolate post
+   * @param object $postsChannel Plugin's channel that's originally imported the post
+   * @param string $status Status to transition the post to
    *
    * @return array API response
    */
