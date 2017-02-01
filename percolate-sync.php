@@ -28,21 +28,15 @@ class Percolate_Setup
   /**
    * Class constructor
    */
-  public function __construct(Percolate_Log $percolate_Log, Percolate_Post_Model $percolate_Post_Model) {
-
-    // Post model
-    $this->Post = $percolate_Post_Model;
-    $this->Log = $percolate_Log;
-
-    // Media library
-    // $this->Media = $container->get('PercolateMedia');
+  public function __construct(
+    Percolate_Log $percolate_Log,
+    Percolate_Post_Model $percolate_Post_Model,
+    PercolateMedia $percolateMedia
+  ) {
+    Percolate_Log::log('Percolate Importer construct');
 
     // GitHub updater
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
-
-    // WP Plugin methods
-    register_activation_hook(__FILE__, array($this, '__activation'));
-    register_deactivation_hook(__FILE__, array($this, '__deactivation'));
 
     // Add settings page
     add_action('admin_menu', array($this, 'register_settings_page'));
@@ -55,24 +49,27 @@ class Percolate_Setup
 
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
-
-    Percolate_Log::log('Percolate Importer constructed');
   }
 
   /**
    * Plugin activation logic
    */
-  public function __activation() {
-    // Activate the WP Cron task for importing posts
-    $this->Post->activateCron();
-  }
+  public function activation() {
+    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
+    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event activated');
+    wp_schedule_event(time()+1, 'every_min', 'percolate_sync_posts_event');  }
 
   /**
    * Plugin activation logic
    */
-  public function __deactivation() {
-    // Dectivate the WP Cron task for importing posts
-    $this->Post->deactivateCron();
+  public function deactivation() {
+    Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_sync_posts_event');
   }
 
   /**
@@ -279,9 +276,13 @@ $container = DI\ContainerBuilder::buildDevContainer();
 add_action( 'plugins_loaded', function()
 {
   global $container;
-  $container->get('Percolate_Setup');
+  $setup = $container->get('Percolate_Setup');
   $container->get('Percolate_AJAX_Model');
-})
+});
+
+// WP Plugin methods
+register_activation_hook(__FILE__, array(Percolate_Setup, 'activation'));
+register_deactivation_hook(__FILE__, array(Percolate_Setup, 'deactivation'));
 
 
 

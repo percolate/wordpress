@@ -28,7 +28,7 @@ class Percolate_Queue
   }
 
   /**
-   * Set the Post model so we can access its methods
+   * Set the Post model so we can access its methofs
    *
    * @param Percolate_Post_Model $model
    * @return void
@@ -174,7 +174,7 @@ class Percolate_Queue
 
       // Post needs to sync
       if ( isset($event->sync) && filter_var( $event->sync, FILTER_VALIDATE_BOOLEAN) ) {
-
+        $this->syncSinglePost($event);
       }
 
       // Post is going LIVE
@@ -238,8 +238,10 @@ class Percolate_Queue
    */
   public function syncSinglePost($event)
   {
+    global $container;
+    $postModel = $container->get('Percolate_Post_Model');
     $post = $this->getExistingPost($event->ID);
-    $this->Post->updateExistingPost($event->ID, $post);
+    // $this->Post->updateExistingPost($event->ID, $post);
   }
 
   /**
