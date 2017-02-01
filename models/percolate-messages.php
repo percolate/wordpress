@@ -6,10 +6,10 @@
  */
 
 /**
- * Class PercolateMessages
+ * Class Percolate_Messages
  * Model to handle warning messages
  */
-class PercolateMessages
+class Percolate_Messages
 {
 
   protected $optionMessages = 'PercV4Messages';
@@ -23,20 +23,6 @@ class PercolateMessages
       // )
     )
   );
-
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_POST_Model
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new PercolateMessages;
-
-		return self::$instance;
-	}
 
   public function __construct() {
   }

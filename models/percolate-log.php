@@ -2,33 +2,17 @@
 
 /**
  * @package Percolate_Importer
- *  API methods
  */
 
 /**
- * Class Percolate_API_Model
- * Model to process API calls
+ * Class Percolate_Log
+ *   Helper class to logging messages to a custom log file
  */
 class Percolate_Log
 {
-
-  // Singleton instance
-  private static $instance = false;
-
   const LOGS_DIRECTORY =  'percolate_logs';
   const LOG_FILE       =  'log';
 
-  /**
-   * Return singleton instance
-   * @return Percolate_Log
-   */
-	public static function instance()
-  {
-		if( !self::$instance )
-			self::$instance = new Percolate_Log;
-
-		return self::$instance;
-	}
 
   public function __construct() {
     $uploads = wp_upload_dir();

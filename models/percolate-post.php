@@ -6,10 +6,10 @@
  */
 
 /**
- * Class Percolate_POST_Model
+ * Class Percolate_Post_Model
  * Model to process Post related methods
  */
-class Percolate_POST_Model
+class Percolate_Post_Model
 {
 
   protected $option = 'PercV4Opt';
@@ -36,33 +36,18 @@ class Percolate_POST_Model
     )
   );
 
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_POST_Model
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new Percolate_POST_Model;
-
-		return self::$instance;
-	}
-
-  public function __construct() {
-    // Logging
-    $this->Log = Percolate_Log::instance();
-    // Percolate API methods
-    $this->Percolate = Percolate_API_Model::instance();
-    // Media library
-    $this->Media = PercolateMedia::instance();
-    // Messages
-    $this->Messages = PercolateMessages::instance();
-    // Queue
-    $this->Queue = Percolate_Queue::instance();
-    // WPML
-    $this->Wpml = Percolate_WPML_Model::instance();
+  public function __construct(
+    PercolateMedia $percolateMedia,
+    Percolate_Messages $percolate_Messages,
+    Percolate_API_Model $percolate_API_Model,
+    Percolate_Queue $percolate_Queue,
+    Percolate_WPML_Model $percolate_WPML_Model
+  ) {
+    $this->Percolate = $percolate_API_Model;
+    $this->Media = $percolateMedia;
+    $this->Messages = $percolate_Messages;
+    $this->Queue = $percolate_Queue;
+    $this->Wpml = $percolate_WPML_Model;
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {

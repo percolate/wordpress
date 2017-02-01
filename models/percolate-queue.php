@@ -16,26 +16,12 @@ class Percolate_Queue
   protected $optionEvents = 'PercV4Events';
 
 
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_Queue
-   */
-	public static function instance()
-  {
-		if( !self::$instance )
-			self::$instance = new Percolate_Queue;
-
-		return self::$instance;
-	}
-
-
-  public function __construct()
-  {
+  public function __construct(
+    Percolate_API_Model $percolate_API_Model
+  ){
+    Percolate_Log::log('Percolate_Queue construct');
     // Percolate API methods
-    $this->Percolate = Percolate_API_Model::instance();
+    $this->Percolate = $percolate_API_Model;
   }
 
 
@@ -238,7 +224,7 @@ class Percolate_Queue
   public function syncSinglePost($event)
   {
     $post = $this->getExistingPost($event->ID);
-    Percolate_POST_Model::updateExistingPost($event->ID, $post);
+    $this->Post->updateExistingPost($event->ID, $post);
   }
 
   /**

@@ -11,23 +11,11 @@
  */
 class Percolate_ACF_Model
 {
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_ACF_Model
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new Percolate_ACF_Model;
-
-		return self::$instance;
-	}
 
   public function __construct() {
     add_action( 'admin_init', array( $this, 'get_ACF_data' ) );
   }
+
 
   public function get_ACF_data()
   {

@@ -20,6 +20,8 @@ class PercolateSync
    *
    * --------------------------------- */
 
+  protected $container;
+
   // API methods
   protected $API;
 
@@ -32,65 +34,41 @@ class PercolateSync
   // Media library
   protected $Media;
 
-  // Singleton instance
-  private static $instance = false;
 
   //Plugin file path
   const FILE = __FILE__;
 
-  /* ---------------------------------
-   *
-   * Public methods
-   *
-   * --------------------------------- */
-
-  /**
-   * Return singleton instance
-   * @return PercolateSync
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new PercolateSync;
-
-		return self::$instance;
-	}
 
   /**
    * Class constructor
    */
   public function __construct() {
-    // if ( ! is_admin() ) {
-    //   return false;
-    // }
-
-    // Includes
-    include_once(__DIR__ . '/models/percolate-acf.php');
-    include_once(__DIR__ . '/models/percolate-log.php');
-    include_once(__DIR__ . '/models/percolate-api.php');
-    include_once(__DIR__ . '/models/percolate-messages.php');
-    include_once(__DIR__ . '/models/percolate-ajax.php');
-    include_once(__DIR__ . '/models/percolate-post.php');
-    include_once(__DIR__ . '/models/percolate-queue.php');
-    include_once(__DIR__ . '/models/percolate-media.php');
-    require_once( __DIR__ . '/models/percolate-updater.php' );
-    include_once(__DIR__ . '/models/percolate-wpml.php');
 
 
-    $this->Log = Percolate_Log::instance();
+    require_once(__DIR__ . '/vendor/autoload.php');
+    require_once(__DIR__ . '/models/percolate-acf.php');
+    require_once(__DIR__ . '/models/percolate-log.php');
+    require_once(__DIR__ . '/models/percolate-api.php');
+    require_once(__DIR__ . '/models/percolate-messages.php');
+    require_once(__DIR__ . '/models/percolate-ajax.php');
+    require_once(__DIR__ . '/models/percolate-post.php');
+    require_once(__DIR__ . '/models/percolate-queue.php');
+    require_once(__DIR__ . '/models/percolate-media.php');
+    require_once(__DIR__ . '/models/percolate-updater.php');
+    require_once(__DIR__ . '/models/percolate-wpml.php');
 
-    // AJAX interface
-    $this->AJAX = Percolate_AJAX_Model::instance();
+    $this->container = DI\ContainerBuilder::buildDevContainer();
 
+    // Logging
+    $this->Log = $this->container->get('Percolate_Log');
+    // AJAX
+    $this->AJAX = $this->container->get('Percolate_AJAX_Model');
     // Post model
-    $this->Post = Percolate_POST_Model::instance();
-
+    $this->Post = $this->container->get('Percolate_Post_Model');
     // Queue model
-
-    $this->Queue = Percolate_Queue::instance();
-
+    $this->Queue = $this->container->get('Percolate_Queue');
     // Media library
-
-    $this->Media = PercolateMedia::instance();
+    $this->Media = $this->container->get('PercolateMedia');
 
     // GitHub updater
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
@@ -117,6 +95,7 @@ class PercolateSync
     // Action for WP-Cron post transition
     add_action('percolate_sync_posts_event', array($this->Queue, 'syncPosts'));
 
+    Percolate_Log::log('Percolate Importer constructed');
   }
 
   /**
@@ -158,15 +137,10 @@ class PercolateSync
     include_once(__DIR__ . '/views/settings/index.php');
   }
 
-  /* ---------------------------------
-   *
-   * Private methods
-   *
-   * --------------------------------- */
 
-   /**
-    * Register all scripts for admin page
-    */
+  /**
+   * Register all scripts for admin page
+   */
   public function addAdminScripts () {
 
     $scripts = array();
@@ -339,6 +313,6 @@ class PercolateSync
   }
 }
 
-PercolateSync::instance();
+new PercolateSync;
 
 ?>

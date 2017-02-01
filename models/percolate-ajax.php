@@ -33,24 +33,20 @@ class Percolate_AJAX_Model
 		return self::$instance;
 	}
 
-  public function __construct() {
-    // ACF methods
-    $this->ACF = Percolate_ACF_Model::instance();
-
-    // WPML methods
-    $this->Wpml = Percolate_WPML_Model::instance();
-
-    // Percolate API methods
-    $this->Percolate = Percolate_API_Model::instance();
-
-    // Messages
-    $this->Messages = PercolateMessages::instance();
-
-    // Logging
-    $this->Log = Percolate_Log::instance();
-
-    // Queue
-    $this->Queue = Percolate_Queue::instance();
+  public function __construct(
+    Percolate_Log $percolate_Log,
+    Percolate_Messages $percolate_Messages,
+    Percolate_ACF_Model $percolate_ACF_Model,
+    Percolate_WPML_Model $percolate_WPML_Model,
+    Percolate_API_Model $percolate_API_Model,
+    Percolate_Queue $percolate_Queue
+  ) {
+    $this->Log = $percolate_Log;
+    $this->ACF = $percolate_ACF_Model;
+    $this->Wpml = $percolate_WPML_Model;
+    $this->Percolate = $percolate_API_Model;
+    $this->Messages = $percolate_Messages;
+    $this->Queue = $percolate_Queue;
 
     // Serve templates to Angular
     add_action( 'wp_ajax_template', array( $this, 'getTemplate' ) );

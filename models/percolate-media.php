@@ -7,40 +7,14 @@
 
 class PercolateMedia
 {
-  /* ---------------------------------
-   *
-   * Private and public variables
-   *
-   * --------------------------------- */
-
-  // Singleton instance
-  private static $instance = false;
-
   //Plugin file path
   const FILE = __FILE__;
-
-  /* ---------------------------------
-   *
-   * Public methods
-   *
-   * --------------------------------- */
-
-  /**
-   * Return singleton instance
-   * @return PercolateMedia
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new PercolateMedia;
-
-		return self::$instance;
-	}
 
   /**
    * Class constructor
    */
-  public function __construct() {
-    $this->Percolate = Percolate_API_Model::instance();
+  public function __construct(Percolate_API_Model $percolate_API_Model) {
+    $this->Percolate = $percolate_API_Model;
 
     // AJAX endpoint
     add_action( 'wp_ajax_image_import', array( $this, 'importImageEndpoint' ) );

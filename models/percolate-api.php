@@ -13,19 +13,6 @@ class Percolate_API_Model
 {
   const API_BASE='https://percolate.com/api/';
 
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_API_Model
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new Percolate_API_Model;
-
-		return self::$instance;
-	}
 
   public function __construct() {
   }
