@@ -31,12 +31,18 @@ class Percolate_Setup
   public function __construct(
     Percolate_Log $percolate_Log,
     Percolate_Post_Model $percolate_Post_Model,
-    PercolateMedia $percolateMedia
+    PercolateMedia $percolateMedia,
+    Percolate_AJAX_Model $percolate_AJAX_Model
   ) {
-    Percolate_Log::log('Percolate Importer construct');
+
+    $this->Post = $percolate_Post_Model;
 
     // GitHub updater
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
+
+    // WP Plugin methods
+    register_activation_hook(__FILE__, array($this, '__activation'));
+    register_deactivation_hook(__FILE__, array($this, '__deactivation'));
 
     // Add settings page
     add_action('admin_menu', array($this, 'register_settings_page'));
@@ -54,22 +60,19 @@ class Percolate_Setup
   /**
    * Plugin activation logic
    */
-  public function activation() {
-    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
-    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
-
-    Percolate_Log::log('WP Cron: percolate_sync_posts_event activated');
-    wp_schedule_event(time()+1, 'every_min', 'percolate_sync_posts_event');  }
+  public function __activation() {
+    Percolate_Log::log('Percolate Importer plugin activated.');
+    // Activate the WP Cron task for importing posts
+    $this->Post->activateCron();
+  }
 
   /**
    * Plugin activation logic
    */
-  public function deactivation() {
-    Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
-    wp_clear_scheduled_hook('percolate_import_posts_event');
-
-    Percolate_Log::log('WP Cron: percolate_sync_posts_event deactiveted');
-    wp_clear_scheduled_hook('percolate_sync_posts_event');
+  public function __deactivation() {
+    Percolate_Log::log('Percolate Importer plugin deactivated.');
+    // Dectivate the WP Cron task for importing posts
+    $this->Post->deactivateCron();
   }
 
   /**
@@ -273,17 +276,6 @@ class Percolate_Setup
 
 $container = DI\ContainerBuilder::buildDevContainer();
 
-add_action( 'plugins_loaded', function()
-{
-  global $container;
-  $setup = $container->get('Percolate_Setup');
-  $container->get('Percolate_AJAX_Model');
-});
-
-// WP Plugin methods
-register_activation_hook(__FILE__, array(Percolate_Setup, 'activation'));
-register_deactivation_hook(__FILE__, array(Percolate_Setup, 'deactivation'));
-
-
+$container->get('Percolate_Setup');
 
 ?>

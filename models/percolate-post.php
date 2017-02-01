@@ -43,7 +43,6 @@ class Percolate_Post_Model
     Percolate_Queue $percolate_Queue,
     Percolate_WPML_Model $percolate_WPML_Model
   ) {
-    Percolate_Log::log('Percolate_Post_Model construct');
     $this->Percolate = $percolate_API_Model;
     $this->Media = $percolateMedia;
     $this->Messages = $percolate_Messages;
@@ -624,7 +623,25 @@ class Percolate_Post_Model
 
   public static function updateExistingPost($wpPostID, $percolatePost)
   {
-    # code...
+    Percolate_Log::log('updateExistingPost');
+  }
+
+  /**
+   * Methods for adding / removing the WP Cron job for importing posts
+   */
+  public function activateCron(){
+    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
+    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event activated');
+    wp_schedule_event(time()+1, 'every_min', 'percolate_sync_posts_event');
+  }
+  public function deactivateCron(){
+    Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_import_posts_event');
+
+    Percolate_Log::log('WP Cron: percolate_sync_posts_event deactiveted');
+    wp_clear_scheduled_hook('percolate_sync_posts_event');
   }
 
 

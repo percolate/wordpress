@@ -19,24 +19,11 @@ class Percolate_Queue
   public function __construct(
     Percolate_API_Model $percolate_API_Model
   ){
-    Percolate_Log::log('Percolate_Queue construct');
     // Percolate API methods
     $this->Percolate = $percolate_API_Model;
 
     // Action for WP-Cron post transition
     add_action('percolate_sync_posts_event', array($this, 'syncPosts'));
-  }
-
-  /**
-   * Set the Post model so we can access its methofs
-   *
-   * @param Percolate_Post_Model $model
-   * @return void
-   */
-  public function setPostModel($model)
-  {
-    $this->Post = $model;
-    Percolate_Log::log('$percolate_Post_Model set');
   }
 
 
@@ -174,6 +161,7 @@ class Percolate_Queue
 
       // Post needs to sync
       if ( isset($event->sync) && filter_var( $event->sync, FILTER_VALIDATE_BOOLEAN) ) {
+        Percolate_Log::log('Syncing post: ' . $event->ID);
         $this->syncSinglePost($event);
       }
 
@@ -238,8 +226,6 @@ class Percolate_Queue
    */
   public function syncSinglePost($event)
   {
-    global $container;
-    $postModel = $container->get('Percolate_Post_Model');
     $post = $this->getExistingPost($event->ID);
     // $this->Post->updateExistingPost($event->ID, $post);
   }
