@@ -6,30 +6,26 @@
  */
 
 /**
- * Class Percolate_WPML
+ * Class Percolate_WPML_Model
  * Model to provide an WPML related methods
  */
-class Percolate_WPML
+class Percolate_WPML_Model
 {
   // Singleton instance
   private static $instance = false;
 
   /**
    * Return singleton instance
-   * @return Percolate_WPML
+   * @return Percolate_WPML_Model
    */
 	public static function instance() {
 		if( !self::$instance )
-			self::$instance = new Percolate_WPML;
+			self::$instance = new Percolate_WPML_Model;
 
 		return self::$instance;
 	}
 
   public function __construct() {
-    // Logging
-    include_once(__DIR__ . '/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
-
     add_action( 'plugins_loaded', array( $this, 'getWpmlStatus' ) );
   }
 

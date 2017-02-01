@@ -28,9 +28,6 @@ class Percolate_API_Model
 	}
 
   public function __construct() {
-    // Logging
-    include_once(__DIR__ . '/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
   }
 
 

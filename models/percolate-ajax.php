@@ -35,27 +35,21 @@ class Percolate_AJAX_Model
 
   public function __construct() {
     // ACF methods
-    include_once(__DIR__ . '/percolate-acf.php');
     $this->ACF = Percolate_ACF_Model::instance();
 
     // WPML methods
-    include_once(__DIR__ . '/percolate-wpml.php');
-    $this->Wpml = Percolate_WPML::instance();
+    $this->Wpml = Percolate_WPML_Model::instance();
 
     // Percolate API methods
-    include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
 
     // Messages
-    include_once(__DIR__ . '/percolate-messages.php');
     $this->Messages = PercolateMessages::instance();
 
     // Logging
-    include_once(__DIR__ . '/percolate-log.php');
     $this->Log = Percolate_Log::instance();
 
     // Queue
-    include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
 
     // Serve templates to Angular

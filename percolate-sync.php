@@ -63,32 +63,36 @@ class PercolateSync
     //   return false;
     // }
 
-    // Logging
+    // Includes
+    include_once(__DIR__ . '/models/percolate-acf.php');
     include_once(__DIR__ . '/models/percolate-log.php');
+    include_once(__DIR__ . '/models/percolate-api.php');
+    include_once(__DIR__ . '/models/percolate-messages.php');
+    include_once(__DIR__ . '/models/percolate-ajax.php');
+    include_once(__DIR__ . '/models/percolate-post.php');
+    include_once(__DIR__ . '/models/percolate-queue.php');
+    include_once(__DIR__ . '/models/percolate-media.php');
+    require_once( __DIR__ . '/models/percolate-updater.php' );
+    include_once(__DIR__ . '/models/percolate-wpml.php');
+
+
     $this->Log = Percolate_Log::instance();
 
-    // API methods
-    include_once(__DIR__ . '/models/percolate-api.php');
-    $this->API = Percolate_API_Model::instance();
-
     // AJAX interface
-    include_once(__DIR__ . '/models/percolate-ajax.php');
     $this->AJAX = Percolate_AJAX_Model::instance();
 
     // Post model
-    include_once(__DIR__ . '/models/percolate-post.php');
     $this->Post = Percolate_POST_Model::instance();
 
     // Queue model
-    include_once(__DIR__ . '/models/percolate-queue.php');
+
     $this->Queue = Percolate_Queue::instance();
 
     // Media library
-    include_once(__DIR__ . '/models/percolate-media.php');
+
     $this->Media = PercolateMedia::instance();
 
     // GitHub updater
-    require_once( __DIR__ . '/models/percolate-updater.php' );
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods

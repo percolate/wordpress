@@ -39,9 +39,6 @@ class PercolateMessages
 	}
 
   public function __construct() {
-    // Logging
-    include_once(__DIR__ . '/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
   }
 
   public function getMessages()

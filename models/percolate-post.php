@@ -52,23 +52,17 @@ class Percolate_POST_Model
 
   public function __construct() {
     // Logging
-    include_once(__DIR__ . '/percolate-log.php');
     $this->Log = Percolate_Log::instance();
     // Percolate API methods
-    include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
     // Media library
-    include_once(__DIR__ . '/percolate-media.php');
     $this->Media = PercolateMedia::instance();
     // Messages
-    include_once(__DIR__ . '/percolate-messages.php');
     $this->Messages = PercolateMessages::instance();
     // Queue
-    include_once(__DIR__ . '/percolate-queue.php');
     $this->Queue = Percolate_Queue::instance();
     // WPML
-    include_once(__DIR__ . '/percolate-wpml.php');
-    $this->Wpml = Percolate_WPML::instance();
+    $this->Wpml = Percolate_WPML_Model::instance();
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {

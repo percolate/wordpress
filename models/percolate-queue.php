@@ -34,16 +34,8 @@ class Percolate_Queue
 
   public function __construct()
   {
-    // Logging
-    include_once(__DIR__ . '/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
-
     // Percolate API methods
-    include_once(__DIR__ . '/percolate-api.php');
     $this->Percolate = Percolate_API_Model::instance();
-
-    // Post model
-    include_once(__DIR__ . '/percolate-post.php');
   }
 
 

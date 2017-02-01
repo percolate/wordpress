@@ -26,10 +26,6 @@ class Percolate_ACF_Model
 	}
 
   public function __construct() {
-    // Logging
-    include_once(__DIR__ . '/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
-
     add_action( 'admin_init', array( $this, 'get_ACF_data' ) );
   }
 
