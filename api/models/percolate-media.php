@@ -5,7 +5,7 @@
  */
 
 
-class PercolateMedia
+class Percolate_Media
 {
   //Plugin file path
   const FILE = __FILE__;
@@ -13,8 +13,8 @@ class PercolateMedia
   /**
    * Class constructor
    */
-  public function __construct(Percolate_API_Model $percolate_API_Model) {
-    $this->Percolate = $percolate_API_Model;
+  public function __construct(Percolate_API_Service $Percolate_API_Service) {
+    $this->Percolate = $Percolate_API_Service;
 
     // AJAX endpoint
     add_action( 'wp_ajax_image_import', array( $this, 'importImageEndpoint' ) );
@@ -42,22 +42,22 @@ class PercolateMedia
 
    $scripts = array();
    $scripts[] = array(
-     'handle'	 => 'PercolateMedia',
-     'src'		 => plugins_url( '/public/js/media/app.js', dirname(__FILE__) ),
+     'handle'	 => 'Percolate_Media',
+     'src'		 => plugins_url( '/frontend/scripts/media/app.js', dirname(dirname(__FILE__)) ),
      'deps'		 => array('angular'),
      'version' => '1',
      'footer'  => true
    );
    $scripts[] = array(
      'handle'	 => 'MediaCtr',
-     'src'		 => plugins_url( '/public/js/media/controllers/media.js', dirname(__FILE__) ),
+     'src'		 => plugins_url( '/frontend/scripts/media/controllers/media.js', dirname(dirname(__FILE__)) ),
      'deps'		 => array('angular'),
      'version' => '1',
      'footer'  => true
    );
    $scripts[] = array(
      'handle'	 => 'LoaderDirM',
-     'src'		 => plugins_url( '/public/js/media/directives/loader.js', dirname(__FILE__) ),
+     'src'		 => plugins_url( '/frontend/scripts/media/directives/loader.js', dirname(dirname(__FILE__)) ),
      'deps'		 => array('angular'),
      'version' => '1',
      'footer'  => true
@@ -70,7 +70,7 @@ class PercolateMedia
    // ---------
    // Styles
 
-   wp_enqueue_style( 'percolate-styles-media', plugins_url( '/public/styles/css/percolate-media.css', dirname(__FILE__) ), null, '1', 'all' );
+   wp_enqueue_style( 'percolate-styles-media', plugins_url( '/frontend/styles/css/percolate-media.css', dirname(dirname(__FILE__)) ), null, '1', 'all' );
  }
 
 
@@ -87,7 +87,7 @@ class PercolateMedia
 	 * Render the modal into the footer
    */
   public function renderModal () {
-    include_once(dirname(__DIR__) . '/views/media/modal.php');
+    include_once(dirname(dirname(__DIR__)) . '/frontend/views/media/modal.php');
   }
 
   /**

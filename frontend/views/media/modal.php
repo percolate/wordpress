@@ -4,7 +4,7 @@
 
 <div id="percolate-backdrop" class="perc-backdrop" style="display:none;"></div>
 
-<div id="percolate-media-library" data-id="<?php echo $post_ID; ?>" class="percolate-app" ng-app="percolateMedia" ng-controller="MediaCtr" style="display:none;" ng-cloak>
+<div id="percolate-media-library" data-id="<?php echo $post_ID; ?>" class="percolate-app" ng-app="Percolate_Media" ng-controller="MediaCtr" style="display:none;" ng-cloak>
   <div class="library-modal">
     <div class="modal-content">
 

@@ -6,10 +6,10 @@
  */
 
 /**
- * Class Percolate_API_Model
+ * Class Percolate_API_Service
  * Model to process API calls
  */
-class Percolate_API_Model
+class Percolate_API_Service
 {
   const API_BASE='https://percolate.com/api/';
 

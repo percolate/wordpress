@@ -6,47 +6,28 @@
  */
 
 /**
- * Class Percolate_AJAX_Model
+ * Class Percolate_AJAX_Service
  * Model to provide an AJAX interface
  */
-class Percolate_AJAX_Model
+class Percolate_AJAX_Service
 {
-  protected $option = 'PercV4Opt';
-
-  protected $ACF;
-
-  protected $Percolate;
-
-  protected $Messages;
-
-  // Singleton instance
-  private static $instance = false;
-
-  /**
-   * Return singleton instance
-   * @return Percolate_AJAX_Model
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new Percolate_AJAX_Model;
-
-		return self::$instance;
-	}
 
   public function __construct(
     Percolate_Log $percolate_Log,
     Percolate_Messages $percolate_Messages,
     Percolate_ACF_Model $percolate_ACF_Model,
     Percolate_WPML_Model $percolate_WPML_Model,
-    Percolate_API_Model $percolate_API_Model,
-    Percolate_Queue $percolate_Queue
+    Percolate_API_Service $Percolate_API_Service,
+    Percolate_Queue $percolate_Queue,
+    Percolate_WP_Model $percolate_WP_Model
   ) {
     $this->Log = $percolate_Log;
     $this->ACF = $percolate_ACF_Model;
     $this->Wpml = $percolate_WPML_Model;
-    $this->Percolate = $percolate_API_Model;
+    $this->Percolate = $Percolate_API_Service;
     $this->Messages = $percolate_Messages;
     $this->Queue = $percolate_Queue;
+    $this->Wp = $percolate_WP_Model;
 
     // Serve templates to Angular
     add_action( 'wp_ajax_template', array( $this, 'getTemplate' ) );
@@ -89,7 +70,7 @@ class Percolate_AJAX_Model
    */
   public function getData()
   {
-    $res = get_option( $this->option );
+    $res = $this->Wp->getData();
     echo $res;
     wp_die();
   }
@@ -99,18 +80,11 @@ class Percolate_AJAX_Model
    */
   public function setData()
   {
-    if( isset($_POST['data']) ) {
-
-      //  clear the options cache before trying to get or update the options
-      wp_cache_delete ( 'alloptions', 'options' );
-
-      $update = update_option( $this->option, json_encode($_POST['data']) );
-
-      $res = array(
-        'success' => $update
-      );
-      echo json_encode($res);
-    }
+    $success = $this->Wp->setData();
+    $res = array(
+      'success' => $success
+    );
+    echo json_encode($res);
   	wp_die();
   }
 
@@ -120,7 +94,7 @@ class Percolate_AJAX_Model
   public function getTemplate()
   {
     if( isset($_POST['template']) ) {
-      include_once(dirname(__DIR__) . '/views/templates/' . $_POST['template'] . '.php');
+      include_once(dirname(dirname(__DIR__)) . '/frontend/views/templates/' . $_POST['template'] . '.php');
     }
   	wp_die();
   }
@@ -130,52 +104,18 @@ class Percolate_AJAX_Model
    */
   public function getCategories()
   {
-    $args = array(
-    	'hide_empty'               => 0,
-    	'hierarchical'             => 1,
-    	'taxonomy'                 => 'category'
-    );
-
-    if ($this->Wpml->isActive()) {
-
-      $categories = array();
-      $languages = $this->Wpml->getLanguages();
-
-      foreach ($languages as $key => $language) {
-        do_action( 'wpml_switch_language', $key );
-
-        $categoriesPerLang = get_categories( $args );
-
-        // add language property to categories
-        foreach ($categoriesPerLang as $category) {
-          $language_code = apply_filters( 'wpml_element_language_code', null, array(
-            'element_id'=> (int)$category->term_id,
-            'element_type'=> 'category'
-          ));
-          $category->language = $language_code;
-
-          $categories[] = $category;
-        }
-      }
-
-    } else {
-      $categories = get_categories( $args );
-    }
-
-    // Percolate_Log::log('Categroies: ' . print_r($categories, true));
+    $categories = $this->Wp->getCategories();
     echo json_encode($categories);
     wp_die();
   }
+
   /**
    * Get WP users
    */
   public function getUsers()
   {
-    $args = array(
-    	// 'role' => 'Administrator'
-    );
-    $res = get_users( $args );
-    echo json_encode($res);
+    $users = $this->Wp->getUsers();
+    echo json_encode($users);
     wp_die();
   }
 
@@ -184,11 +124,8 @@ class Percolate_AJAX_Model
    */
   public function getCpts()
   {
-    $args = array(
-     'public'   => true
-    );
-    $res = get_post_types( $args, 'objects' );
-    echo json_encode($res);
+    $cpts = $this->Wp->getCpts();
+    echo json_encode($cpts);
     wp_die();
   }
 
@@ -302,12 +239,8 @@ class Percolate_AJAX_Model
     wp_die();
   }
 
-
-  /* ---------------------------------------------------------------
-   * --------------------------------------------------------------- */
-
   /**
-   * Percolate: get User
+   * Call the Percolate API
    */
   public function callPercolateApi()
   {

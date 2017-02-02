@@ -17,10 +17,10 @@ class Percolate_Queue
 
 
   public function __construct(
-    Percolate_API_Model $percolate_API_Model
+    Percolate_API_Service $Percolate_API_Service
   ){
     // Percolate API methods
-    $this->Percolate = $percolate_API_Model;
+    $this->Percolate = $Percolate_API_Service;
 
     // Action for WP-Cron post transition
     add_action('percolate_sync_posts_event', array($this, 'syncPosts'));

@@ -37,14 +37,14 @@ class Percolate_Post_Model
   );
 
   public function __construct(
-    PercolateMedia $percolateMedia,
+    Percolate_Media $Percolate_Media,
     Percolate_Messages $percolate_Messages,
-    Percolate_API_Model $percolate_API_Model,
+    Percolate_API_Service $Percolate_API_Service,
     Percolate_Queue $percolate_Queue,
     Percolate_WPML_Model $percolate_WPML_Model
   ) {
-    $this->Percolate = $percolate_API_Model;
-    $this->Media = $percolateMedia;
+    $this->Percolate = $Percolate_API_Service;
+    $this->Media = $Percolate_Media;
     $this->Messages = $percolate_Messages;
     $this->Wpml = $percolate_WPML_Model;
     $this->Queue = $percolate_Queue;
