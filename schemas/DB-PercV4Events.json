@@ -6,6 +6,7 @@
       "statusPerc": "queued",
       "statusWP": "draft",
       "sync": true,
+      "updatedDateUTM": "",
       "dateUTM": false
     }
   }

@@ -2,12 +2,10 @@
 
 /**
  * @package Percolate_Importer
- *  POST methods
  */
 
 /**
  * Class Percolate_Post_Model
- * Model to process Post related methods
  */
 class Percolate_Post_Model
 {
@@ -34,13 +32,15 @@ class Percolate_Post_Model
   public function __construct(
     Percolate_Media $Percolate_Media,
     Percolate_API_Service $Percolate_API_Service,
-    Percolate_Queue $percolate_Queue,
+    Percolate_Queue_Model $percolate_Queue_Model,
+    Percolate_WP_Model $percolate_WP_Model,
     Percolate_WPML_Model $percolate_WPML_Model
   ) {
     $this->Percolate = $Percolate_API_Service;
     $this->Media = $Percolate_Media;
+    $this->Wp = $percolate_WP_Model;
     $this->Wpml = $percolate_WPML_Model;
-    $this->Queue = $percolate_Queue;
+    $this->Queue = $percolate_Queue_Model;
 
     // Dom Parser plugin
     if (!class_exists('simple_html_dom_node')) {
@@ -55,6 +55,7 @@ class Percolate_Post_Model
    * Get all posts from Percolate
    *
    * @param stdObject $channel
+   *
    * @return array Posts
    */
   public function getAllPosts($channel)
@@ -98,17 +99,119 @@ class Percolate_Post_Model
     return $posts;
   }
 
+
   /**
-   * Add a percolate story to WP
+   * Get the post data from Percolate for a post that's already imported
+   *
+   * @param string $wpPostID WP post ID
+   *
+   * @return arrray|false Post object from Percolate
    */
-  public function importPost($post, $template, $schema, $channel)
+  public function getExistingPost($wpPostID)
   {
-    /*
-     * $post: percolate post object
-     * $template: importer's template settings
-     * $schema: percolate's custom schema
-     * $channel: importer's selected channel
-     */
+    $postPercolateID = get_post_meta($wpPostID, 'percolate_id', true);
+    if(!isset($postPercolateID) || empty($postPercolateID)) {
+      Percolate_Log::log('No Percolate ID found for this post. ' . $wpPostID);
+      return false;
+    }
+
+    $key    = $this->getPostChannel($wpPostID)->key;
+    $method = "v5/post/" . $postPercolateID;
+    $fields = array();
+
+    $res = $this->Percolate->callAPI($key, $method, $fields);
+
+    if(!isset($res['data'])) {
+      Percolate_Log::log('There was an error, check the API response.');
+      return;
+    }
+
+    return $res['data'];
+  }
+
+
+  /**
+   * Get the channel options of an already imported post
+   *
+   * @param string $wpPostID WP post ID
+   *
+   * @return stdObject Stored WP channel data
+   */
+  public function getPostChannel($wpPostID)
+  {
+    // Get the UUID of the WP-Perc channel that imported the post
+    $wpChannelUuid = get_post_meta($wpPostID, 'wp_channel_uuid', true);
+    if( empty($wpChannelUuid)) {
+      Percolate_Log::log("No channel UUID found for post {$wpPostID}.");
+      return false;
+    }
+
+    // Get the plugin options from DB
+    $option = json_decode( $this->Wp->getData() );
+    if( !isset($option->channels) ) {
+      Percolate_Log::log('No channels were found, exiting.');
+      return false;
+    }
+
+    // Percolate_Log::log("Post's original importing channel found.");
+    return $option->channels->{$wpChannelUuid};
+  }
+
+  /**
+   * Get the schemas from Percolate for the given channel
+   *
+   * @param stdObject $channel
+   *
+   * @return array Schemas
+   */
+  public function getSchemas($channel)
+  {
+    $key    = $channel->key;
+    $method = "v5/schema/";
+    $fields = array(
+      'scope_ids' => 'license:' . $channel->license,
+      'ext.platform_ids' => $channel->platform,
+      'type' => 'post'
+    );
+
+    $res_schema = $this->Percolate->callAPI($key, $method, $fields);
+    // Percolate_Log::log(print_r($res_schema, true));
+
+    return $schemas = $res_schema["data"];
+  }
+
+
+  public function updateExistingPost($wpPostID)
+  {
+    $percolatePost = $this->getExistingPost($wpPostID);
+
+    // Check if updated_at date to see if the post has been changed
+    if (intval(strtotime($percolatePost['updated_at'])) <= intval(get_post_meta($wpPostID, 'percolate_updated_at', true)) ) {
+      return false;
+    }
+
+    $channel = $this->getPostChannel($wpPostID);
+    $schemas = $this->getSchemas($channel);
+    $schema = PercolateHelpers::searchInArray($schemas, 'id', PercolateHelpers::getOriginalSchemaId($percolatePost['schema_id']));
+    $template = $channel->{$schema[0]['id']};
+
+    $res = $this->importPost($percolatePost, $template, $schema[0], $channel);
+    return $res;
+  }
+
+
+  /**
+   * Import a Percolate post into WP
+   *
+   * @param stdObject $post Percolate post data
+   * @param stdObject $template Importer's template settings
+   * @param array $schema Percolate's custom schema
+   * @param stdObject $channel Importer's selected channel
+   *
+   * @return array Status messages
+   */
+  public function importPost($post, $template, $schema, $channel, $wpPostID = null)
+  {
     $res = array(
       'success' => true,
       'message' => ''
@@ -143,60 +246,71 @@ class Percolate_Post_Model
           return $res;
     }
 
-    $statusToImport = array(
-      'queued.publishing',
-      'queued.published',
-      'live'
-    );
-
-    if( isset($template->import) ) {
-      switch($template->import){
-        case 'draft':
-          $statusToImport[] = 'draft';
-          $statusToImport[] = 'queued';
-          break;
-        case 'queued':
-          $statusToImport[] = 'queued';
-          break;
-      }
-    }
-
-    // Percolate_Log::log("status to import: ");
-    // Percolate_Log::log(print_r($statusToImport, true));
-
-    // ------ Check approval status from Perc --------
-    $res['status'] = $post['status'];
-    if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
-    {
-          // Percolate_Log::log($post['id'] . " hasn't been approved yet. Status: " . $post['status']);
-          $res['success'] = false;
-          $res['message'] = "Post hasn't been approved yet. Status: " . $post['status'];
-          $res['percolate_id'] = $post['id'];
-          return $res;
-    }
-
-    // ------ Check if imported already --------
-    $args = array(
-      'post_type'		     =>	$template->postType,
-      'post_status'	     =>	'any',
-      'meta_key'         => 'percolate_id',
-      'meta_value'       => $post['id'],
-      'suppress_filters' => true // need to bypass the WPML language filter
-    );
-    // ----------- Post basics --------------
-    $posts = new WP_Query( $args );
-    if ( $posts->post_count > 0) {
-      Percolate_Log::log('Post already imported: ' . $post['id']);
-      // Delete post if any
-      // wp_delete_post($posts->posts[0]->ID, true);
-      $res['success'] = false;
-      $res['percolate_id'] = $post['id'];
-      $res['message'] = "Post already imported";
-      return $res;
-    }
     Percolate_Log::log('----------------------------------');
-    Percolate_Log::log('Importing post: ' . $post['id'] );
-    Percolate_Log::log('Post status: ' . $post['status']);
+
+
+    if ($wpPostID) {
+
+      // ------- Updating post -------
+      Percolate_Log::log('Updating post: ' . $post['id'] . ',WP: ' . $wpPostID);
+      Percolate_Log::log('Post status: ' . $post['status']);
+      $updatePost = true;
+    }
+    else
+    {
+      // ------- Creating new post -------
+      $statusToImport = array(
+        'queued.publishing',
+        'queued.published',
+        'live'
+      );
+
+      if( isset($template->import) ) {
+        switch($template->import){
+          case 'draft':
+            $statusToImport[] = 'draft';
+            $statusToImport[] = 'queued';
+            break;
+          case 'queued':
+            $statusToImport[] = 'queued';
+            break;
+        }
+      }
+
+      // ------ Check approval status from Perc --------
+      $res['status'] = $post['status'];
+      if( isset($post['status']) && !in_array($post['status'], $statusToImport) )
+      {
+        $res['success'] = false;
+        $res['message'] = "Post is not ready to import. Status: " . $post['status'];
+        $res['percolate_id'] = $post['id'];
+        return $res;
+      }
+
+      // ------ Check if imported already --------
+      $args = array(
+        'post_type'		     =>	$template->postType,
+        'post_status'	     =>	'any',
+        'meta_key'         => 'percolate_id',
+        'meta_value'       => $post['id'],
+        'suppress_filters' => true // need to bypass the WPML language filter
+      );
+      // ----------- Post basics --------------
+      $posts = new WP_Query( $args );
+      if ( $posts->post_count > 0) {
+        Percolate_Log::log('Post already imported: ' . $post['id']);
+        // DEBUG: Delete post if any
+        // wp_delete_post($posts->posts[0]->ID, true);
+        $res['success'] = false;
+        $res['percolate_id'] = $post['id'];
+        $res['message'] = "Post already imported";
+        return $res;
+      }
+      Percolate_Log::log('Importing post: ' . $post['id'] );
+      Percolate_Log::log('Post status: ' . $post['status']);
+    }
+
+
 
     // ----------- Post Author --------------
     $postAuthor = $channel->wpUser;
@@ -270,7 +384,6 @@ class Percolate_Post_Model
     $post_status = 'future';
     $publish_date = $post['live_at'];
 
-    // Still trying to fix 1970 bug
     if ($publish_date == NULL){
       Percolate_Log::log('No live_at date, using created_at.');
       $publish_date = $post['created_at'];
@@ -323,6 +436,7 @@ class Percolate_Post_Model
         "idPerc" => $post['id'],
         "statusPerc" => $post['status'], // draft || queued || queued.publishing
         "statusWP" => $post_status, // draft || future
+        "updatedDateUTM" => strtotime($post['updated_at'])
       );
 
       // if ($post['status'] == 'draft' || (isset($template->safety) && $template->safety == 'on')) {
@@ -339,9 +453,6 @@ class Percolate_Post_Model
 
       Percolate_Log::log('Adding post to the Sync queue: ' . print_r($event, true));
       $this->Queue->addEvent( $event );
-
-      // Can I edit 'queued' posts in Perco?
-      // Can I update tags or categories?
     }
 
     // ----------- Factory meta fields --------------
@@ -353,6 +464,7 @@ class Percolate_Post_Model
     update_post_meta($wpPostID, 'percolate_schema_id', $post['schema_id']);
     update_post_meta($wpPostID, 'percolate_name', $post['name']);
     update_post_meta($wpPostID, 'percolate_status', $post['status']);
+    update_post_meta($wpPostID, 'percolate_updated_at', strtotime($post['updated_at']));
 
     // ----------- Meta fields --------------
     if( isset($post['ext']) && !empty($post['ext']) ) {
@@ -365,7 +477,7 @@ class Percolate_Post_Model
       foreach ($post['ext'] as $key => $value) {
 
         // Chech if it's an asset field & import asset from Percolate DAM
-        $definition = $this->searchInArray($fieldDefinitions, 'key', $key);
+        $definition = PercolateHelpers::searchInArray($fieldDefinitions, 'key', $key);
         if( $definition[0]['type'] == 'asset' ) {
           Percolate_Log::log('Asset field found, importing from Percolate');
           $imageID = $this->Media->importImageWP($value, $channel->key);
@@ -485,11 +597,6 @@ class Percolate_Post_Model
   }
 
 
-  public static function updateExistingPost($wpPostID, $percolatePost)
-  {
-    Percolate_Log::log('updateExistingPost');
-  }
-
 
 
   private function checkHandoff($import, $handoff)
@@ -505,22 +612,6 @@ class Percolate_Post_Model
   private function checkWpml($template)
   {
     return $this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField);
-  }
-
-  private function searchInArray($array, $key, $value) {
-    $results = array();
-
-    if (is_array($array)) {
-      if (isset($array[$key]) && $array[$key] == $value) {
-          $results[] = $array;
-      }
-
-      foreach ($array as $subarray) {
-          $results = array_merge($results, $this->searchInArray($subarray, $key, $value));
-      }
-    }
-
-    return $results;
   }
 
 

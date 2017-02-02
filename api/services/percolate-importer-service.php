@@ -11,7 +11,7 @@ class Percolate_Importer_Service
 {
 
   public function __construct(
-    Percolate_Queue $percolate_Queue,
+    Percolate_Sync_Service $percolate_Sync_Service,
     Percolate_API_Service $Percolate_API_Service,
     Percolate_WP_Model $percolate_WP_Model,
     Percolate_Messages $percolate_Messages,
@@ -110,7 +110,7 @@ class Percolate_Importer_Service
       'success' => true,
       'messages' => array()
     );
-    $schemas = $this->getSchemas($channel);
+    $schemas = $this->Posts->getSchemas($channel);
 
     $posts = $this->Posts->getAllPosts($channel);
 
@@ -124,11 +124,7 @@ class Percolate_Importer_Service
 
     $postsBySchema = array();
     foreach ($posts as $post) {
-      /* we have schema versioning now, and post[schema_id] contains the version too
-       *  eg. schema:00000000_11111111
-       */
-      $postSchema = explode("_", $post['schema_id']);
-      $postSchemaRoot = $postSchema[0];
+      $postSchemaRoot = PercolateHelpers::getOriginalSchemaId($post['schema_id']);
       $postsBySchema[$postSchemaRoot][] = $post;
     }
 
@@ -168,28 +164,5 @@ class Percolate_Importer_Service
 
     return $res;
   }
-
-  /**
-   * Get the schemas from Percolate for the given channel
-   *
-   * @param stdObject $channel
-   * @return array Schemas
-   */
-  private function getSchemas($channel)
-  {
-    $key    = $channel->key;
-    $method = "v5/schema/";
-    $fields = array(
-      'scope_ids' => 'license:' . $channel->license,
-      'ext.platform_ids' => $channel->platform,
-      'type' => 'post'
-    );
-
-    $res_schema = $this->Percolate->callAPI($key, $method, $fields);
-    // Percolate_Log::log(print_r($res_schema, true));
-
-    return $schemas = $res_schema["data"];
-  }
-
 
 }

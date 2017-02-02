@@ -18,7 +18,7 @@ class Percolate_AJAX_Service
     Percolate_ACF_Model $percolate_ACF_Model,
     Percolate_WPML_Model $percolate_WPML_Model,
     Percolate_API_Service $Percolate_API_Service,
-    Percolate_Queue $percolate_Queue,
+    Percolate_Queue_Model $percolate_Queue_Model,
     Percolate_WP_Model $percolate_WP_Model
   ) {
     $this->Log = $percolate_Log;
@@ -26,7 +26,7 @@ class Percolate_AJAX_Service
     $this->Wpml = $percolate_WPML_Model;
     $this->Percolate = $Percolate_API_Service;
     $this->Messages = $percolate_Messages;
-    $this->Queue = $percolate_Queue;
+    $this->Queue = $percolate_Queue_Model;
     $this->Wp = $percolate_WP_Model;
 
     // Serve templates to Angular

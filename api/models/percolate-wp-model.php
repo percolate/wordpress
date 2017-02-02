@@ -11,7 +11,7 @@
 class Percolate_WP_Model
 {
   protected $option = 'PercV4Opt';
-
+  protected $optionEvents = 'PercV4Events';
 
   public function __construct(
     Percolate_WPML_Model $percolate_WPML_Model
@@ -49,6 +49,31 @@ class Percolate_WP_Model
     }
   }
 
+  /**
+   * Get the saved events from the DB
+   *
+   * @return array Events
+   */
+  public function getEventsData()
+  {
+    $events = json_decode( get_option( $this->optionEvents ) );
+    // Percolate_Log::log('WP model: Get Events' . print_r($events, true));
+    return $events;
+  }
+
+
+  /**
+   * Save the events to the DB
+   *
+   * @param array $events all the events
+   * @return bool true
+   */
+  public function setEventsData( $events )
+  {
+    update_option( $this->optionEvents, json_encode($events) );
+    // Percolate_Log::log('WP model: Set Events' . print_r($events, true));
+    return true;
+  }
 
   /**
    * Get WP categories
