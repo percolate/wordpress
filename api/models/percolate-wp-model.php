@@ -142,6 +142,19 @@ class Percolate_WP_Model
     return $cpts;
   }
 
+  /**
+   * Generate the posts preview link
+   *
+   * Works for custom post types too
+   *
+   * @param string $wpPostID WP post ID
+   * @return string URL
+   */
+  public function generatePreviewLink($wpPostID)
+  {
+    return get_site_url() . "/?p=$wpPostID&preview=true";
+  }
+
 
 
 }

@@ -9,7 +9,7 @@
  */
 class Percolate_Post_Model
 {
-  const SCHEMA_MISMATCH_MSG = "Alternative schema versions have been found for the channel's posts. Please check your mapping and update if needed!";
+  const POST_PREVIEW_COPY = "Post has been updated in WordPress: ";
 
   private $postStatuses = array(
     'draft' => array(
@@ -55,7 +55,6 @@ class Percolate_Post_Model
    * Get all posts from Percolate
    *
    * @param stdObject $channel
-   *
    * @return array Posts
    */
   public function getAllPosts($channel)
@@ -104,7 +103,6 @@ class Percolate_Post_Model
    * Get the post data from Percolate for a post that's already imported
    *
    * @param string $wpPostID WP post ID
-   *
    * @return arrray|false Post object from Percolate
    */
   public function getExistingPost($wpPostID)
@@ -134,7 +132,6 @@ class Percolate_Post_Model
    * Get the channel options of an already imported post
    *
    * @param string $wpPostID WP post ID
-   *
    * @return stdObject Stored WP channel data
    */
   public function getPostChannel($wpPostID)
@@ -161,7 +158,6 @@ class Percolate_Post_Model
    * Get the schemas from Percolate for the given channel
    *
    * @param stdObject $channel
-   *
    * @return array Schemas
    */
   public function getSchemas($channel)
@@ -458,6 +454,20 @@ class Percolate_Post_Model
       $this->Queue->addEvent( $event );
     }
 
+    // ----------- Preview link --------------
+    if ($post['status'] != 'live') {
+      $url = $this->Wp->generatePreviewLink($wpPostID);
+      Percolate_Log::log('Sending preview link: ' . $url);
+
+      $fields = array(
+        "scope_id"  => "license:" . $channel->license,
+        "object_id" => $post['id'],
+        "body"      => self::POST_PREVIEW_COPY . $url,
+      );
+
+      $res = $this->Percolate->callAPI($channel->key, "v5/comment/", null, $fields);
+    }
+
     // ----------- Factory meta fields --------------
     update_post_meta($wpPostID, 'wp_channel_uuid', $channel->uuid);
     update_post_meta($wpPostID, 'percolate_id', $post['id']);
@@ -601,7 +611,15 @@ class Percolate_Post_Model
 
 
 
-
+  /**
+   * Check if post needs to be synced
+   *
+   * Dont' need to sync if handoff is not later the earliest import
+   *
+   * @param string $import Earliest import status
+   * @param string $handoff Handoff status
+   * @return bool
+   */
   private function checkHandoff($import, $handoff)
   {
     Percolate_Log::log('checkHandoff: ' . $import . " -> " . $handoff);
@@ -612,6 +630,12 @@ class Percolate_Post_Model
     }
   }
 
+  /**
+   * Check if WPML is active and it's switched on for the project
+   *
+   * @param stdObject $template Current template
+   * @return bool
+   */
   private function checkWpml($template)
   {
     return $this->Wpml->isActive() && isset($template->wpmlStatus) && $template->wpmlStatus == 'on' && isset($template->wpmlField);

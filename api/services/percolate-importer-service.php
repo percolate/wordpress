@@ -10,6 +10,8 @@
 class Percolate_Importer_Service
 {
 
+  const SCHEMA_MISMATCH_MSG = "Alternative schema versions have been found for the channel's posts. Please check your mapping and update if needed!";
+
   public function __construct(
     Percolate_Sync_Service $percolate_Sync_Service,
     Percolate_API_Service $Percolate_API_Service,
@@ -153,7 +155,7 @@ class Percolate_Importer_Service
                 && !$schemaVersionMismatch )
             {
               $schemaVersionMismatch = true;
-              $this->Messages->addMessage(SCHEMA_MISMATCH_MSG, $res_schema["data"]);
+              $this->Messages->addMessage(self::SCHEMA_MISMATCH_MSG, $res_schema["data"]);
             }
 
             $res['messages'][] = $success;
