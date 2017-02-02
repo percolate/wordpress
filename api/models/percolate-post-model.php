@@ -187,6 +187,7 @@ class Percolate_Post_Model
 
     // Check if updated_at date to see if the post has been changed
     if (intval(strtotime($percolatePost['updated_at'])) <= intval(get_post_meta($wpPostID, 'percolate_updated_at', true)) ) {
+      Percolate_Log::log('Post has not been updated: ' . $wpPostID);
       return false;
     }
 
@@ -195,7 +196,7 @@ class Percolate_Post_Model
     $schema = PercolateHelpers::searchInArray($schemas, 'id', PercolateHelpers::getOriginalSchemaId($percolatePost['schema_id']));
     $template = $channel->{$schema[0]['id']};
 
-    $res = $this->importPost($percolatePost, $template, $schema[0], $channel);
+    $res = $this->importPost($percolatePost, $template, $schema[0], $channel, $wpPostID);
     return $res;
   }
 
@@ -415,8 +416,10 @@ class Percolate_Post_Model
       'post_category'  => $post_category // [ array(<category id>, ...) ] // Default empty.
     );
 
-    // Percolate_Log::log('Post object:');
-    // Percolate_Log::log(print_r($post_args, true));
+    if ($wpPostID) {
+      $post_args['ID'] = $wpPostID;
+    }
+
     $wpPostID = wp_insert_post($post_args);
 
     if( !$wpPostID ) {

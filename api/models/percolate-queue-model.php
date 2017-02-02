@@ -58,7 +58,11 @@ class Percolate_Queue_Model
        $this->Wp->setEventsData($events);
        $events = $this->Wp->getEventsData();
      }
-
+     if (isset($events->postToTransition->{$event['ID']})) {
+       // unset & update if event already exists
+       Percolate_Log::log('Update event.');
+       unset($events->postToTransition->{$event['ID']});
+     }
      $events->postToTransition->{$event['ID']} = $event;
      $this->Wp->setEventsData($events);
 

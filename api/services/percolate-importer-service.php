@@ -117,7 +117,7 @@ class Percolate_Importer_Service
     if( !is_array($posts) || empty($posts) ) {
       $res = array(
         'success' => false,
-        'messages' => 'No posts were found for this channel: ' . $channel
+        'messages' => 'No posts were found for this channel: ' . $channel->name
       );
       return $res;
     }

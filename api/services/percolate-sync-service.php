@@ -93,12 +93,14 @@ class Percolate_Sync_Service
 
         // Remove the transitioned item from the DB
         if($res) {
+          $events = $this->Queue->getEvents();
           unset($events->postToTransition->{$key});
           $this->Queue->setEvents($events);
         }
       }
     }
 
+    $events = $this->Queue->getEvents();
     $events->transitionInProgress = false;
     $this->Queue->setEvents($events);
 
