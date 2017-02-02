@@ -12,18 +12,20 @@ Author URI: http://percolate.com
 */
 
 require_once(__DIR__ . '/api/vendor/autoload.php');
-require_once(__DIR__ . '/api/models/percolate-acf.php');
-require_once(__DIR__ . '/api/models/percolate-log.php');
-require_once(__DIR__ . '/api/models/percolate-messages.php');
-require_once(__DIR__ . '/api/models/percolate-queue.php');
-require_once(__DIR__ . '/api/models/percolate-wp.php');
-require_once(__DIR__ . '/api/models/percolate-wpml.php');
-require_once(__DIR__ . '/api/models/percolate-post.php');
+require_once(__DIR__ . '/api/models/percolate-acf-model.php');
+require_once(__DIR__ . '/api/models/percolate-messages-model.php');
+require_once(__DIR__ . '/api/models/percolate-queue-model.php');
+require_once(__DIR__ . '/api/models/percolate-wp-model.php');
+require_once(__DIR__ . '/api/models/percolate-wpml-model.php');
+require_once(__DIR__ . '/api/models/percolate-post-model.php');
 
-require_once(__DIR__ . '/api/services/percolate-api.php');
-require_once(__DIR__ . '/api/services/percolate-ajax.php');
-require_once(__DIR__ . '/api/models/percolate-media.php');
-require_once(__DIR__ . '/api/services/percolate-updater.php');
+require_once(__DIR__ . '/api/services/percolate-api-service.php');
+require_once(__DIR__ . '/api/services/percolate-ajax-service.php');
+require_once(__DIR__ . '/api/services/percolate-media-service.php');
+require_once(__DIR__ . '/api/services/percolate-importer-service.php');
+require_once(__DIR__ . '/api/services/percolate-updater-service.php');
+require_once(__DIR__ . '/api/services/percolate-log-service.php');
+
 
 
 class Percolate_Setup
@@ -33,12 +35,12 @@ class Percolate_Setup
    */
   public function __construct(
     Percolate_Log $percolate_Log,
-    Percolate_Post_Model $percolate_Post_Model,
     Percolate_Media $Percolate_Media,
+    Percolate_Importer_Service $percolate_Importer_Service,
     Percolate_AJAX_Service $Percolate_AJAX_Service
   ) {
 
-    $this->Post = $percolate_Post_Model;
+    $this->Post = $percolate_Importer_Service;
 
     // GitHub updater
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );

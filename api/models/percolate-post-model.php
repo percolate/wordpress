@@ -11,11 +11,6 @@
  */
 class Percolate_Post_Model
 {
-
-  protected $option = 'PercV4Opt';
-
-  protected $Percolate;
-
   const SCHEMA_MISMATCH_MSG = "Alternative schema versions have been found for the channel's posts. Please check your mapping and update if needed!";
 
   private $postStatuses = array(
@@ -38,14 +33,12 @@ class Percolate_Post_Model
 
   public function __construct(
     Percolate_Media $Percolate_Media,
-    Percolate_Messages $percolate_Messages,
     Percolate_API_Service $Percolate_API_Service,
     Percolate_Queue $percolate_Queue,
     Percolate_WPML_Model $percolate_WPML_Model
   ) {
     $this->Percolate = $Percolate_API_Service;
     $this->Media = $Percolate_Media;
-    $this->Messages = $percolate_Messages;
     $this->Wpml = $percolate_WPML_Model;
     $this->Queue = $percolate_Queue;
 
@@ -55,144 +48,15 @@ class Percolate_Post_Model
       require_once( dirname(__DIR__) . '/vendor/simple_html_dom.php' );
     }
 
-    // AJAX endpoint
-    add_action('wp_ajax_do_import', array( $this, 'importChannelPosts' ));
-
-    // Action for WP-Cron import
-    add_action('percolate_import_posts_event', array($this, 'importStories'));
-
   }
 
 
   /**
-   * Endpoint for importing posts for the selected channel
+   * Get all posts from Percolate
+   *
+   * @param stdObject $channel
+   * @return array Posts
    */
-  public function importChannelPosts()
-  {
-    if( isset($_POST['data']) ) {
-      $option = json_decode( $this->getChannels() );
-      $channel = $option->channels->{$_POST['data']};
-
-      $res = $this->processChannel( $channel );
-    }
-
-    echo json_encode($res);
-    wp_die();
-
-  }
-
-  /**
-   * Endpoint for WP Cron to import posts
-   */
-  public function importStories () {
-    Percolate_Log::log('WP Cron: importing posts.');
-
-    $option = json_decode( $this->getChannels() );
-    if( !isset($option->channels) ) {
-      Percolate_Log::log('No channels were found, exiting.');
-      return;
-    }
-
-    foreach ($option->channels as $channel) {
-      if($channel->active == 'true') {
-        $res = $this->processChannel( $channel );
-      }
-    }
-
-    return;
-  }
-
-  /* --------------------------------
-   * Public Methods
-   * -------------------------------- */
-
-  public function getChannels()
-  {
-    $option = get_option( $this->option );
-    return $option;
-  }
-
-  public function getSchemas($channel)
-  {
-    $key    = $channel->key;
-    $method = "v5/schema/";
-    $fields = array(
-      'scope_ids' => 'license:' . $channel->license,
-      'ext.platform_ids' => $channel->platform,
-      'type' => 'post'
-    );
-
-    $res_schema = $this->Percolate->callAPI($key, $method, $fields);
-    // Percolate_Log::log(print_r($res_schema, true));
-
-    return $schemas = $res_schema["data"];
-  }
-
-  public function processChannel($channel)
-  {
-    $res = array(
-      'success' => true,
-      'messages' => array()
-    );
-    $schemas = $this->getSchemas($channel);
-
-    $posts = $this->getAllPosts($channel);
-
-    if( !is_array($posts) || empty($posts) ) {
-      $res = array(
-        'success' => false,
-        'messages' => 'No posts were found for this channel: ' . $channel
-      );
-      return $res;
-    }
-
-    $postsBySchema = array();
-    foreach ($posts as $post) {
-      /* we have schema versioning now, and post[schema_id] contains the version too
-       *  eg. schema:00000000_11111111
-       */
-      $postSchema = explode("_", $post['schema_id']);
-      $postSchemaRoot = $postSchema[0];
-      $postsBySchema[$postSchemaRoot][] = $post;
-    }
-
-    foreach ($schemas as $schema) {
-
-      // Get the plugin's template (called channel on the frontend)
-      $template = $channel->{$schema['id']};
-
-      // Flag if there are multiple versions of the schame has been found
-      $schemaVersionMismatch = false;
-
-      if( empty($template) || $template->postType !== 'false' ) {
-
-        if( !is_array($postsBySchema[$schema['id']]) || empty($postsBySchema[$schema['id']]) ) {
-          Percolate_Log::log('No posts found for ' . $schema['id']);
-        } else {
-          Percolate_Log::log('Importing posts for: ' . print_r($template, true));
-
-          foreach ($postsBySchema[$schema['id']] as $post) {
-            $success = $this->importPost($post, $template, $schema, $channel);
-
-            // Check if there is an updated template
-            if( $success['success'] == true
-                && isset($tempate->version)
-                && $tempate->version != $post['schema_id']
-                && !$schemaVersionMismatch )
-            {
-              $schemaVersionMismatch = true;
-              $this->Messages->addMessage(SCHEMA_MISMATCH_MSG, $res_schema["data"]);
-            }
-
-            $res['messages'][] = $success;
-          }
-        }
-      }
-    }
-
-    return $res;
-  }
-
   public function getAllPosts($channel)
   {
     /**
@@ -626,23 +490,6 @@ class Percolate_Post_Model
     Percolate_Log::log('updateExistingPost');
   }
 
-  /**
-   * Methods for adding / removing the WP Cron job for importing posts
-   */
-  public function activateCron(){
-    Percolate_Log::log('WP Cron: percolate_import_posts_event activated');
-    wp_schedule_event(time(), 'every_5_min', 'percolate_import_posts_event');
-
-    Percolate_Log::log('WP Cron: percolate_sync_posts_event activated');
-    wp_schedule_event(time()+1, 'every_min', 'percolate_sync_posts_event');
-  }
-  public function deactivateCron(){
-    Percolate_Log::log('WP Cron: percolate_import_posts_event deactiveted');
-    wp_clear_scheduled_hook('percolate_import_posts_event');
-
-    Percolate_Log::log('WP Cron: percolate_sync_posts_event deactiveted');
-    wp_clear_scheduled_hook('percolate_sync_posts_event');
-  }
 
 
   private function checkHandoff($import, $handoff)
