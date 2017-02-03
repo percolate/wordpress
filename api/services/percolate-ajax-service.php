@@ -16,6 +16,7 @@ class Percolate_AJAX_Service
     Percolate_Log $percolate_Log,
     Percolate_Messages $percolate_Messages,
     Percolate_ACF_Model $percolate_ACF_Model,
+    Percolate_MetaBox_Model $percolate_MetaBox_Model,
     Percolate_WPML_Model $percolate_WPML_Model,
     Percolate_API_Service $Percolate_API_Service,
     Percolate_Queue_Model $percolate_Queue_Model,
@@ -23,6 +24,7 @@ class Percolate_AJAX_Service
   ) {
     $this->Log = $percolate_Log;
     $this->ACF = $percolate_ACF_Model;
+    $this->MetaBox = $percolate_MetaBox_Model;
     $this->Wpml = $percolate_WPML_Model;
     $this->Percolate = $Percolate_API_Service;
     $this->Messages = $percolate_Messages;
@@ -44,6 +46,10 @@ class Percolate_AJAX_Service
     // Is ACF active
     add_action( 'wp_ajax_get_acf_status', array( $this, 'getAcfStatus' ) );
     // Get ACF data
+    add_action( 'wp_ajax_get_metabox_data', array( $this, 'getMetaBoxData' ) );
+    // Is MetaBox active
+    add_action( 'wp_ajax_get_metabox_status', array( $this, 'getMetaBoxStatus' ) );
+    // Get MetaBox data
     add_action( 'wp_ajax_get_acf_data', array( $this, 'getAcfData' ) );
     // Is WPML active
     add_action( 'wp_ajax_get_wpml_status', array( $this, 'getWpmlStatus' ) );
@@ -145,6 +151,26 @@ class Percolate_AJAX_Service
   public function getAcfData()
   {
     $res = $this->ACF->getAcfData();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * MetaBox: check if plugin is active
+   */
+  public function getMetaBoxStatus()
+  {
+    $res =  $this->MetaBox->getStatus();
+    echo json_encode($res);
+    wp_die();
+  }
+
+  /**
+   * MetaBox: get field groups & fields
+   */
+  public function getMetaBoxData()
+  {
+    $res = $this->MetaBox->getData();
     echo json_encode($res);
     wp_die();
   }

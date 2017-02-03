@@ -79,6 +79,22 @@ angular.module('wpApi', [])
           data            : jQuery.param({ action : 'get_acf_data'})
         })
       },
+      getMetaBoxStatus: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_metabox_status'})
+        })
+      },
+      getMetaBoxData: function () {
+        return $http({
+          method          : 'POST',
+          url             : _url,
+          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+          data            : jQuery.param({ action : 'get_metabox_data'})
+        })
+      },
       getWpmlStatus: function () {
         return $http({
           method          : 'POST',

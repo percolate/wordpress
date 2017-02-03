@@ -35,7 +35,7 @@ angular.module('myApp')
       $scope.showError(err)
       return
     }
-    
+
 
     function getHandoffStatuses (importKey, templateId) {
       // get the valid states for handoff
@@ -116,6 +116,21 @@ angular.module('myApp')
     function getWpmlStatus (res) {
       console.log('WPML status', res)
       $scope.isWpmlActive = (res.data === 'true')
+      return Api.getMetaBoxStatus()
+    }
+
+    function getMetaBoxStatus (res) {
+      console.log('getMetaBoxStatus', res);
+      $scope.isMetaBoxActive = (res.data === '1')
+      return Api.getMetaBoxData()
+    }
+
+    function getMetaBoxData (res) {
+      console.log('getMetaBoxData', res);
+      if ($scope.isMetaBoxActive) {
+        $scope.metaboxGroups = res.data.groups
+      }
+      return
     }
 
 
@@ -203,6 +218,8 @@ angular.module('myApp')
       .then(getAcfStatus, apiError)
       .then(getAcfData, apiError)
       .then(getWpmlStatus, apiError)
+      .then(getMetaBoxStatus, apiError)
+      .then(getMetaBoxData, apiError)
 
     /**
      * Exports
