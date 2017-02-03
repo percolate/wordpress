@@ -170,6 +170,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-acf" id="{{template.id}}-acf" class="form-control"
                           ng-model="formData[template.id].acf"
+                          ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'"
                           ng-change="formData[template.id].mapping[field.key] = ''">
                     <option value="off">Custom Fields</option>
                     <option value="on">Advanced Custom Fields</option>
