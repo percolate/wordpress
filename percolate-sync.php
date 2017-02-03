@@ -7,93 +7,52 @@ Plugin Name: WP Percolate Importer
 Plugin URI: https://github.com/percolate/wordpress
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.x-1.2.0
+Version: 4.x-1.2.1
 Author URI: http://percolate.com
-
 */
 
-class PercolateSync
+require_once(__DIR__ . '/api/vendor/autoload.php');
+
+require_once(__DIR__ . '/api/models/percolate-acf-model.php');
+require_once(__DIR__ . '/api/models/percolate-messages-model.php');
+require_once(__DIR__ . '/api/models/percolate-queue-model.php');
+require_once(__DIR__ . '/api/models/percolate-wp-model.php');
+require_once(__DIR__ . '/api/models/percolate-wpml-model.php');
+require_once(__DIR__ . '/api/models/percolate-post-model.php');
+
+require_once(__DIR__ . '/api/helpers/percolate-helpers.php');
+
+require_once(__DIR__ . '/api/services/percolate-api-service.php');
+require_once(__DIR__ . '/api/services/percolate-ajax-service.php');
+require_once(__DIR__ . '/api/services/percolate-media-service.php');
+require_once(__DIR__ . '/api/services/percolate-importer-service.php');
+require_once(__DIR__ . '/api/services/percolate-sync-service.php');
+require_once(__DIR__ . '/api/services/percolate-updater-service.php');
+require_once(__DIR__ . '/api/services/percolate-log-service.php');
+
+
+
+class Percolate_Setup
 {
-  /* ---------------------------------
-   *
-   * Private and public variables
-   *
-   * --------------------------------- */
-
-  // API methods
-  protected $API;
-
-  // AJAX interface
-  protected $AJAX;
-
-  // ACF interface
-  protected $acf;
-
-  // Media library
-  protected $Media;
-
-  // Singleton instance
-  private static $instance = false;
-
-  //Plugin file path
-  const FILE = __FILE__;
-
-  /* ---------------------------------
-   *
-   * Public methods
-   *
-   * --------------------------------- */
-
-  /**
-   * Return singleton instance
-   * @return PercolateSync
-   */
-	public static function instance() {
-		if( !self::$instance )
-			self::$instance = new PercolateSync;
-
-		return self::$instance;
-	}
-
   /**
    * Class constructor
    */
-  public function __construct() {
-    // if ( ! is_admin() ) {
-    //   return false;
-    // }
+  public function __construct(
+    Percolate_Log $percolate_Log,
+    Percolate_Media $Percolate_Media,
+    Percolate_Importer_Service $percolate_Importer_Service,
+    Percolate_Sync_Service $percolate_Sync_Service,
+    Percolate_AJAX_Service $Percolate_AJAX_Service
+  ) {
 
-    // Logging
-    include_once(__DIR__ . '/models/percolate-log.php');
-    $this->Log = Percolate_Log::instance();
-
-    // API methods
-    include_once(__DIR__ . '/models/percolate-api.php');
-    $this->API = Percolate_API_Model::instance();
-
-    // AJAX interface
-    include_once(__DIR__ . '/models/percolate-ajax.php');
-    $this->AJAX = Percolate_AJAX_Model::instance();
-
-    // Post model
-    include_once(__DIR__ . '/models/percolate-post.php');
-    $this->Post = Percolate_POST_Model::instance();
-
-    // Queue model
-    include_once(__DIR__ . '/models/percolate-queue.php');
-    $this->Queue = Percolate_Queue::instance();
-
-    // Media library
-    include_once(__DIR__ . '/models/percolate-media.php');
-    $this->Media = PercolateMedia::instance();
+    $this->Post = $percolate_Importer_Service;
 
     // GitHub updater
-    require_once( __DIR__ . '/models/percolate-updater.php' );
     new Percolate_GitHubPluginUpdater( __FILE__, 'percolate', 'wordpress' );
 
     // WP Plugin methods
-    register_activation_hook(self::FILE, array($this, '__activation'));
-    register_deactivation_hook(self::FILE, array($this, '__deactivation'));
+    register_activation_hook(__FILE__, array($this, '__activation'));
+    register_deactivation_hook(__FILE__, array($this, '__deactivation'));
 
     // Add settings page
     add_action('admin_menu', array($this, 'register_settings_page'));
@@ -106,19 +65,13 @@ class PercolateSync
 
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
-
-    // Action for WP-Cron import
-    add_action('percolate_import_posts_event', array($this->Post, 'importStories'));
-
-    // Action for WP-Cron post transition
-    add_action('percolate_transition_posts_event', array($this->Queue, 'transitionPosts'));
-
   }
 
   /**
    * Plugin activation logic
    */
   public function __activation() {
+    Percolate_Log::log('Percolate Importer plugin activated.');
     // Activate the WP Cron task for importing posts
     $this->Post->activateCron();
   }
@@ -127,6 +80,7 @@ class PercolateSync
    * Plugin activation logic
    */
   public function __deactivation() {
+    Percolate_Log::log('Percolate Importer plugin deactivated.');
     // Dectivate the WP Cron task for importing posts
     $this->Post->deactivateCron();
   }
@@ -143,7 +97,7 @@ class PercolateSync
         'administrator', // or 'manage_options'
         'percolate-settings',
         array($this, 'renderSettings'),
-        plugin_dir_url( __FILE__ ) . '/public/images/percolate-icon.png',
+        plugin_dir_url( __FILE__ ) . '/frontend/images/percolate-icon.png',
         81
       );
 
@@ -151,150 +105,145 @@ class PercolateSync
   }
 
   public function renderSettings () {
-    include_once(__DIR__ . '/views/settings/index.php');
+    include_once(__DIR__ . '/frontend/views/settings/index.php');
   }
 
-  /* ---------------------------------
-   *
-   * Private methods
-   *
-   * --------------------------------- */
 
-   /**
-    * Register all scripts for admin page
-    */
+  /**
+   * Register all scripts for admin page
+   */
   public function addAdminScripts () {
 
     $scripts = array();
     $scripts[] = array(
     	'handle'	=> 'underscore',
-    	'src'		  => plugins_url( '/public/lib/underscore-1.8.3/underscore-min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/underscore-1.8.3/underscore-min.js', __FILE__ ),
     	'deps'		=> null,
       'version' => '1.8.3',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'velocity',
-    	'src'		  => plugins_url( '/public/lib/velocity-1.2.3/velocity.min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/velocity-1.2.3/velocity.min.js', __FILE__ ),
     	'deps'		=> array('jquery'),
       'version' => '1.2.3',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'bootstrap',
-    	'src'		  => plugins_url( '/public/lib/bootstrap-sass-3.3.6/assets/javascripts/bootstrap.min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/bootstrap-sass-3.3.6/assets/javascripts/bootstrap.min.js', __FILE__ ),
     	'deps'		=> array('jquery'),
       'version' => '3.3.6',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'angular',
-    	'src'		  => plugins_url( '/public/lib/angular-1.4.8/angular.min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/angular-1.4.8/angular.min.js', __FILE__ ),
     	'deps'		=> array('jquery'),
       'version' => '1.4.8',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'ngAnimate',
-    	'src'		  => plugins_url( '/public/lib/angular-1.4.8/angular-animate.min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/angular-1.4.8/angular-animate.min.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1.4.8',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'ui-router',
-    	'src'		  => plugins_url( '/public/lib/ui-router-0.2.15/angular-ui-router.min.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/vendor/ui-router-0.2.15/angular-ui-router.min.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '0.2.15',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-App',
-    	'src'		  => plugins_url( '/public/js/settings/app.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/app.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-Api',
-    	'src'		  => plugins_url( '/public/js/api/api.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/api/api.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-Percolate',
-    	'src'		  => plugins_url( '/public/js/api/percolate.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/api/percolate.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-UuidSrv',
-    	'src'		  => plugins_url( '/public/js/settings/services/uuid.service.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/services/uuid.service.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-MainCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/main.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/main.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-IndexCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/index.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/index.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-AddCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/add.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/add.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-AddSetupCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/add.setup.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/add.setup.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-AddTopicsCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/add.topics.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/add.topics.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-AddTemplatesCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/add.templates.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/add.templates.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-SettingsCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/settings.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/settings.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-LogCtr',
-    	'src'		  => plugins_url( '/public/js/settings/controllers/log.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/log.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
     );
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-LoaderDir',
-    	'src'		  => plugins_url( '/public/js/settings/directives/loader.js', __FILE__ ),
+    	'src'		  => plugins_url( '/frontend/scripts/settings/directives/loader.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true
@@ -315,7 +264,7 @@ class PercolateSync
       // ---------
       // Styles
 
-      wp_enqueue_style( 'percolate-styles', plugins_url( '/public/styles/css/percolate-settings.css', __FILE__ ), null, '1', 'all' );
+      wp_enqueue_style( 'percolate-styles', plugins_url( '/frontend/styles/css/percolate-settings.css', __FILE__ ), null, '1', 'all' );
     }
   }
 
@@ -335,6 +284,8 @@ class PercolateSync
   }
 }
 
-PercolateSync::instance();
+// Bootstrap the plugin with PHP-DI
+$container = DI\ContainerBuilder::buildDevContainer();
+$container->get('Percolate_Setup');
 
 ?>
