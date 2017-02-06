@@ -172,9 +172,9 @@
                           ng-model="formData[template.id].acf"
                           ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'"
                           ng-change="formData[template.id].mapping[field.key] = ''">
-                    <option value="off">Custom Fields</option>
-                    <option value="on">Advanced Custom Fields</option>
-                    <option value="metabox">Meta Box</option>
+                    <option value="off">WP custom fields</option>
+                    <option value="on">ACF fields</option>
+                    <option value="metabox">Meta Box fields</option>
                   </select>
                 </div>
               </div>
