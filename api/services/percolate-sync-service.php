@@ -87,7 +87,7 @@ class Percolate_Sync_Service
       }
 
       // Post is going LIVE
-      if( (isset($event->dateUTM) && time() > $event->dateUTM) || ($event->draft == 'yes' && get_post_status($event->ID) == 'publish') ) {
+      if( (isset($event->dateUTM) && time() > $event->dateUTM) || ($event->statusWP == 'draft' && get_post_status($event->ID) == 'publish') ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
         $res = $this->transitionSinglePost( $event );
 
