@@ -465,7 +465,7 @@ class Percolate_Post_Model
         "body"      => self::POST_PREVIEW_COPY . $url,
       );
 
-      $res = $this->Percolate->callAPI($channel->key, "v5/comment/", null, $fields);
+      $this->Percolate->callAPI($channel->key, "v5/comment/", null, $fields);
     }
 
     // ----------- Factory meta fields --------------
@@ -530,7 +530,23 @@ class Percolate_Post_Model
           }
           $meta_success = update_field($_fieldname, $value, $wpPostID);
         }
-        // ----- No ACF -----
+        // ----- Meta Box -----
+        else if( isset($template->acf) && $template->acf == 'metabox' ) {
+          if( isset($template->mapping->{$key}) && !empty($template->mapping->{$key}) ) {
+            $_fieldname = $template->mapping->{$key};
+
+            if(is_array($value)){
+              delete_post_meta($wpPostID, $_fieldname);
+              foreach ($value as $subvalue) {
+                $meta_success = add_post_meta($wpPostID, $_fieldname, $subvalue);
+              }
+            } else {
+              $meta_success = update_post_meta($wpPostID, $_fieldname, $value);
+            }
+
+          }
+        }
+        // ----- WP -----
         else {
 
           // Check for mapping

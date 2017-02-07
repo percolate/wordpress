@@ -163,16 +163,19 @@
                 </div>
               </div>
 
-              <div class="row form-group" ng-show="isAcfActive">
+              <div class="row form-group" nng-show="isAcfActive || isMetaBoxActive">
                 <div class="col-sm-6">
-                  <label for="{{template.id}}-acf">Use Advanced Custom Fields</label>
+                  <label for="{{template.id}}-acf">Map Percolate fields to</label>
                 </div>
                 <div class="col-sm-6">
-                  <div class="switch">
-                    <input type="radio" id="{{template.id}}-acf-on" name="{{template.id}}-acf" value="on" ng-model="formData[template.id].acf">
-                    <input type="radio" id="{{template.id}}-acf-off" name="{{template.id}}-acf" value="off" ng-model="formData[template.id].acf" ng-checked="true" ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'">
-                    <span class="toggle"></span>
-                  </div>
+                  <select name="{{template.id}}-acf" id="{{template.id}}-acf" class="form-control"
+                          ng-model="formData[template.id].acf"
+                          ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'"
+                          ng-change="formData[template.id].mapping[field.key] = ''">
+                    <option value="off">WP custom fields</option>
+                    <option value="on">ACF fields</option>
+                    <option value="metabox">Meta Box fields</option>
+                  </select>
                 </div>
               </div>
 
@@ -191,9 +194,9 @@
                 <thead>
                   <td>Label</td>
                   <td>Type</td>
-                  <td ng-if="formData[template.id].acf !== 'on'">Custom field</td>
-                  <td ng-if="formData[template.id].acf == 'on'">ACF group</td>
-                  <td ng-if="formData[template.id].acf == 'on'">ACF field (type)</td>
+                  <td ng-if="formData[template.id].acf === 'off'">Custom field</td>
+                  <td ng-if="formData[template.id].acf !== 'off'"> Field group</td>
+                  <td ng-if="formData[template.id].acf !== 'off'"> Field (type)</td>
                 </thead>
 
                 <tbody>
@@ -207,24 +210,45 @@
                     <div class="input-group">
                       <td><span cclass="input-group-addon">{{field.label}}</span></td>
                       <td><span cclass="input-group-addon">{{field.type}}</span></td>
-                      <td ng-if="formData[template.id].acf !== 'on'">
+                      <!-- Custom field -->
+                      <td ng-if="formData[template.id].acf === 'off'">
                         <input  type="text" name="key" class="form-control"
                               ng-model="formData[template.id].mapping[field.key]">
                       </td>
-                      <td ng-if="formData[template.id].acf == 'on'">
+                      <!-- Advanced Custom Fields -->
+                      <td ng-if="formData[template.id].acf === 'on'">
                         <select name="{{template.id}}-acfSet" id="{{template.id}}-acfSet" class="form-control"
                                 ng-model="formData[template.id].acfGroup[field.key]"
+                                ng-change="formData[template.id].mapping[field.key] = ''"
                                 ng-selected="edit.active ? formData[template.id].acfGroup[field.key] : false">
                           <option value="">Don't map</option>
                           <option value="{{option.ID}}" ng-repeat="option in acfGroups">{{option.post_title}}</option>
                         </select>
                       </td>
-                      <td ng-if="formData[template.id].acf == 'on'">
+                      <td ng-if="formData[template.id].acf === 'on'">
                         <select name="acfkey" class="form-control"
                               ng-model="formData[template.id].mapping[field.key]"
                               ng-selected="edit.active ? formData[template.id].mapping[field.key] : false">
                           <option value="">Don't map</option>
                           <option value="{{option.key}}" ng-repeat="option in acfFields[formData[template.id].acfGroup[field.key]]">{{option.label}}  ({{option.data.type}})</option>
+                        </select>
+                      </td>
+                      <!-- Meta Box -->
+                      <td ng-if="formData[template.id].acf === 'metabox'">
+                        <select class="form-control"
+                                ng-model="formData[template.id].metaboxGroup[field.key]"
+                                ng-change="formData[template.id].mapping[field.key] = ''"
+                                ng-selected="edit.active ? formData[template.id].metaboxGroup[field.key] : false">
+                          <option value="">Don't map</option>
+                          <option value="{{key}}" ng-repeat="(key, option) in metaboxGroups">{{option.title}}</option>
+                        </select>
+                      </td>
+                      <td ng-if="formData[template.id].acf === 'metabox'">
+                        <select class="form-control"
+                              ng-model="formData[template.id].mapping[field.key]"
+                              ng-selected="edit.active ? formData[template.id].mapping[field.key] : false">
+                          <option value="">Don't map</option>
+                          <option value="{{option.id}}" ng-repeat="option in metaboxGroups[formData[template.id].metaboxGroup[field.key]].fields">{{option.name}}  ({{option.type}})</option>
                         </select>
                       </td>
                     </div>
