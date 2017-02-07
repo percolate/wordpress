@@ -538,7 +538,7 @@ class Percolate_Post_Model
             if(is_array($value)){
               delete_post_meta($wpPostID, $_fieldname);
               foreach ($value as $subvalue) {
-                $meta_success = update_post_meta($wpPostID, $_fieldname, $subvalue);
+                $meta_success = add_post_meta($wpPostID, $_fieldname, $subvalue);
               }
             } else {
               $meta_success = update_post_meta($wpPostID, $_fieldname, $value);
