@@ -56,21 +56,21 @@ class Percolate_API_Service
     if( $type != "" ) {
       $req['method'] = $type;
       $req['headers'] = array('Content-Type' => 'application/json', "Authorization" => $api_key, "Content-Length" => strlen(json_encode($jsonFields)));
-      Percolate_Log::log("API: Custom CRUD, url: {$url}");
+      Percolate_Log::log("API: Custom CRUD, url: {$url}, method: {$type}");
     }
 
     $res = wp_remote_request( $url, $req);
 
     if ( is_wp_error( $res ) ) {
        $error_message = $res->get_error_message();
-       Percolate_Log::log($error_message);
+       Percolate_Log::log("There was an error: " . $error_message);
        return;
     }
 
     $status = intval(wp_remote_retrieve_response_code($res));
     $data = json_decode( wp_remote_retrieve_body($res), true );
 
-    if ($status != 200) {
+    if ($status != 200 && $status != 201) {
       $message = "An unknown error occurred communicating with Percolate ($status): " . print_r($res, true);
       if ($data) {
         if ($data['error']) {
@@ -85,8 +85,6 @@ class Percolate_API_Service
       Percolate_Log::log($message);
       return $message;
     }
-
-    // error_log(print_r($data, true));
     return $data;
   }
 

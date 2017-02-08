@@ -87,7 +87,7 @@ class Percolate_Sync_Service
       }
 
       // Post is going LIVE
-      if( (isset($event->dateUTM) && time() > $event->dateUTM) || ($event->statusWP == 'draft' && get_post_status($event->ID) == 'publish') ) {
+      if( (isset($event->dateUTM) && time() > $event->dateUTM) || get_post_status($event->ID) == 'publish' ) {
         Percolate_Log::log('Transitioning post: ' . $event->ID);
         $res = $this->transitionSinglePost( $event );
 
@@ -120,7 +120,7 @@ class Percolate_Sync_Service
     Percolate_Log::log('Post transition event, post WP ID:' . $event->ID);
 
     $postPercolate = $this->Posts->getExistingPost($event->ID);
-    Percolate_Log::log('Post current status:' . $post['status']);
+    Percolate_Log::log('Post current status:' . $postPercolate['status']);
 
     switch ($postPercolate['status']) {
       case 'draft':
@@ -136,7 +136,7 @@ class Percolate_Sync_Service
         $this->transitionPostApiCall( $event->ID, $postPercolate, 'queued.published' );
         break;
     }
-    $res = $this->transitionPostApiCall( $event->ID, $postPercolate, 'live', $event->dateUTM );
+    $res = $this->transitionPostApiCall( $event->ID, $postPercolate, 'live', time() );
     return $res;
   }
 
@@ -177,11 +177,13 @@ class Percolate_Sync_Service
       'name' => $postPercolate['name'],
       'status' => $status
     );
-    if( isset($dateUTM) ) {
-      $jsonFields['live_at'] = date(DATE_RFC3339, $dateUTM);
+
+    if (isset($dateUTM)) {
+      $jsonFields['live_at'] = date(DATE_ATOM, $dateUTM);
     }
 
     $res = $this->Percolate->callAPI($key, $method, $fields, $jsonFields, 'PUT');
+    
 
     if(!isset($res['data'])) {
       Percolate_Log::log('There was an error, API response: ' . print_r($res, true));
@@ -192,12 +194,6 @@ class Percolate_Sync_Service
     Percolate_Log::log('Post '. $wpPostID .' was transitioned to ' . $status);
 
     return $res;
-  }
-
-
-  private function updatePreviewLinks( $event )
-  {
-    # code...
   }
 
 }

@@ -206,7 +206,7 @@
                         ng-hide="field.key == formData[template.id].postBody ||
                                 field.key == formData[template.id].postImage ||
                                 field.key == formData[template.id].postTitle ||
-                                field.key == formData[template.id].wpmlField">
+                                (field.key == formData[template.id].wpmlField && formData[template.id].wpmlStatus !== 'on')">
                     <div class="input-group">
                       <td><span cclass="input-group-addon">{{field.label}}</span></td>
                       <td><span cclass="input-group-addon">{{field.type}}</span></td>
