@@ -567,7 +567,7 @@ class Percolate_Post_Model
     // ----------- Perc topics -> WP tags --------------
     if( isset($post['term_ids']) && !empty($post['term_ids']) ) {
       $res['terms'] = array();
-      foreach ($post['term_ids'] as $term) {
+      foreach ($post['term_ids'] as $index=>$term) {
         // Percolate_Log::log('term_id: ' . $term);
         // Get term from Percolate
         // https://percolate.com/api/v5/term/?ids=term%3A2030798
@@ -581,7 +581,8 @@ class Percolate_Post_Model
         if( isset($res_tag['data']) && isset($res_tag['data'][0]['name']) ) {
           $termName = $res_tag['data'][0]['name'];
           // Percolate_Log::log('term_name: ' . $termName);
-          wp_set_post_tags( $wpPostID, $termName, true );
+          //   check index for removing existing tags first
+          wp_set_post_tags( $wpPostID, $termName, $index==0 ? false : true );
 
           $res['term'][] = 'Adding term: ' . $term;
         } else {

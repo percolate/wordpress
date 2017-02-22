@@ -37,12 +37,18 @@ class Percolate_MetaBox_Model
   public function getData()
   {
     // WP loads plugins alphabetically, should this class shall already exist
-    $meta_boxes = RWMB_Core::get_meta_boxes();
+    if ( is_plugin_active( 'meta-box/meta-box.php' ) ) {
+      $meta_boxes = RWMB_Core::get_meta_boxes();
 
-    $res = array(
-      'success' => true,
-      'groups'  => $meta_boxes
-    );
+      $res = array(
+        'success' => true,
+        'groups'  => $meta_boxes
+      );
+    } else {
+      $res = array(
+        'success' => false
+      );
+    }
 
     return $res;
   }
