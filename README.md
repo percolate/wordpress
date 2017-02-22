@@ -198,7 +198,7 @@ You should see that:
 
 ## Changelog
 
-### 4.x-1.2.0
+### 4.x-1.2.1
 
 * Added Post Syncing - changes from Percolate automatically get picked up
 * Added MetaBox support - schema fields can be mapped to MetaBox fields too
