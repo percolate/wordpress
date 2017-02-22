@@ -200,6 +200,12 @@ You should see that:
 
 ### 4.x-1.2.0
 
+* Added Post Syncing - changes from Percolate automatically get picked up
+* Added MetaBox support - schema fields can be mapped to MetaBox fields too
+* Bugfixes
+
+### 4.x-1.2.0
+
 * WPML support
 * PHP 7 support
 * Code refactoring
@@ -265,4 +271,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.0~
+~Current Version:4.x-1.2.1~
