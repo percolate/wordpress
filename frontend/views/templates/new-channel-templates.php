@@ -163,7 +163,7 @@
                 </div>
               </div>
 
-              <div class="row form-group" nng-show="isAcfActive || isMetaBoxActive">
+              <div class="row form-group">
                 <div class="col-sm-6">
                   <label for="{{template.id}}-acf">Map Percolate fields to</label>
                 </div>
@@ -173,8 +173,8 @@
                           ng-init="formData[template.id].acf = edit.active && formData[template.id].acf ? formData[template.id].acf : 'off'"
                           ng-change="formData[template.id].mapping[field.key] = ''">
                     <option value="off">WP custom fields</option>
-                    <option value="on">ACF fields</option>
-                    <option value="metabox">Meta Box fields</option>
+                    <option value="on" ng-if="isAcfActive">ACF fields</option>
+                    <option value="metabox" ng-if="isMetaBoxActive">Meta Box fields</option>
                   </select>
                 </div>
               </div>
