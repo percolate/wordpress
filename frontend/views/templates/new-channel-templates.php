@@ -139,6 +139,40 @@
                 </div>
               </div>
 
+              <!-- Custom Taxonomies -->
+              <div class="row form-group">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-taxonomy">Custom Taxonomies</label>
+                </div>
+                <div class="col-sm-6">
+                  <div class="switch">
+                    <input type="radio" id="{{template.id}}-taxonomy-on" name="{{template.id}}-taxonomy" value="on" ng-model="formData[template.id].taxonomy">
+                    <input type="radio" id="{{template.id}}-taxonomy-off" name="{{template.id}}-taxonomy" value="off" ng-model="formData[template.id].taxonomy" ng-checked="true" ng-init="formData[template.id].taxonomy = edit.active && formData[template.id].taxonomy ? formData[template.id].taxonomy : 'off'">
+                    <span class="toggle"></span>
+                  </div>
+                </div>
+              </div>
+              <div class="row form-group" ng-show="formData[template.id].taxonomy === 'on'">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-taxonomyField">Taxonomy field</label>
+                </div>
+                <div class="col-sm-6">
+                  <select name="{{template.id}}-taxonomyField" id="{{template.id}}-taxonomyField" class="form-control"
+                          ng-model="formData[template.id].taxonomyField"
+                          ng-options="option.key as option.label for option in template.fields | filterType: ['text', 'string-array']"></select>
+                </div>
+              </div>
+              <div class="row form-group" ng-show="formData[template.id].taxonomy === 'on'">
+                <div class="col-sm-6">
+                  <label for="{{template.id}}-taxonomyWP">Wordpress Taxonomy</label>
+                </div>
+                <div class="col-sm-6">
+                  <select name="{{template.id}}-taxonomyWP" id="{{template.id}}-taxonomyWP" class="form-control"
+                          ng-model="formData[template.id].taxonomyWP"
+                          ng-options="option.name as option.label for option in taxonomies"></select>
+                </div>
+              </div>
+
               <!-- WPML -->
               <div class="row form-group" ng-if="isWpmlActive">
                 <div class="col-sm-6">

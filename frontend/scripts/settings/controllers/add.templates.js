@@ -57,7 +57,6 @@ angular.module('myApp')
 
     function getTemplateSchemas(res) {
       console.log('Schemas', res.data)
-      $scope.stopLoader()
 
       if( !res.data || !res.data.data ) {
         $scope.showError('There was an error.')
@@ -109,6 +108,14 @@ angular.module('myApp')
           })
         }
       }
+      return Api.getTaxonomies()
+    }
+
+    function getTaxonomies(res) {
+      console.log('Taxonomies', res)
+      if (res.data) {
+        $scope.taxonomies = res.data
+      }
       return Api.getWpmlStatus()
     }
 
@@ -124,6 +131,7 @@ angular.module('myApp')
     }
 
     function getMetaBoxData (res) {
+      $scope.stopLoader()
       if ($scope.isMetaBoxActive) {
         $scope.metaboxGroups = res.data.groups
       }
@@ -214,6 +222,7 @@ angular.module('myApp')
       .then(getCpts, apiError)
       .then(getAcfStatus, apiError)
       .then(getAcfData, apiError)
+      .then(getTaxonomies, apiError)
       .then(getWpmlStatus, apiError)
       .then(getMetaBoxStatus, apiError)
       .then(getMetaBoxData, apiError)
@@ -234,6 +243,9 @@ angular.module('myApp')
   })
   .filter('filterType', function () {
     return function (list, type) {
+      if(Array.isArray(type)) {
+        return _.filter(list, function(obj){ return type.indexOf(obj.type) > -1 })
+      }
       return _.filter(list, function(obj){ return obj.type === type })
     }
   })

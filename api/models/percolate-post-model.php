@@ -591,6 +591,16 @@ class Percolate_Post_Model
       }
     }
 
+    // ----------- Custom Taxonomies --------------
+    if ( isset($template->taxonomy) && $template->taxonomy == 'on' && isset($template->taxonomyField) && isset($template->taxonomyWP) ) {
+      $terms = $post['ext'][$template->taxonomyField];
+      if (!is_array($terms)) {
+        $terms = explode(',', $terms);
+      }
+      Percolate_Log::log("Mapping {$template->taxonomyField} to {$template->taxonomyWP}, terms: " . print_r($terms, true));
+      wp_set_object_terms($wpPostID, $terms, $template->taxonomyWP, false);
+    }
+
     // ----------- Featured image --------------
     if ( isset($template->image) && $template->image == 'on' && isset($template->postImage) && isset($importedFields[$template->postImage]) ) {
       // Gegt image ID from the imported fields array
