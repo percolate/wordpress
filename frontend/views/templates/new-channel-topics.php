@@ -138,6 +138,7 @@
         <h4>Selective mapping for Percolate users</h4>
       </div>
     </div>
+
     <div class="form-group row" ng-repeat="percolateUser in percolateUsers">
       <div class="col-sm-6">
         <label for="userMapping-{{$index}}">{{percolateUser.user.name}}</label>
@@ -152,6 +153,16 @@
         </select>
       </div>
     </div>
+
+    <div ng-if="!percolateUsers">
+      <p>Loading users from Percolate...</p>
+    </div>
+
+    <nav aria-label="Page navigation" ng-if="userPagination && userPagination.pages > 1">
+      <ul class="pagination">
+        <li ng-repeat="offset in userPagination.offsets" ng-class="{'active': offset.active}"><a href="#page-{{offset.index}}" ng-click="fetchPercolatUsers(offset)">{{offset.index}}</a></li>
+      </ul>
+    </nav>
 
 
 
@@ -189,5 +200,5 @@
 </form>
 
 <!-- <pre>
-  {{formData}}
+  {{formData.userMapping}}
 </pre> -->
