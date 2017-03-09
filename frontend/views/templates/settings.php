@@ -82,5 +82,8 @@
 <hr>
 
 <p>
-  <small>Plugin version: 4.x-1.2.1 (<i>Supported WordPress version - Plugin version</i>)</small>
+  <small>
+    Plugin version: 4.x-1.2.2 (<i>Supported WordPress version - Plugin version</i>)<br>
+    PHP >= 5.6 required for the plugin to function properly
+  </small>
 </p>
