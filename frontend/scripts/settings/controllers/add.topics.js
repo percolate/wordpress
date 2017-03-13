@@ -1,9 +1,9 @@
 'use strict';
 
-var PAGINATION_LIMIT = 1
+var PAGINATION_LIMIT = 10
 
 angular.module('myApp')
-  .controller('AddTopicsCtr', function ($scope, $state, Api, Percolate) {
+  .controller('AddTopicsCtr', function ($scope, $state, Api, Percolate, Pagination) {
     console.log('Add New Channel - Topics state')
 
     /* --------------------------------------
@@ -43,64 +43,6 @@ angular.module('myApp')
       $scope.stopLoader()
       $scope.showError(err)
       return
-    }
-
-    function pagination(paginationData) {
-      if (!paginationData.total) { return false }
-      var _pagination = {
-        pages: Math.floor(paginationData.total/paginationData.limit) + 1,
-        offsets: [],
-        activePage: paginationData.offset / paginationData.limit,
-      }
-      if ( _pagination.activePage > 0) {
-        _pagination.prev = {
-          label: _pagination.activePage - 1,
-          offset: paginationData.offset - paginationData.limit,
-          limit: paginationData.limit
-        }
-      }
-      if (_pagination.activePage < _pagination.pages - 2) {
-        _pagination.next = {
-          label: _pagination.activePage + 1,
-          offset: paginationData.offset + paginationData.limit,
-          limit: paginationData.limit
-        }
-      }
-
-      if (_pagination.pages > 10) {
-        var _start = 0
-        if (_pagination.activePage - 4 > 0) {
-          _start = _pagination.activePage - 4
-        }
-
-        var _end = _start + 8
-        if (_end > _pagination.pages - 1) {
-          _end = _pagination.pages - 1
-        }
-
-        for (var i = _start; i < _end; i++) {
-           _pagination.offsets.push({
-             label: i+1,
-             offset: paginationData.limit * i,
-             limit: paginationData.limit,
-             active: paginationData.offset === paginationData.limit * i ? true : false
-           })
-         }
-
-      } else {
-
-        for (var i = 0; i <_pagination.pages; i++) {
-         _pagination.offsets.push({
-           label: i+1,
-           offset: paginationData.limit * i,
-           limit: paginationData.limit,
-           active: paginationData.offset === paginationData.limit * i ? true : false
-         })
-        }
-
-      }
-      console.log(_pagination);
-      return _pagination
     }
 
     function processWpUsers (res) {
@@ -146,7 +88,7 @@ angular.module('myApp')
         $scope.showError('There was an error.')
         return
       }
-      $scope.userPagination = pagination(res.data.pagination)
+      $scope.userPagination = Pagination.build(res.data.pagination)
       $scope.percolateUsers = res.data.data
     }
 

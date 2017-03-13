@@ -187,6 +187,13 @@ class Percolate_Setup
       'footer'  => true
     );
     $scripts[] = array(
+    	'handle'	=> 'PerolcateWP-PaginationSrv',
+    	'src'		  => plugins_url( '/frontend/scripts/settings/services/pagination.service.js', __FILE__ ),
+    	'deps'		=> array('angular'),
+      'version' => '1',
+      'footer'  => true
+    );
+    $scripts[] = array(
     	'handle'	=> 'PerolcateWP-MainCtr',
     	'src'		  => plugins_url( '/frontend/scripts/settings/controllers/main.js', __FILE__ ),
     	'deps'		=> array('angular'),
