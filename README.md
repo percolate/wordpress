@@ -198,6 +198,12 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.2
+
+* Custom taxonomy support
+* User mapping pagination
+* Better detection for the installed version of ACF
+
 ### 4.x-1.2.1
 
 * Added Post Syncing - changes from Percolate automatically get picked up
@@ -271,4 +277,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.1~
+~Current Version:4.x-1.2.2~
