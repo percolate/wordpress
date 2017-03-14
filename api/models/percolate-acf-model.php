@@ -19,12 +19,23 @@ class Percolate_ACF_Model
 
   public function get_ACF_data()
   {
-    if ( is_plugin_active( 'advanced-custom-fields/acf.php' ) ) {
-      // Percolate_Log::log('ACF v4 active');
-      $this->acf = 'v4';
-    } else if ( is_plugin_active( 'advanced-custom-fields-pro/acf.php' ) ) {
-      // Percolate_Log::log('ACF v5 active');
-      $this->acf = 'v5';
+    global $acf;
+
+  	if (isset($acf))
+  	{
+  		// Percolate_Log::log($acf->settings['version']);
+      $_ver = $acf->settings['version'];
+
+      if (version_compare($_ver, '5.0.0') >= 0) {
+        $this->acf = 'v5';
+      }
+      elseif (version_compare($_ver, '4.0.0') >= 0) {
+        $this->acf = 'v4';
+      } else {
+        $this->acf = null;
+      }
+      // Percolate_Log::log('ACF version: ' . $this->acf);
+
     } else {
       $this->acf = null;
     }
@@ -35,11 +46,9 @@ class Percolate_ACF_Model
    */
   public function getAcfStatus()
   {
-    // // We don't want ACF for now
-    // echo false;
-    // wp_die();
+    global $acf;
 
-    if ( is_plugin_active( 'advanced-custom-fields/acf.php' ) || is_plugin_active( 'advanced-custom-fields-pro/acf.php' ) ) {
+    if ( isset($acf) ) {
       echo true;
       wp_die();
     } else {
@@ -63,13 +72,12 @@ class Percolate_ACF_Model
 
   public function getAcfGroups()
   {
-    if ($this->acf && $this->acf == 'v5'){
-  		$this->acfGroups = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field-group'));
-  	}
-  	else
-    {
-  		$this->acfGroups = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf'));
-  	}
+    if ($this->acf == 'v5') {
+      $this->acfGroups = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field-group'));
+    } else {
+      $this->acfGroups = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf'));
+    }
+
     return $this->acfGroups;
   }
 
@@ -83,10 +91,11 @@ class Percolate_ACF_Model
 
       $all_existing_acf[$group->ID] = array();
 
-      if ($this->acf == 'v5' ){
+      if ($this->acf == 'v5' || $this->acf == 'v55' ){
         $fields = get_posts(array('posts_per_page' => -1, 'post_type' => 'acf-field', 'post_parent' => $group->ID));
 
         foreach ($fields as $field) {
+          // Percolate_Log::log('Fields: ' . print_r($field, true));
           // Percolate_Log::log('Fields: ' . print_r(unserialize( $field->post_content  ), true));
           $all_existing_acf[$group->ID][] = array(
             'key'   => $field->post_name,

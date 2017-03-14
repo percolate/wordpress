@@ -39,8 +39,10 @@ class Percolate_AJAX_Service
     add_action( 'wp_ajax_set_data', array( $this, 'setData' ) );
     // Get WP categories
     add_action( 'wp_ajax_get_cpts', array( $this, 'getCpts' ) );
-    // Get WP post types
+    // Get WP categories
     add_action( 'wp_ajax_get_categories', array( $this, 'getCategories' ) );
+    // Get WP taxonomies
+    add_action( 'wp_ajax_get_taxonomies', array( $this, 'getTaxonomies' ) );
     // Get WP users
     add_action( 'wp_ajax_get_users', array( $this, 'getUsers' ) );
     // Is ACF active
@@ -111,6 +113,16 @@ class Percolate_AJAX_Service
   public function getCategories()
   {
     $categories = $this->Wp->getCategories();
+    echo json_encode($categories);
+    wp_die();
+  }
+
+  /**
+   * Get WP custom taxonomies
+   */
+  public function getTaxonomies()
+  {
+    $categories = $this->Wp->getTaxonomies();
     echo json_encode($categories);
     wp_die();
   }

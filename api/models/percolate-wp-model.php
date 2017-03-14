@@ -116,6 +116,22 @@ class Percolate_WP_Model
     return $categories;
   }
 
+  /**
+   * Get custom taxonomies
+   *
+   * @return array|false Taxonomies
+   */
+  public function getTaxonomies()
+  {
+    $args = array(
+      'public'   => true,
+      '_builtin' => false
+
+    );
+    $taxonomies = get_taxonomies( $args, 'objects', 'and' );
+    return $taxonomies;
+  }
+
 
   /**
    * Get WP users

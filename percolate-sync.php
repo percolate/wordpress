@@ -7,7 +7,7 @@ Plugin Name: WP Percolate Importer
 Plugin URI: https://github.com/percolate/wordpress
 Description: Percolate integration for Wordpress, which includes the ability to sync posts, media library elements and custom creative templates.
 Author: Percolate Industries, Inc.
-Version: 4.x-1.2.1
+Version: 4.x-1.2.2
 Author URI: http://percolate.com
 */
 
@@ -182,6 +182,13 @@ class Percolate_Setup
     $scripts[] = array(
     	'handle'	=> 'PerolcateWP-UuidSrv',
     	'src'		  => plugins_url( '/frontend/scripts/settings/services/uuid.service.js', __FILE__ ),
+    	'deps'		=> array('angular'),
+      'version' => '1',
+      'footer'  => true
+    );
+    $scripts[] = array(
+    	'handle'	=> 'PerolcateWP-PaginationSrv',
+    	'src'		  => plugins_url( '/frontend/scripts/settings/services/pagination.service.js', __FILE__ ),
     	'deps'		=> array('angular'),
       'version' => '1',
       'footer'  => true

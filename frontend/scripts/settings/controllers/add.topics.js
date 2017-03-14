@@ -1,7 +1,9 @@
 'use strict';
 
+var PAGINATION_LIMIT = 10
+
 angular.module('myApp')
-  .controller('AddTopicsCtr', function ($scope, $state, Api, Percolate) {
+  .controller('AddTopicsCtr', function ($scope, $state, Api, Percolate, Pagination) {
     console.log('Add New Channel - Topics state')
 
     /* --------------------------------------
@@ -55,14 +57,27 @@ angular.module('myApp')
 
     function processPercolateTopics (res) {
       console.log('Topics', res.data)
-      if ($scope.percolateUsers) $scope.stopLoader()
+      if ($scope.percolateUsers) { $scope.stopLoader() }
 
       if( !res.data || !res.data.data ) {
         $scope.showError('There was an error.')
         return
       }
 
-      return $scope.topics = res.data.data
+      $scope.topics = res.data.data
+    }
+
+    function fetchPercolatUsers(paginationData) {
+      $scope.showLoader('Loading users from Percolate...')
+      $scope.percolateUsers = null
+      return Percolate.getUsersByLicense({
+        key    : $scope.activeChannel.key,
+        license: $scope.activeChannel.license,
+        fields : {
+          limit: (paginationData && paginationData.limit) ? paginationData.limit : PAGINATION_LIMIT,
+          offset: (paginationData && paginationData.offset) ? paginationData.offset : 0
+        }
+      }).then(processPercolateUsers, apiError)
     }
 
     function processPercolateUsers(res){
@@ -73,7 +88,7 @@ angular.module('myApp')
         $scope.showError('There was an error.')
         return
       }
-
+      $scope.userPagination = Pagination.build(res.data.pagination)
       $scope.percolateUsers = res.data.data
     }
 
@@ -156,6 +171,11 @@ angular.module('myApp')
      * Bootstrap
      * -------------------------------------- */
 
+
+    angular.extend($scope, {
+      fetchPercolatUsers: fetchPercolatUsers
+    })
+
      // Check if we have the active User
      if( !$scope.activeChannel.user ) {
        $scope.showError('No active user found.')
@@ -163,7 +183,7 @@ angular.module('myApp')
      }
 
     // Get Percolate topics
-    $scope.showLoader('Getting data from Percolate...')
+    $scope.showLoader('Loading data from Percolate...')
     Percolate.getTopics({
       key    : $scope.activeChannel.key,
       fields : {
@@ -171,14 +191,7 @@ angular.module('myApp')
       }
     }).then(processPercolateTopics, apiError)
 
-    Percolate.getUsersByLicense({
-      key    : $scope.activeChannel.key,
-      license: $scope.activeChannel.license,
-      fields : {
-        limit: 100,
-        offset: 0
-      }
-    }).then(processPercolateUsers, apiError)
+    fetchPercolatUsers()
 
     // Get WP users
     Api.getUsers().then(processWpUsers, apiError)
