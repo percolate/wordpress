@@ -187,6 +187,12 @@ class Percolate_Post_Model
       return false;
     }
 
+    // Don't sync approved posts
+    if (strpos($percolatePost['status'], 'approvals')) {
+      Percolate_Log::log('Post status is not valid for sync.' . $wpPostID);
+      return false;
+    }
+
     $channel = $this->getPostChannel($wpPostID);
     $schemas = $this->getSchemas($channel);
     $schema = PercolateHelpers::searchInArray($schemas, 'id', PercolateHelpers::getOriginalSchemaId($percolatePost['schema_id']));
