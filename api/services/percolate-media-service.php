@@ -228,7 +228,8 @@ class Percolate_Media
     $url = $uploads['url'] . '/' . $filename;
     // $object['media']['images'][$image]['url'] = $url;
 
-    $type = mime_content_type($filepath);
+    $type = $this->_mime_content_type($filepath);
+    // Percolate_Log::log("Mime:" . $type);
 
     $title = $imageData['metadata']['original_filename'];
     if( !$title ) {
@@ -340,6 +341,18 @@ class Percolate_Media
   	}
 
   	return $src = wp_get_attachment_url( $id );
+  }
+
+  private function _mime_content_type($file) {
+    $mtype = false;
+     if (function_exists('finfo_open')) {
+       $finfo = finfo_open(FILEINFO_MIME_TYPE);
+       $mtype = finfo_file($finfo, $file);
+       finfo_close($finfo);
+     } elseif (function_exists('mime_content_type')) {
+       $mtype = mime_content_type($file);
+     }
+     return $mtype;
   }
 
 }
