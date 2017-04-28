@@ -78,6 +78,8 @@ class Percolate_Post_Model
     );
 
     $res_posts = $this->Percolate->callAPI($key, $method, $fields);
+    if (!isset($res_posts['data'])) { return $posts; }
+    
     $posts = array_merge($posts, $res_posts['data']);
 
     // Percolate_Log::log(print_r($res_posts, true));
