@@ -60,7 +60,7 @@ class Percolate_Log
       {
          $line = fgets($fp, 4096);
          array_push($lines, $line);
-         if (count($lines)>100)
+         if (count($lines)>1000)
              array_shift($lines);
       }
       fclose($fp);
