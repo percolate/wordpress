@@ -54,8 +54,17 @@ class Percolate_Log
     $uploads = wp_upload_dir();
     $furi = $uploads['basedir'] . DIRECTORY_SEPARATOR . self::LOGS_DIRECTORY . DIRECTORY_SEPARATOR . self::LOG_FILE;
     if (  is_readable($furi)) {
-      $file = file_get_contents( $furi );
-      $res = array("success" => true, "log" => $file);
+      $lines=array();
+      $fp = fopen($furi, "r");
+      while(!feof($fp))
+      {
+         $line = fgets($fp, 4096);
+         array_push($lines, $line);
+         if (count($lines)>100)
+             array_shift($lines);
+      }
+      fclose($fp);
+      $res = array("success" => true, "log" => $lines);
     } else {
       $res = array("success" => false);
     }
