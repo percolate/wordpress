@@ -64,7 +64,7 @@ class Percolate_Log
              array_shift($lines);
       }
       fclose($fp);
-      $res = array("success" => true, "log" => $lines);
+      $res = array("success" => true, "log" => implode($lines));
     } else {
       $res = array("success" => false);
     }
