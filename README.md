@@ -200,6 +200,11 @@ You should see that:
 
 ### 4.x-1.2.2
 
+* Approvals workflow fix
+* Several small enhancements and fixes
+
+### 4.x-1.2.2
+
 * Custom taxonomy support
 * User mapping pagination
 * Better detection for the installed version of ACF
@@ -277,4 +282,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.2~
+~Current Version:4.x-1.2.3~
