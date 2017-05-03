@@ -78,6 +78,8 @@ class Percolate_Post_Model
     );
 
     $res_posts = $this->Percolate->callAPI($key, $method, $fields);
+    if (!isset($res_posts['data'])) { return $posts; }
+
     $posts = array_merge($posts, $res_posts['data']);
 
     // Percolate_Log::log(print_r($res_posts, true));
@@ -184,6 +186,13 @@ class Percolate_Post_Model
     // Check if updated_at date to see if the post has been changed
     if (intval(strtotime($percolatePost['updated_at'])) <= intval(get_post_meta($wpPostID, 'percolate_updated_at', true)) ) {
       Percolate_Log::log('Post has not been updated: ' . $wpPostID);
+      return false;
+    }
+
+    // Don't sync approved posts
+    Percolate_Log::log('APPROVALS: checking status' . $percolatePost['status'] . strpos($percolatePost['status'], 'approvals'));
+    if (strpos($percolatePost['status'], 'approvals') !== FALSE) {
+      Percolate_Log::log('Post status is not valid for sync.' . $wpPostID);
       return false;
     }
 
@@ -450,7 +459,7 @@ class Percolate_Post_Model
       // Handoff is at a later state, so we'll need to keep content in sync
       $event['sync'] = $this->checkHandoff($template->import, $template->handoff);
 
-      Percolate_Log::log('Adding post to the Sync queue: ' . print_r($event, true));
+      Percolate_Log::log(' post to the Sync queue: ' . print_r($event, true));
       $this->Queue->addEvent( $event );
     }
 
