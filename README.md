@@ -198,7 +198,7 @@ You should see that:
 
 ## Changelog
 
-### 4.x-1.2.2
+### 4.x-1.2.3
 
 * Approvals workflow fix
 * Several small enhancements and fixes
