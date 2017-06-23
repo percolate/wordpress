@@ -198,6 +198,11 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.3
+
+* Approvals workflow fix
+* Several small enhancements and fixes
+
 ### 4.x-1.2.2
 
 * Custom taxonomy support
@@ -277,4 +282,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.2~
+~Current Version:4.x-1.2.3~
