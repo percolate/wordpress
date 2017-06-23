@@ -160,7 +160,7 @@ class Percolate_Post_Model
    * Get the schemas from Percolate for the given channel
    *
    * @param stdObject $channel
-   * @return array Schemas
+   * @return array|false Schemas
    */
   public function getSchemas($channel)
   {
@@ -175,7 +175,12 @@ class Percolate_Post_Model
     $res_schema = $this->Percolate->callAPI($key, $method, $fields);
     // Percolate_Log::log(print_r($res_schema, true));
 
-    return $schemas = $res_schema["data"];
+    if (isset($res_schema["data"])) {
+      return $schemas = $res_schema["data"];
+    } else {
+      Percolate_Log::log('No shchemas were found.');
+      return false;
+    }
   }
 
 
@@ -198,6 +203,7 @@ class Percolate_Post_Model
 
     $channel = $this->getPostChannel($wpPostID);
     $schemas = $this->getSchemas($channel);
+    if (!$schemas) return false;
     $schema = PercolateHelpers::searchInArray($schemas, 'id', PercolateHelpers::getOriginalSchemaId($percolatePost['schema_id']));
     $template = $channel->{$schema[0]['id']};
 
@@ -351,10 +357,11 @@ class Percolate_Post_Model
       $html = str_get_html($body);
 
       if (is_object($html)) {
+        Percolate_Log::log('Body is processed by str_get_html');
         // Find all images
         foreach($html->find('img') as $img) {
           Percolate_Log::log('Image found: ' . print_r($img->src, true));
-          $newSrc = $this->Media->importImageFromUrl($img->src);
+          $newSrc = $this->Media->importImageFromUrl(urldecode($img->src));
           if( $newSrc ) {
             Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
             $img->src = $newSrc;
