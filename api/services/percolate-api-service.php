@@ -33,8 +33,9 @@ class Percolate_API_Service
       'method' => 'GET',
       'headers' => array("Content-type" => "application/json", "Authorization" => $api_key),
       'timeout' => 30,
-    	'redirection' => 3,
-    	'blocking' => true
+      'redirection' => 3,
+      'blocking' => true,
+      'sslverify' => false
     );
 
     // GET: make URL from fields
@@ -58,6 +59,8 @@ class Percolate_API_Service
       $req['headers'] = array('Content-Type' => 'application/json', "Authorization" => $api_key, "Content-Length" => strlen(json_encode($jsonFields)));
       Percolate_Log::log("API: Custom CRUD, url: {$url}, method: {$type}");
     }
+
+    Percolate_Log::log("WP Remote Request to: " . $url);
 
     $res = wp_remote_request( $url, $req);
 
