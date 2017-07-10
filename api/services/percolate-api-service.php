@@ -60,8 +60,6 @@ class Percolate_API_Service
       Percolate_Log::log("API: Custom CRUD, url: {$url}, method: {$type}");
     }
 
-    Percolate_Log::log("WP Remote Request to: " . $url);
-
     $res = wp_remote_request( $url, $req);
 
     if ( is_wp_error( $res ) ) {
