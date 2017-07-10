@@ -73,6 +73,7 @@ class Percolate_Post_Model
     $fields = array(
       'scope_ids'     => 'license:' . $channel->license,
       'platform_ids'  => $channel->platform,
+      'statuses'      => 'draft,queued.*',
       'limit'         => $batch,
       'offset'        => $offset
     );
