@@ -361,8 +361,8 @@ class Percolate_Post_Model
         Percolate_Log::log('Body is processed by str_get_html');
         // Find all images
         foreach($html->find('img') as $img) {
-          Percolate_Log::log('Image found: ' . print_r($img->src, true));
-          $newSrc = $this->Media->importImageFromUrl(urldecode($img->src));
+          Percolate_Log::log('Image found for post : ' . $post['id'] . " - " . print_r(htmlspecialchars_decode($img->src), true));
+          $newSrc = $this->Media->importImageFromUrl(htmlspecialchars_decode($img->src));
           if( $newSrc ) {
             Percolate_Log::log('Image imported: ' . print_r($newSrc, true));
             $img->src = $newSrc;
