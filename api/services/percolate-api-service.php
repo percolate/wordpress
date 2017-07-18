@@ -33,8 +33,9 @@ class Percolate_API_Service
       'method' => 'GET',
       'headers' => array("Content-type" => "application/json", "Authorization" => $api_key),
       'timeout' => 30,
-    	'redirection' => 3,
-    	'blocking' => true
+      'redirection' => 3,
+      'blocking' => true,
+      'sslverify' => false
     );
 
     // GET: make URL from fields

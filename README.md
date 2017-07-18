@@ -198,6 +198,11 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.4
+
+* Only fetch draft and queued posts upon import
+* Fix inline image import to WP
+
 ### 4.x-1.2.3
 
 * Approvals workflow fix
@@ -282,4 +287,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.3~
+~Current Version:4.x-1.2.4~
