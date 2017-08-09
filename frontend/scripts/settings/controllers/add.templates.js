@@ -2,7 +2,7 @@
 
 angular.module('myApp')
   .controller('AddTemplatesCtr', function ($scope, $state, UUID, Api, Percolate) {
-    console.log('Add New Channel - Templates state')
+    // console.log('Add New Channel - Templates state')
 
     // Check if we have the active User
     if( !$scope.activeChannel.user ) {
@@ -22,6 +22,10 @@ angular.module('myApp')
       acfGroups : [],
       isWpmlActive : false,
       wpmlLanguages : [],
+      taxonomiesWP: [],
+      taxonomiesPerco: [],
+      termsWP: [],
+      termsPerco: [],
     })
 
     // Prepare form data
@@ -56,7 +60,7 @@ angular.module('myApp')
 
 
     function getTemplateSchemas(res) {
-      console.log('Schemas', res.data)
+      // console.log('Schemas', res.data)
 
       if( !res.data || !res.data.data ) {
         $scope.showError('There was an error.')
@@ -64,13 +68,46 @@ angular.module('myApp')
       }
 
       $scope.templates = res.data.data
+      return setTimeout(null, 1)
+    }
 
-      return
+    function getTaxonomiesPerco(res) {
+      console.log('Percolate taxonomies', res)
+      if (res.data) $scope.taxonomiesPerco = res.data.data
+      return setTimeout(null, 1)
+    }
+
+    function getTermsPerco(res) {
+      console.log('Percolate terms', res)
+      if (res.data) $scope.termsPerco = res.data.data
+      processSchemas()
+      $scope.stopLoader()
+    }
+
+    function processSchemas() {
+      $scope.templates = $scope.templates.map(function(template) {
+
+        var taxonomyField = _.find(template.fields, {type: 'term'})
+
+        if (!taxonomyField || !taxonomyField.ext || !taxonomyField.ext.parent_term_ids[0])
+         return template
+
+        var taxID = taxonomyField.ext.parent_term_ids[0]
+        taxonomyField.taxonomy = _.find($scope.taxonomiesPerco, {root_id: taxID})
+        taxonomyField.terms = _.filter($scope.termsPerco, function(term) {
+          if (term.path_ids.indexOf(taxID) > -1)
+            return term
+        })
+
+        return template
+      })
+
+      console.log($scope.templates);
     }
 
 
     function getCpts (res) {
-      console.log('Post types', res.data)
+      // console.log('Post types', res.data)
       delete res.data.page
       delete res.data.attachment
       $scope.postTypes = res.data
@@ -87,7 +124,7 @@ angular.module('myApp')
 
     function getAcfStatus (res) {
       if(res.data === '1') {
-        console.log('ACF is found')
+        // console.log('ACF is found')
         $scope.isAcfActive = true
         return Api.getAcfData()
       }
@@ -96,7 +133,7 @@ angular.module('myApp')
 
     function getAcfData (res) {
       if( $scope.isAcfActive ) {
-        console.log('ACF data', res)
+        // console.log('ACF data', res)
 
         $scope.acfGroups = res.data.groups
         $scope.acfFields = res.data.fields
@@ -108,15 +145,19 @@ angular.module('myApp')
           })
         }
       }
-      return Api.getTaxonomies()
     }
 
-    function getTaxonomies(res) {
-      console.log('Taxonomies', res)
+    function getTaxonomiesWP(res) {
+      // console.log('WP taxonomies', res)
       if (res.data) {
-        $scope.taxonomies = res.data
+        $scope.taxonomiesWP = res.data
       }
-      return Api.getWpmlStatus()
+      return Api.getTerms()
+    }
+
+    function getTermsWP(res) {
+      console.log('WP terms', res)
+      if (res.data) $scope.termsWP = res.data
     }
 
 
@@ -131,7 +172,6 @@ angular.module('myApp')
     }
 
     function getMetaBoxData (res) {
-      $scope.stopLoader()
       if ($scope.isMetaBoxActive) {
         $scope.metaboxGroups = res.data.groups
       }
@@ -142,10 +182,10 @@ angular.module('myApp')
     function setData (res) {
       $scope.stopLoader()
       if(!res.data.success) {
-        console.log('Error while saving to DB', res)
+        // console.log('Error while saving to DB', res)
         $scope.showError('Error while saving to DB.')
       } else {
-        console.log('Data saved', res)
+        // console.log('Data saved', res)
         // reset the new channel object
         $scope.activeChannel = {}
         // all done here
@@ -190,13 +230,11 @@ angular.module('myApp')
       }
 
       $scope.showLoader('Saving data...')
-      console.log('Submiting data, current dataset: ', $scope.Percolate)
+      // console.log('Submiting data, current dataset: ', $scope.Percolate)
 
       Api.setData($scope.Percolate)
         .then(setData, apiError)
     }
-
-
 
 
 
@@ -213,7 +251,30 @@ angular.module('myApp')
       }
     })
       .then(getTemplateSchemas, apiError)
-
+      .then(function () {
+        // Get taxonomies
+        return Percolate.getTaxonomies({
+          key    : $scope.activeChannel.key,
+          fields : {
+            'scope_ids': 'license:' + $scope.activeChannel.license,
+            'ext.platform_ids': $scope.activeChannel.platform,
+          }
+        })
+      })
+      .then(getTaxonomiesPerco, apiError)
+      .then(function () {
+        // Get terms
+        return Percolate.getTerms({
+          key    : $scope.activeChannel.key,
+          fields : {
+            'scope_ids': 'license:' + $scope.activeChannel.license,
+            'ext.platform_ids': $scope.activeChannel.platform,
+            'mode': 'taxonomy',
+            'depth': 2,
+          }
+        })
+      }, apiError)
+      .then(getTermsPerco, apiError)
 
     /**
      * Populate the form fields with data from WP and Percolate
@@ -222,7 +283,10 @@ angular.module('myApp')
       .then(getCpts, apiError)
       .then(getAcfStatus, apiError)
       .then(getAcfData, apiError)
-      .then(getTaxonomies, apiError)
+    Api.getTaxonomies()
+      .then(getTaxonomiesWP, apiError)
+      .then(getTermsWP, apiError)
+    Api.getWpmlStatus()
       .then(getWpmlStatus, apiError)
       .then(getMetaBoxStatus, apiError)
       .then(getMetaBoxData, apiError)
@@ -232,7 +296,7 @@ angular.module('myApp')
      */
     angular.extend($scope, {
       submitForm : submitForm,
-      getHandoffStatuses : getHandoffStatuses
+      getHandoffStatuses : getHandoffStatuses,
     })
 
   })
@@ -247,5 +311,10 @@ angular.module('myApp')
         return _.filter(list, function(obj){ return type.indexOf(obj.type) > -1 })
       }
       return _.filter(list, function(obj){ return obj.type === type })
+    }
+  })
+  .filter('filterByTaxonomy', function () {
+    return function (list, taxId) {
+      return _.filter(list, function(obj){ return obj.taxonomy == taxId })
     }
   })

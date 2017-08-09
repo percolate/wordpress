@@ -58,7 +58,6 @@ angular.module('myApp')
         }
 
       }
-      console.log(_pagination);
       return _pagination
     }
 

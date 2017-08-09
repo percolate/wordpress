@@ -43,6 +43,8 @@ class Percolate_AJAX_Service
     add_action( 'wp_ajax_get_categories', array( $this, 'getCategories' ) );
     // Get WP taxonomies
     add_action( 'wp_ajax_get_taxonomies', array( $this, 'getTaxonomies' ) );
+    // Get WP terms
+    add_action( 'wp_ajax_get_terms', array( $this, 'getTerms' ) );
     // Get WP users
     add_action( 'wp_ajax_get_users', array( $this, 'getUsers' ) );
     // Is ACF active
@@ -118,12 +120,22 @@ class Percolate_AJAX_Service
   }
 
   /**
-   * Get WP custom taxonomies
+   * Get WP taxonomies
    */
   public function getTaxonomies()
   {
-    $categories = $this->Wp->getTaxonomies();
-    echo json_encode($categories);
+    $taxonomies = $this->Wp->getTaxonomies();
+    echo json_encode($taxonomies);
+    wp_die();
+  }
+
+  /**
+   * Get WP terms
+   */
+  public function getTerms()
+  {
+    $terms = $this->Wp->getTerms();
+    echo json_encode($terms);
     wp_die();
   }
 

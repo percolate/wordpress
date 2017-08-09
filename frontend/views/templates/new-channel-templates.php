@@ -152,7 +152,48 @@
                   </div>
                 </div>
               </div>
-              <div class="row form-group" ng-show="formData[template.id].taxonomy === 'on'">
+
+              <div class="taxonomies" ng-show="formData[template.id].taxonomy === 'on'">
+                <hr>
+
+                <div class="tax-field" ng-repeat="field in template.fields | filterType: ['term']">
+
+                  <div class="row form-group">
+                    <div class="col-sm-6">
+                      <h5>Taxonomies:</h5>
+                    </div>
+                  </div>
+                  <div class="row form-group">
+                    <div class="col-sm-6">
+                      <label for="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}">{{field.taxonomy.name}}</label>
+                    </div>
+                    <div class="col-sm-6">
+                      <select name="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}" id="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}" class="form-control"
+                              ng-model="formData[template.id].taxonomies[field.key]['taxonomy']"
+                              ng-options="option.name as option.label for option in taxonomiesWP"></select>
+                    </div>
+                  </div>
+
+                  <div class="terms" ng-if="formData[template.id].taxonomies[field.key]['taxonomy']">
+                    <div class="row form-group" ng-repeat="term in field.terms">
+                      <div class="col-sm-6">
+                        <label for="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}-{{term.id}}" style="font-weight: normal;"> – {{term.name}}</label>
+                      </div>
+                      <div class="col-sm-6">
+                        <select name="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}-{{term.id}}" id="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}-{{term.id}}" class="form-control"
+                                ng-model="formData[template.id].taxonomies[field.key]['terms'][term.id]"
+                                ng-options="option.term_id as option.name for option in termsWP | filterByTaxonomy: formData[template.id].taxonomies[field.key]['taxonomy']"></select>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <hr>
+              </div>
+
+
+              <!-- <div class="row form-group" ng-show="formData[template.id].taxonomy === 'on'">
                 <div class="col-sm-6">
                   <label for="{{template.id}}-taxonomyField">Taxonomy field</label>
                 </div>
@@ -169,9 +210,9 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-taxonomyWP" id="{{template.id}}-taxonomyWP" class="form-control"
                           ng-model="formData[template.id].taxonomyWP"
-                          ng-options="option.name as option.label for option in taxonomies"></select>
+                          ng-options="option.name as option.label for option in taxonomiesWP"></select>
                 </div>
-              </div>
+              </div> -->
 
               <!-- WPML -->
               <div class="row form-group" ng-if="isWpmlActive">

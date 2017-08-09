@@ -82,7 +82,7 @@ angular.module('wpPercolate', [])
       /**
        * Get the v5 terms */
       getTerms: function (data) {
-        return callApi('v5/terms/', data)
+        return callApi('v5/term/', data)
       },
 
 

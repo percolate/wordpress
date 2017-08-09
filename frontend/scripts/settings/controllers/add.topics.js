@@ -4,7 +4,7 @@ var PAGINATION_LIMIT = 10
 
 angular.module('myApp')
   .controller('AddTopicsCtr', function ($scope, $state, Api, Percolate, Pagination) {
-    console.log('Add New Channel - Topics state')
+    // console.log('Add New Channel - Topics state')
 
     /* --------------------------------------
      * Public variables
@@ -34,6 +34,7 @@ angular.module('myApp')
       angular.extend($scope.activeChannel, $scope.edit.channel)
     }
 
+    $state.go('add.templates')
 
     /* --------------------------------------
      * Private methods
@@ -52,11 +53,11 @@ angular.module('myApp')
       } else {
         $scope.formData.wpUser = +$scope.formData.wpUser
       }
-      console.log('WP users', $scope.wpUsers)
+      // console.log('WP users', $scope.wpUsers)
     }
 
     function processPercolateTopics (res) {
-      console.log('Topics', res.data)
+      // console.log('Topics', res.data)
       if ($scope.percolateUsers) { $scope.stopLoader() }
 
       if( !res.data || !res.data.data ) {
@@ -81,7 +82,7 @@ angular.module('myApp')
     }
 
     function processPercolateUsers(res){
-      console.log('Percolate users: ', res)
+      // console.log('Percolate users: ', res)
       if ($scope.topics) $scope.stopLoader()
 
       if( !res.data || !res.data.data ) {
@@ -95,7 +96,7 @@ angular.module('myApp')
     function processWpCategories(res) {
       // var tree = _unflatten(res.data)
       $scope.categories = $scope.categories.concat(res.data)
-      console.log('WP categories', $scope.categories)
+      // console.log('WP categories', $scope.categories)
 
       return Api.getWpmlStatus()
     }
@@ -111,11 +112,11 @@ angular.module('myApp')
         }
       })
 
-      console.log($scope.categoriesByLanguage);
+      // console.log($scope.categoriesByLanguage);
     }
 
     function getWpmlStatus (res) {
-      console.log('WPML status', res)
+      // console.log('WPML status', res)
       $scope.isWpmlActive = (res.data === 'true')
 
       if (res) {
@@ -163,7 +164,7 @@ angular.module('myApp')
       if( $scope.formData ) {
         angular.extend($scope.activeChannel, $scope.formData)
       }
-      console.log('Submiting form, current dataset: ', $scope.activeChannel)
+      // console.log('Submiting form, current dataset: ', $scope.activeChannel)
       $state.go('add.templates')
     }
 

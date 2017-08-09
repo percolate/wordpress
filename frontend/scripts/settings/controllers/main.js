@@ -2,7 +2,7 @@
 
 angular.module('myApp')
   .controller('MainCtr', function ($scope, $state, Api, $rootScope, Percolate, UUID) {
-    console.log('Angular app started, setting the state...');
+    // console.log('Angular app started, setting the state...');
 
     /* --------------------------
      * Public variables
@@ -72,7 +72,6 @@ angular.module('myApp')
         channelId : channelId,
         channel : $scope.Percolate.channels[channelId]
       })
-      console.log($scope.edit);
       $state.go('add.topics')
     }
 
@@ -82,12 +81,12 @@ angular.module('myApp')
         delete $scope.Percolate.channels[channelId]
       }
 
-      console.log('Submiting data, current dataset: ', $scope.Percolate)
+      // console.log('Submiting data, current dataset: ', $scope.Percolate)
       $scope.showLoader('Saving data...')
       Api.setData($scope.Percolate)
         .then(function (res) {
           $scope.stopLoader()
-          console.log('Data saved', res)
+          // console.log('Data saved', res)
           // reset the new channel object
           $scope.activeChannel = {}
           // all done here
@@ -97,25 +96,25 @@ angular.module('myApp')
 
     function deleteHiddenChannels() {
       _.each($scope.Percolate.channels, function (channel, uuid, list) {
-        console.log(channel, uuid)
+        // console.log(channel, uuid)
         if(!$scope.Percolate.channels[uuid].active || $scope.Percolate.channels[uuid].active === 'false' ) {
-          console.log('delete')
+          // console.log('delete')
           delete $scope.Percolate.channels[uuid]
         }
       })
-      // console.log('Cleaned up: ', $scope.Percolate);
+      console.log('Cleaned up: ', $scope.Percolate);
       Api.setData($scope.Percolate)
     }
 
     function restoreChannel (channelId) {
       $scope.Percolate.channels[channelId].active = 'true'
 
-      console.log('Submiting data, current dataset: ', $scope.Percolate)
+      // console.log('Submiting data, current dataset: ', $scope.Percolate)
       $scope.showLoader('Saving data...')
       Api.setData($scope.Percolate)
         .then(function (res) {
           $scope.stopLoader()
-          console.log('Data saved', res)
+          // console.log('Data saved', res)
           // reset the new channel object
           $scope.activeChannel = {}
           // all done here
@@ -132,7 +131,7 @@ angular.module('myApp')
         .then(function (res) {
           $scope.stopLoader()
           Api.getMessages().then(updateMessages)
-          console.log('Import channel', res)
+          // console.log('Import channel', res)
         }, function (err) {
           $scope.stopLoader()
           $scope.showError(err)
@@ -196,7 +195,7 @@ angular.module('myApp')
 
     function init (res) {
       $scope.stopLoader()
-      console.log('Getting data', res);
+      // console.log('Getting data', res);
       if(!res.data || res.data === 'false') {
         // Create an object for Percolate settings
         $scope.Percolate = {
@@ -220,7 +219,7 @@ angular.module('myApp')
     function updateMessages(res) {
       if(!res.data) { return false }
       $scope.messages = res.data
-      console.info('Messages', res.data)
+      // console.info('Messages', res.data)
     }
 
     function updateLog(res) {

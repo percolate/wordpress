@@ -609,6 +609,8 @@ class Percolate_Post_Model
     }
 
     // ----------- Custom Taxonomies --------------
+    //   Not supported anymore
+    //   Superseded by v5 custom taxonomies
     if ( isset($template->taxonomy) && $template->taxonomy == 'on' && isset($template->taxonomyField) && isset($template->taxonomyWP) ) {
       $terms = $post['ext'][$template->taxonomyField];
       if (!is_array($terms)) {
