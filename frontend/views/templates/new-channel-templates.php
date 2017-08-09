@@ -142,7 +142,7 @@
               <!-- Custom Taxonomies -->
               <div class="row form-group">
                 <div class="col-sm-6">
-                  <label for="{{template.id}}-taxonomy">Custom Taxonomies</label>
+                  <label for="{{template.id}}-taxonomy">Map Taxonomies</label>
                 </div>
                 <div class="col-sm-6">
                   <div class="switch">
@@ -159,7 +159,7 @@
                 <div class="col-sm-6">
                   <select name="{{template.id}}-taxonomyField" id="{{template.id}}-taxonomyField" class="form-control"
                           ng-model="formData[template.id].taxonomyField"
-                          ng-options="option.key as option.label for option in template.fields | filterType: ['text', 'string-array']"></select>
+                          ng-options="option.key as option.label for option in template.fields | filterType: ['term']"></select>
                 </div>
               </div>
               <div class="row form-group" ng-show="formData[template.id].taxonomy === 'on'">
