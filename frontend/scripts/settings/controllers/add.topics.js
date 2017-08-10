@@ -34,7 +34,7 @@ angular.module('myApp')
       angular.extend($scope.activeChannel, $scope.edit.channel)
     }
 
-    $state.go('add.templates')
+    // $state.go('add.templates')
 
     /* --------------------------------------
      * Private methods

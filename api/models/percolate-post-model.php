@@ -314,6 +314,7 @@ class Percolate_Post_Model
         Percolate_Log::log('Post already imported: ' . $post['id']);
         // DEBUG: Delete post if any
         // wp_delete_post($posts->posts[0]->ID, true);
+        
         $res['success'] = false;
         $res['percolate_id'] = $post['id'];
         $res['message'] = "Post already imported";
@@ -373,7 +374,7 @@ class Percolate_Post_Model
       }
     }
 
-    // ----------- Categories --------------
+    // ----------- OBSOLATE: Topic -> Category --------------
     $post_category = array();
 
     if( isset($post['topic_ids']) && !empty($post['topic_ids']) ) {
@@ -605,6 +606,22 @@ class Percolate_Post_Model
         } else {
           $res['term'][] = 'Cannot add term: ' . $term;
         }
+      }
+    }
+
+    // -----------  Taxonomies v5  --------------
+    if( isset($template->taxonomies) && !empty($template->taxonomies) ) {
+      $index = 0;
+      foreach ($template->taxonomies as $taxID => $taxonomy) {
+        Percolate_Log::log('Adding terms for : ' . $taxonomy->taxonomy);
+        if( !isset($post['ext'][$taxID]) || empty($post['ext'][$taxID]) )
+          continue;
+        $wpTerms = [];
+        foreach ($post['ext'][$taxID] as $termID) {
+          $wpTerms[] = $taxonomy->terms->${termID};
+        }
+        wp_set_post_terms($wpPostID, $wpTerms, $taxonomy->taxonomy, $index==0 ? false : true);
+        $index++;
       }
     }
 

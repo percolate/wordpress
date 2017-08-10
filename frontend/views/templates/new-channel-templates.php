@@ -153,7 +153,7 @@
                 </div>
               </div>
 
-              <div class="taxonomies" ng-show="formData[template.id].taxonomy === 'on'">
+              <div class="taxonomies" ng-if="formData[template.id].taxonomy === 'on' && termsPerco.length > 0">
                 <hr>
 
                 <div class="tax-field" ng-repeat="field in template.fields | filterType: ['term']">
@@ -170,7 +170,11 @@
                     <div class="col-sm-6">
                       <select name="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}" id="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}" class="form-control"
                               ng-model="formData[template.id].taxonomies[field.key]['taxonomy']"
-                              ng-options="option.name as option.label for option in taxonomiesWP"></select>
+                              ng-selected="edit.active ? formData[template.id].taxonomies[field.key]['taxonomy'] : false"
+                      >
+                        <option value="">Don't map</option>
+                        <option value="{{option.name}}" ng-repeat="option in taxonomiesWP">{{option.label}}</option>
+                      </select>
                     </div>
                   </div>
 
@@ -182,13 +186,16 @@
                       <div class="col-sm-6">
                         <select name="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}-{{term.id}}" id="{{template.id}}-{{field.key}}-{{field.taxonomy.id}}-{{term.id}}" class="form-control"
                                 ng-model="formData[template.id].taxonomies[field.key]['terms'][term.id]"
-                                ng-options="option.term_id as option.name for option in termsWP | filterByTaxonomy: formData[template.id].taxonomies[field.key]['taxonomy']"></select>
+                                ng-selected="edit.active ? formData[template.id].taxonomies[field.key]['terms'][term.id] : false"
+                        >
+                          <option value="">Don't map</option>
+                          <option value="{{option.term_id}}" ng-repeat="option in termsWP | filterByTaxonomy: formData[template.id].taxonomies[field.key]['taxonomy']">{{option.name}}</option>
+                        </select>
                       </div>
                     </div>
                   </div>
-
+                  {{formData[template.id].taxonomies}}
                 </div>
-
                 <hr>
               </div>
 

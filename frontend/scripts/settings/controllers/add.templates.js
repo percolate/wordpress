@@ -72,13 +72,13 @@ angular.module('myApp')
     }
 
     function getTaxonomiesPerco(res) {
-      console.log('Percolate taxonomies', res)
+      // console.log('Percolate taxonomies', res)
       if (res.data) $scope.taxonomiesPerco = res.data.data
       return setTimeout(null, 1)
     }
 
     function getTermsPerco(res) {
-      console.log('Percolate terms', res)
+      // console.log('Percolate terms', res)
       if (res.data) $scope.termsPerco = res.data.data
       processSchemas()
       $scope.stopLoader()
@@ -101,8 +101,6 @@ angular.module('myApp')
 
         return template
       })
-
-      console.log($scope.templates);
     }
 
 
@@ -156,7 +154,7 @@ angular.module('myApp')
     }
 
     function getTermsWP(res) {
-      console.log('WP terms', res)
+      // console.log('WP terms', res)
       if (res.data) $scope.termsWP = res.data
     }
 
