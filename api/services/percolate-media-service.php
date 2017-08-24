@@ -146,7 +146,8 @@ class Percolate_Media
 
     $method = "v3/media/" . $imageKey;
     $imageData = $this->Percolate->callAPI($key, $method, $fields);
-    Percolate_Log::log($method);
+    Percolate_Log::log("IMAGE $imageKey: Importing Image into WP");
+    Percolate_Log::log("IMAGE $imageKey: " . $method);
     // Percolate_Log::log(print_r($imageData, true));
 
     if( isset($imageData['src']) ) {
@@ -176,7 +177,7 @@ class Percolate_Media
       $imageData = $imageData[0];
     }
     else {
-      Percolate_Log::log("Image soruce cannot be found in Percolate API response.");
+      Percolate_Log::log("IMAGE $imageKey: Image soruce cannot be found in Percolate API response.");
       return;
     }
 
@@ -187,7 +188,7 @@ class Percolate_Media
 	    $percolate_id =  $imageData['data']['id'];
     }
     else {
-      Percolate_Log::log("Image ID cannot be found");
+      Percolate_Log::log("IMAGE $imageKey: Image ID cannot be found");
       return;
     }
 
@@ -203,7 +204,7 @@ class Percolate_Media
 
     if ( $posts->post_count > 0) {
       // Percolate_Log::log(print_r($posts, true));
-      Percolate_Log::log("Image already imported.");
+      Percolate_Log::log("IMAGE $imageKey: Image already imported.");
       // wp_delete_post($posts->posts[0]->ID, true);
       return $posts->posts[0]->ID;
     }
@@ -219,6 +220,7 @@ class Percolate_Media
     $uploads = wp_upload_dir();
     // get unique file name
     $filename = wp_unique_filename( $uploads['path'], basename(parse_url($src, PHP_URL_PATH)) );
+    Percolate_Log::log('IMAGE: WP filename' . $filename);
     $filepath = $uploads['path'] . '/' . $filename;
 
     $url = '';
@@ -229,12 +231,13 @@ class Percolate_Media
     // $object['media']['images'][$image]['url'] = $url;
 
     $type = $this->_mime_content_type($filepath);
-    // Percolate_Log::log("Mime:" . $type);
+    Percolate_Log::log("IMAGE $imageKey: Mime " . $type);
 
     $title = $imageData['metadata']['original_filename'];
     if( !$title ) {
       $title = $imageData['id'];
     }
+    Percolate_Log::log("IMAGE $imageKey: title " . $title);
 
     $title = preg_replace('!\.[^.]+$!', '', basename($file));
     $content = '';
@@ -246,6 +249,8 @@ class Percolate_Media
       if ('' != trim($image_meta['caption']))
         $content = trim($image_meta['caption']);
     }
+
+    Percolate_Log::log("IMAGE $imageKey: meta " . print_r($title, true));
 
     if( isset($imageData['metadata']['description']) && !empty($imageData['metadata']['description']) ) {
       $content = $imageData['metadata']['description'];
@@ -278,6 +283,7 @@ class Percolate_Media
     // $filepath = str_replace(strtolower(str_replace('\\', '/', $uploads['path'])), $uploads['path'], $filepath);
     // Save the data
     $id = wp_insert_attachment($attachment, $filepath);
+    Percolate_Log::log("IMAGE $imageKey: wp_insert_attachment " . $id);
     if (is_wp_error($id)) {
       Percolate_Log::log(print_r($id, true));
       return false;
