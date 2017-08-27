@@ -314,7 +314,7 @@ class Percolate_Post_Model
         Percolate_Log::log('Post already imported: ' . $post['id']);
         // DEBUG: Delete post if any
         // wp_delete_post($posts->posts[0]->ID, true);
-        
+
         $res['success'] = false;
         $res['percolate_id'] = $post['id'];
         $res['message'] = "Post already imported";
@@ -610,18 +610,27 @@ class Percolate_Post_Model
     }
 
     // -----------  Taxonomies v5  --------------
-    if( isset($template->taxonomies) && !empty($template->taxonomies) ) {
-      $index = 0;
-      foreach ($template->taxonomies as $taxID => $taxonomy) {
-        Percolate_Log::log('Adding terms for : ' . $taxonomy->taxonomy);
-        if( !isset($post['ext'][$taxID]) || empty($post['ext'][$taxID]) )
-          continue;
+    if( isset($channel->taxonomyMapping) && !empty($channel->taxonomyMapping) ) {
+      foreach ($channel->taxonomyMapping as $index => $mapping) {
+        Percolate_Log::log('Adding terms for : ' . print_r($mapping, true));
         $wpTerms = [];
-        foreach ($post['ext'][$taxID] as $termID) {
-          $wpTerms[] = $taxonomy->terms->${termID};
+        foreach ($schema['fields'] as $field) {
+          if ($field['type'] == 'term') {
+            foreach ($post['ext'][$field['key']] as $termID) {
+              $wpTerms[] = $mapping->terms->${termID};
+            }
+          }
         }
-        wp_set_post_terms($wpPostID, $wpTerms, $taxonomy->taxonomy, $index==0 ? false : true);
-        $index++;
+        Percolate_Log::log('$wpTerms' . print_r($wpTerms, true));
+        $taxonomyWp = get_taxonomy( $mapping->taxonomyWP );
+        if (!$taxonomyWp->hierarchical) {
+          Percolate_Log::log('Taxonomy is not hierarchical');
+          foreach ($wpTerms as $key => $termId) {
+            $term = get_term( $termId, $mapping->taxonomyWP );
+            $wpTerms[$key] = $term->slug;
+          }
+        }
+        wp_set_post_terms($wpPostID, $wpTerms, $mapping->taxonomyWP, $index==0 ? false : true);
       }
     }
 

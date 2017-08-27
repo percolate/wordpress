@@ -22,10 +22,6 @@ angular.module('myApp')
       acfGroups : [],
       isWpmlActive : false,
       wpmlLanguages : [],
-      taxonomiesWP: [],
-      taxonomiesPerco: [],
-      termsWP: [],
-      termsPerco: [],
     })
 
     // Prepare form data
@@ -68,41 +64,8 @@ angular.module('myApp')
       }
 
       $scope.templates = res.data.data
-      return setTimeout(null, 1)
-    }
-
-    function getTaxonomiesPerco(res) {
-      // console.log('Percolate taxonomies', res)
-      if (res.data) $scope.taxonomiesPerco = res.data.data
-      return setTimeout(null, 1)
-    }
-
-    function getTermsPerco(res) {
-      // console.log('Percolate terms', res)
-      if (res.data) $scope.termsPerco = res.data.data
-      processSchemas()
       $scope.stopLoader()
     }
-
-    function processSchemas() {
-      $scope.templates = $scope.templates.map(function(template) {
-
-        var taxonomyField = _.find(template.fields, {type: 'term'})
-
-        if (!taxonomyField || !taxonomyField.ext || !taxonomyField.ext.parent_term_ids[0])
-         return template
-
-        var taxID = taxonomyField.ext.parent_term_ids[0]
-        taxonomyField.taxonomy = _.find($scope.taxonomiesPerco, {root_id: taxID})
-        taxonomyField.terms = _.filter($scope.termsPerco, function(term) {
-          if (term.path_ids.indexOf(taxID) > -1)
-            return term
-        })
-
-        return template
-      })
-    }
-
 
     function getCpts (res) {
       // console.log('Post types', res.data)
@@ -143,19 +106,6 @@ angular.module('myApp')
           })
         }
       }
-    }
-
-    function getTaxonomiesWP(res) {
-      // console.log('WP taxonomies', res)
-      if (res.data) {
-        $scope.taxonomiesWP = res.data
-      }
-      return Api.getTerms()
-    }
-
-    function getTermsWP(res) {
-      // console.log('WP terms', res)
-      if (res.data) $scope.termsWP = res.data
     }
 
 
@@ -249,30 +199,6 @@ angular.module('myApp')
       }
     })
       .then(getTemplateSchemas, apiError)
-      .then(function () {
-        // Get taxonomies
-        return Percolate.getTaxonomies({
-          key    : $scope.activeChannel.key,
-          fields : {
-            'scope_ids': 'license:' + $scope.activeChannel.license,
-            'ext.platform_ids': $scope.activeChannel.platform,
-          }
-        })
-      })
-      .then(getTaxonomiesPerco, apiError)
-      .then(function () {
-        // Get terms
-        return Percolate.getTerms({
-          key    : $scope.activeChannel.key,
-          fields : {
-            'scope_ids': 'license:' + $scope.activeChannel.license,
-            'ext.platform_ids': $scope.activeChannel.platform,
-            'mode': 'taxonomy',
-            'depth': 2,
-          }
-        })
-      }, apiError)
-      .then(getTermsPerco, apiError)
 
     /**
      * Populate the form fields with data from WP and Percolate
@@ -281,9 +207,6 @@ angular.module('myApp')
       .then(getCpts, apiError)
       .then(getAcfStatus, apiError)
       .then(getAcfData, apiError)
-    Api.getTaxonomies()
-      .then(getTaxonomiesWP, apiError)
-      .then(getTermsWP, apiError)
     Api.getWpmlStatus()
       .then(getWpmlStatus, apiError)
       .then(getMetaBoxStatus, apiError)
@@ -309,10 +232,5 @@ angular.module('myApp')
         return _.filter(list, function(obj){ return type.indexOf(obj.type) > -1 })
       }
       return _.filter(list, function(obj){ return obj.type === type })
-    }
-  })
-  .filter('filterByTaxonomy', function () {
-    return function (list, taxId) {
-      return _.filter(list, function(obj){ return obj.taxonomy == taxId })
     }
   })

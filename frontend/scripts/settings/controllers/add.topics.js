@@ -10,24 +10,21 @@ angular.module('myApp')
      * Public variables
      * -------------------------------------- */
 
-    $scope.formData = {}
+    angular.extend($scope, {
+      formData : {},
+      percolateUsers : [],
+      isWpmlActive : false,
+      taxonomiesWP: [],
+      taxonomiesPerco: [],
+      termsWP: [],
+      termsPerco: [],
+      _: _
+    })
+
     // Prepare form data
     if( $scope.edit.active === true ) {
       $scope.formData = $scope.edit.channel
     }
-
-    // Users from Percolate
-    $scope.percolateUsers = []
-
-    // Categories from WP
-    $scope.categories = [
-      {
-        cat_name: 'Select a category...',
-        term_id: ''
-      }
-    ]
-
-    $scope.isWpmlActive = false
 
     // Edit mode
     if( $scope.edit.active && $scope.edit.channel ) {
@@ -56,17 +53,64 @@ angular.module('myApp')
       // console.log('WP users', $scope.wpUsers)
     }
 
-    function processPercolateTopics (res) {
-      // console.log('Topics', res.data)
-      if ($scope.percolateUsers) { $scope.stopLoader() }
-
-      if( !res.data || !res.data.data ) {
-        $scope.showError('There was an error.')
-        return
-      }
-
-      $scope.topics = res.data.data
+    function getTaxonomiesPerco(res) {
+      console.log('Percolate taxonomies', res)
+      if (res.data) $scope.taxonomiesPerco = res.data.data
+      return setTimeout(null, 1)
     }
+
+    function getTermsPerco(res) {
+      console.log('Percolate terms', res)
+      if (res.data) $scope.termsPerco = res.data.data
+      processSchemas()
+      if ($scope.percolateUsers) { $scope.stopLoader() }
+    }
+
+    function processSchemas() {
+      if (!$scope.taxonomiesPerco) return
+      $scope.taxonomiesPerco = $scope.taxonomiesPerco.map(function(taxonomy) {
+        taxonomy.terms = _.filter($scope.termsPerco, function(term) {
+          if (term.path_ids.indexOf(taxonomy.root_id) > -1)
+            return term
+        })
+        return taxonomy
+      })
+
+      console.log($scope.taxonomiesPerco);
+
+      // $scope.templates = $scope.templates.map(function(template) {
+      //
+      //   var taxonomyField = _.find(template.fields, {type: 'term'})
+      //
+      //   if (!taxonomyField || !taxonomyField.ext || !taxonomyField.ext.parent_term_ids[0])
+      //    return template
+      //
+      //   var taxID = taxonomyField.ext.parent_term_ids[0]
+      //   taxonomyField.taxonomy = _.find($scope.taxonomiesPerco, {root_id: taxID})
+      //   taxonomyField.terms = _.filter($scope.termsPerco, function(term) {
+      //     if (term.path_ids.indexOf(taxID) > -1)
+      //       return term
+      //   })
+      //
+      //   return template
+      // })
+    }
+
+    function getTaxonomiesWP(res) {
+      // console.log('WP taxonomies', res)
+      if (res.data) {
+        $scope.taxonomiesWP = res.data
+      }
+      return Api.getTerms()
+    }
+
+    function getTermsWP(res) {
+      // console.log('WP terms', res)
+      if (res.data) $scope.termsWP = res.data
+    }
+
+
+
 
     function fetchPercolatUsers(paginationData) {
       $scope.showLoader('Loading users from Percolate...')
@@ -93,13 +137,6 @@ angular.module('myApp')
       $scope.percolateUsers = res.data.data
     }
 
-    function processWpCategories(res) {
-      // var tree = _unflatten(res.data)
-      $scope.categories = $scope.categories.concat(res.data)
-      // console.log('WP categories', $scope.categories)
-
-      return Api.getWpmlStatus()
-    }
 
     function processWpCategoriesByLanguage () {
       $scope.categoriesByLanguage = {}
@@ -148,10 +185,25 @@ angular.module('myApp')
      * Public methods
      * -------------------------------------- */
 
+
+    function addMapping() {
+      if (!$scope.formData.taxonomyMapping) $scope.formData.taxonomyMapping = []
+      $scope.formData.taxonomyMapping.push({})
+    }
+
+    function deleteMapping(key) {
+      $scope.formData.taxonomyMapping.splice(key, 1)
+    }
+
+    function getTermsForTaxonomy(rootId) {
+      var tax = _.find($scope.taxonomiesPerco, {root_id: rootId})
+      if (tax) return tax.terms
+    }
+
     /*
      * Populate object in parent scope
      */
-    $scope.submitForm = function (form) {
+    function submitForm (form) {
       // Trigger validation flag.
       $scope.submitted = true
 
@@ -174,7 +226,11 @@ angular.module('myApp')
 
 
     angular.extend($scope, {
-      fetchPercolatUsers: fetchPercolatUsers
+      fetchPercolatUsers: fetchPercolatUsers,
+      addMapping: addMapping,
+      deleteMapping: deleteMapping,
+      getTermsForTaxonomy: getTermsForTaxonomy,
+      submitForm: submitForm,
     })
 
      // Check if we have the active User
@@ -185,20 +241,40 @@ angular.module('myApp')
 
     // Get Percolate topics
     $scope.showLoader('Loading data from Percolate...')
-    Percolate.getTopics({
-      key    : $scope.activeChannel.key,
-      fields : {
-        owner_uid: 'license:' + $scope.activeChannel.license
-      }
-    }).then(processPercolateTopics, apiError)
+    Percolate.getTaxonomies({
+        key    : $scope.activeChannel.key,
+        fields : {
+          'scope_ids': 'license:' + $scope.activeChannel.license,
+          'ext.platform_ids': $scope.activeChannel.platform,
+        }
+      })
+      .then(getTaxonomiesPerco, apiError)
+      .then(function () {
+        // Get terms
+        return Percolate.getTerms({
+          key    : $scope.activeChannel.key,
+          fields : {
+            'scope_ids': 'license:' + $scope.activeChannel.license,
+            'ext.platform_ids': $scope.activeChannel.platform,
+            'mode': 'taxonomy',
+            'depth': 2,
+          }
+        })
+      }, apiError)
+      .then(getTermsPerco, apiError)
 
     fetchPercolatUsers()
 
     // Get WP users
     Api.getUsers().then(processWpUsers, apiError)
+    Api.getTaxonomies()
+      .then(getTaxonomiesWP, apiError)
+      .then(getTermsWP, apiError)
 
-    // Categories from WP
-    Api.getCategories()
-      .then(processWpCategories, apiError)
-      .then(getWpmlStatus, apiError)
+
+  })
+  .filter('filterByTaxonomy', function () {
+    return function (list, taxId) {
+      return _.filter(list, function(obj){ return obj.taxonomy == taxId })
+    }
   })
