@@ -13,6 +13,7 @@ class ComposerStaticInit23ce6e4ed1a7c1d31149fe0f05b1c396
     public static $prefixLengthsPsr4 = array (
         'P' => 
         array (
+            'Psr\\Container\\' => 14,
             'PhpDocReader\\' => 13,
         ),
         'I' => 
@@ -27,6 +28,10 @@ class ComposerStaticInit23ce6e4ed1a7c1d31149fe0f05b1c396
     );
 
     public static $prefixDirsPsr4 = array (
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
         'PhpDocReader\\' => 
         array (
             0 => __DIR__ . '/..' . '/php-di/phpdoc-reader/src/PhpDocReader',
