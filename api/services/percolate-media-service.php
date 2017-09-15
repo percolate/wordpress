@@ -256,6 +256,20 @@ class Percolate_Media
   	$title = basename($matches[0]);
     $desc = "Scraped image from Percolate post html";
 
+    // ----------- Check if already imported --------------
+    $args = array(
+    	'post_type'		=>	'attachment',
+      'post_status'	=>	'any',
+	    'title'       =>  $title
+    );
+    $images = new WP_Query( $args );
+    wp_reset_postdata();
+
+    if ( $images->post_count > 0) {
+      Percolate_Log::log("Image already imported.");
+      return wp_get_attachment_url( $images->posts[0]->ID );
+    }
+
 
     $id = media_sideload_image($url, null, $title, 'id');
 
