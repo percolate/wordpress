@@ -2,8 +2,6 @@
 #   override:
 #     - gem install mdl
 
-#test:
-#   override:
-#     - mdl:
-#         files:
-#           - "**/*.md"
+test:
+  override:
+    - "true"
