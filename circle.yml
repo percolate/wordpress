@@ -1,8 +1,8 @@
-dependencies:
+#dependencies:
 #   override:
 #     - gem install mdl
 
-test:
+#test:
 #   override:
 #     - mdl:
 #         files:
