@@ -1,6 +1,6 @@
-#dependencies:
-#   override:
-#     - gem install mdl
+dependencies:
+  override:
+    - "true"
 
 test:
   override:
