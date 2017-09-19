@@ -1,9 +1,7 @@
 dependencies:
   override:
-    - gem install mdl
+    - "true"
 
 test:
   override:
-    - mdl:
-        files:
-          - "**/*.md"
+    - "true"
