@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.5
+
+* Complete rewrite of image importing
+
 ### 4.x-1.2.4
 
 * Only fetch draft and queued posts upon import
@@ -287,4 +291,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.4~
+~Current Version:4.x-1.2.5~
