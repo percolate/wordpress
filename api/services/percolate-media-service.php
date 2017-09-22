@@ -136,7 +136,7 @@ class Percolate_Media
    *
    * @param $imageKey: Percolate uid, eg. video:674337.....193305
    * @param $key: importer's custom channel set's key
-   * @return string: imported image's ID
+   * @return string|false: imported image's ID
    */
   public function importImageWP ($imageKey, $key) {
 
@@ -146,8 +146,7 @@ class Percolate_Media
 
     $method = "v3/media/" . $imageKey;
     $imageData = $this->Percolate->callAPI($key, $method, $fields);
-    Percolate_Log::log("IMAGE $imageKey: Importing Image into WP");
-    Percolate_Log::log("IMAGE $imageKey: " . $method);
+    Percolate_Log::log($method);
     // Percolate_Log::log(print_r($imageData, true));
 
     if( isset($imageData['src']) ) {
@@ -177,7 +176,7 @@ class Percolate_Media
       $imageData = $imageData[0];
     }
     else {
-      Percolate_Log::log("IMAGE $imageKey: Image soruce cannot be found in Percolate API response.");
+      Percolate_Log::log("Image soruce cannot be found in Percolate API response.");
       return;
     }
 
@@ -188,7 +187,7 @@ class Percolate_Media
 	    $percolate_id =  $imageData['data']['id'];
     }
     else {
-      Percolate_Log::log("IMAGE $imageKey: Image ID cannot be found");
+      Percolate_Log::log("Image ID cannot be found");
       return;
     }
 
@@ -204,99 +203,36 @@ class Percolate_Media
 
     if ( $posts->post_count > 0) {
       // Percolate_Log::log(print_r($posts, true));
-      Percolate_Log::log("IMAGE $imageKey: Image already imported.");
+      Percolate_Log::log("Image already imported.");
       // wp_delete_post($posts->posts[0]->ID, true);
       return $posts->posts[0]->ID;
     }
 
     // ----- WP Media upload ------
     // Need to require these files
-  	if ( !function_exists('media_handle_upload') ) {
+  	if ( !function_exists('media_sideload_image') ) {
   		require_once(ABSPATH . "wp-admin" . '/includes/image.php');
   		require_once(ABSPATH . "wp-admin" . '/includes/file.php');
   		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   	}
 
-    $uploads = wp_upload_dir();
-    // get unique file name
-    $filename = wp_unique_filename( $uploads['path'], basename(parse_url($src, PHP_URL_PATH)) );
-    Percolate_Log::log('IMAGE: WP filename' . $filename);
-    $filepath = $uploads['path'] . '/' . $filename;
-
-    $url = '';
-
-    $this->Percolate->getImageFromServer($src, $filepath);
-    // Compute the URL
-    $url = $uploads['url'] . '/' . $filename;
-    // $object['media']['images'][$image]['url'] = $url;
-
-    $type = $this->_mime_content_type($filepath);
-    Percolate_Log::log("IMAGE $imageKey: Mime " . $type);
-
     $title = $imageData['metadata']['original_filename'];
     if( !$title ) {
       $title = $imageData['id'];
     }
-    Percolate_Log::log("IMAGE $imageKey: title " . $title);
 
-    $title = preg_replace('!\.[^.]+$!', '', basename($file));
-    $content = '';
-
-    // use image exif/iptc data for title and caption defaults if possible
-    if ($image_meta = @wp_read_image_metadata($filepath)) {
-      if ('' != trim($image_meta['title']))
-        $title = trim($image_meta['title']);
-      if ('' != trim($image_meta['caption']))
-        $content = trim($image_meta['caption']);
-    }
-
-    Percolate_Log::log("IMAGE $imageKey: meta " . print_r($title, true));
-
-    if( isset($imageData['metadata']['description']) && !empty($imageData['metadata']['description']) ) {
-      $content = $imageData['metadata']['description'];
-    }
-
-    $time = gmdate('Y-m-d H:i:s', @filemtime($filepath));
-
-    if ($time) {
-      $post_date_gmt = $time;
-      $post_date = $time;
-    } else {
-      $post_date = current_time('mysql');
-      $post_date_gmt = current_time('mysql', 1);
-    }
-
-    // Construct the attachment array
-    $attachment = array(
-        'post_mime_type' => $type,
-        'guid' => $url,
-        'post_parent' => 0, //$post_id,
-        'post_title' => $title,
-        'post_name' => $title,
-        'post_content' => $content,
-        'post_date' => $post_date,
-        'post_date_gmt' => $post_date_gmt
-    );
-
-    $filepath = $uploads['path'] .'/'. $filename;
-    // //Win32 fix:
-    // $filepath = str_replace(strtolower(str_replace('\\', '/', $uploads['path'])), $uploads['path'], $filepath);
-    // Save the data
-    $id = wp_insert_attachment($attachment, $filepath);
-    Percolate_Log::log("IMAGE $imageKey: wp_insert_attachment " . $id);
-    if (is_wp_error($id)) {
-      Percolate_Log::log(print_r($id, true));
-      return false;
-    }
-    $data = wp_generate_attachment_metadata($id, $filepath);
-    wp_update_attachment_metadata($id, $data);
+    $id = media_sideload_image($src, null, $title, 'id');
 
     // ----------- Percolate meta fields --------------
     update_post_meta($id, 'percolate_id', $imageData['id']);
     update_post_meta($id, 'percolate_uid', $imageData['uid']);
     update_post_meta($id, 'percolate_created_at', strtotime($imageData['metadata']['created_at']));
 
-  	// $src = wp_get_attachment_url( $id );
+    // If error storing permanently, unlink
+  	if ( is_wp_error($id) ) {
+      Percolate_Log::log(print_r($id, true));
+  		return false;
+  	}
 
     return $id;
   }
@@ -304,44 +240,41 @@ class Percolate_Media
   /**
 	 * Import image from an URL to WP Media Library
    * @param string $url: image's src attribute
-   * @return string: imported image's url
+   * @return string|false: imported image's url
    */
   public function importImageFromUrl ($url) {
     // Need to require these files
-  	if ( !function_exists('media_handle_upload') ) {
+  	if ( !function_exists('media_sideload_image') ) {
   		require_once(ABSPATH . "wp-admin" . '/includes/image.php');
   		require_once(ABSPATH . "wp-admin" . '/includes/file.php');
   		require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   	}
 
-  	$tmp = download_url( $url );
-    if (is_wp_error($id)) {
-      Percolate_Log::log(print_r($id, true));
-      return false;
-    }
-  	$post_id = 0;
-  	$desc = "Scraped image from Percolate post html";
-  	$file_array = array();
 
-  	// Set variables for storage
   	// fix file filename for query strings
   	preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
-  	$file_array['name'] = basename($matches[0]);
-  	$file_array['tmp_name'] = $tmp;
+  	$title = basename($matches[0]);
+    $desc = "Scraped image from Percolate post html";
 
-  	// If error storing temporarily, unlink
-  	if ( is_wp_error( $tmp ) ) {
-      Percolate_Log::log(print_r($tmp, true));
-  		@unlink($file_array['tmp_name']);
-  		$file_array['tmp_name'] = '';
-  	}
+    // ----------- Check if already imported --------------
+    $args = array(
+    	'post_type'		=>	'attachment',
+      'post_status'	=>	'any',
+	    'title'       =>  $title
+    );
+    $images = new WP_Query( $args );
+    wp_reset_postdata();
 
-  	// do the validation and storage stuff
-  	$id = media_handle_sideload( $file_array, $post_id, $desc );
+    if ( $images->post_count > 0) {
+      Percolate_Log::log("Image already imported.");
+      return wp_get_attachment_url( $images->posts[0]->ID );
+    }
 
-  	// If error storing permanently, unlink
+
+    $id = media_sideload_image($url, null, $title, 'id');
+
+  	// If error importing
   	if ( is_wp_error($id) ) {
-  		@unlink($file_array['tmp_name']);
       Percolate_Log::log(print_r($id, true));
   		return false;
   	}
@@ -349,18 +282,4 @@ class Percolate_Media
   	return $src = wp_get_attachment_url( $id );
   }
 
-  private function _mime_content_type($file) {
-    $mtype = false;
-     if (function_exists('finfo_open')) {
-       $finfo = finfo_open(FILEINFO_MIME_TYPE);
-       $mtype = finfo_file($finfo, $file);
-       finfo_close($finfo);
-     } elseif (function_exists('mime_content_type')) {
-       $mtype = mime_content_type($file);
-     }
-     return $mtype;
-  }
-
 }
-
-?>
