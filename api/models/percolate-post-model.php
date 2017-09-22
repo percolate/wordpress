@@ -622,7 +622,10 @@ class Percolate_Post_Model
     if ( isset($template->image) && $template->image == 'on' && isset($template->postImage) && isset($importedFields[$template->postImage]) ) {
       // Gegt image ID from the imported fields array
       $imageID = $importedFields[$template->postImage];
+      Percolate_Log::log('Setting imageID:' . $imageID . ' to wpPostID' . $wpPostID );
       set_post_thumbnail( $wpPostID, $imageID );
+      Percolate_Log::log('Set imageID:' . $imageID . ' to wpPostID' . $wpPostID );
+
     }
 
     // ----------- WPML --------------
