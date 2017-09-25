@@ -510,7 +510,7 @@ class Percolate_Post_Model
         $definition = PercolateHelpers::searchInArray($fieldDefinitions, 'key', $key);
         if( $definition[0]['type'] == 'asset' ) {
           Percolate_Log::log('Asset field found, importing from Percolate');
-          $imageID = $this->Media->importImageWP($value, $channel->key);
+          $imageID = $this->Media->importImage($value, $channel->key);
 
           $value = $importedFields[$key] = $imageID;
         }
