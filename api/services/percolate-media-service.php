@@ -104,7 +104,7 @@ class Percolate_Media
      * $_POST['data'] keys: $imageKey, $key, $postId, $featured
      */
     if( isset($_POST['data']) ) {
-      $imageID = $this->importImageWP(array($_POST['data']['imageKey']), $_POST['data']['key']);
+      $imageID = $this->importImage(array($_POST['data']['imageKey']), $_POST['data']['key']);
       if( $_POST['data']['featured'] === "true" && $imageID) {
         Percolate_Log::log('featured: ' . $imageID);
         set_post_thumbnail( $_POST['data']['postId'], $imageID );
@@ -138,7 +138,7 @@ class Percolate_Media
    * @param $key: importer's custom channel set's key
    * @return string|false: imported image's ID
    */
-  public function importImageWP ($imageKey, $key) {
+  public function importImage ($imageKey, $key) {
 
     if( is_array($imageKey) ) {
       $imageKey = $imageKey[0];
@@ -221,18 +221,18 @@ class Percolate_Media
       $title = $imageData['id'];
     }
 
-    $id = media_sideload_image($src, null, $title, 'id');
-
-    // ----------- Percolate meta fields --------------
-    update_post_meta($id, 'percolate_id', $imageData['id']);
-    update_post_meta($id, 'percolate_uid', $imageData['uid']);
-    update_post_meta($id, 'percolate_created_at', strtotime($imageData['metadata']['created_at']));
+    $id = $this->uploadToWp($src, $title);
 
     // If error storing permanently, unlink
   	if ( is_wp_error($id) ) {
       Percolate_Log::log(print_r($id, true));
   		return false;
   	}
+
+    // ----------- Percolate meta fields --------------
+    update_post_meta($id, 'percolate_id', $imageData['id']);
+    update_post_meta($id, 'percolate_uid', $imageData['uid']);
+    update_post_meta($id, 'percolate_created_at', strtotime($imageData['metadata']['created_at']));
 
     return $id;
   }
@@ -271,7 +271,7 @@ class Percolate_Media
     }
 
 
-    $id = media_sideload_image($url, null, $title, 'id');
+    $id = $this->uploadToWp($url, $title);
 
   	// If error importing
   	if ( is_wp_error($id) ) {
@@ -280,6 +280,54 @@ class Percolate_Media
   	}
 
   	return $src = wp_get_attachment_url( $id );
+  }
+
+  /**
+   * Uploads the image from given URL to WP
+   * @param  string $src: The image's src
+   * @param  string $title: Title of the asset
+   * @return int|WP_Error id: The uploaded asset's ID or error
+   */
+  private function uploadToWp($src, $title = '')
+  {
+    // media_sideload_image can only return the ID on WP v4.8 and above
+    if (version_compare ( get_bloginfo('version') , '4.8.0' , '>=')) {
+
+      return media_sideload_image($src, null, $title, 'id');
+
+    } else {
+
+      if ( ! empty( $src ) ) {
+
+        // Set variables for storage, fix file filename for query strings.
+        preg_match( '/[^\?]+\.(jpe?g|jpe|gif|png)\b/i', $src, $matches );
+        if ( ! $matches ) {
+            return new WP_Error( 'image_sideload_failed', __( 'Invalid image URL' ) );
+        }
+
+        $file_array = array();
+        $file_array['name'] = basename( $matches[0] );
+
+        // Download file to temp location.
+        $file_array['tmp_name'] = download_url( $src );
+
+        // If error storing temporarily, return the error.
+        if ( is_wp_error( $file_array['tmp_name'] ) ) {
+          return $file_array['tmp_name'];
+        }
+
+        // Do the validation and storage stuff.
+        $id = media_handle_sideload( $file_array, 0, $title );
+
+        // If error storing permanently, unlink.
+        if ( is_wp_error( $id ) ) {
+          @unlink( $file_array['tmp_name'] );
+        }
+
+        return $id;
+      }
+
+    }
   }
 
 }
