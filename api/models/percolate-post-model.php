@@ -510,7 +510,7 @@ class Percolate_Post_Model
         $definition = PercolateHelpers::searchInArray($fieldDefinitions, 'key', $key);
         if( $definition[0]['type'] == 'asset' ) {
           Percolate_Log::log('Asset field found, importing from Percolate');
-          $imageID = $this->Media->importImageWP($value, $channel->key);
+          $imageID = $this->Media->importImage($value, $channel->key);
 
           $value = $importedFields[$key] = $imageID;
         }
@@ -622,7 +622,10 @@ class Percolate_Post_Model
     if ( isset($template->image) && $template->image == 'on' && isset($template->postImage) && isset($importedFields[$template->postImage]) ) {
       // Gegt image ID from the imported fields array
       $imageID = $importedFields[$template->postImage];
+      Percolate_Log::log('Setting imageID:' . $imageID . ' to wpPostID' . $wpPostID );
       set_post_thumbnail( $wpPostID, $imageID );
+      Percolate_Log::log('Set imageID:' . $imageID . ' to wpPostID' . $wpPostID );
+
     }
 
     // ----------- WPML --------------
