@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.6
+
+* Image import backward compatibility for WP < v4.8
+
 ### 4.x-1.2.5
 
 * Complete rewrite of image importing
@@ -291,4 +295,4 @@ please refer to the original repository:
 ***
 
 _Please do not remove this version declaration_
-~Current Version:4.x-1.2.5~
+~Current Version:4.x-1.2.6~
