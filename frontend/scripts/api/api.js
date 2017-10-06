@@ -4,185 +4,92 @@ angular.module('wpApi', [])
   .factory('Api', function ($http) {
     var _url = ajax_object.ajax_url
 
+    function callApi(data) {
+      return $http({
+        method          : 'POST',
+        url             : _url,
+        headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+        data            : jQuery.param(data)
+      })
+    }
+
     return {
       getTemplate: function ($tpl) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'template', template: $tpl})
-        })
+        return callApi({ action : 'template', template: $tpl})
       },
       getData: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_data'})
-        })
+        return callApi({ action : 'get_data'})
       },
       setData: function ($data) {
         $data.timestamp = new Date().toUTCString()
-
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'set_data', data: $data})
-        })
+        return callApi({ action : 'set_data', data: $data})
       },
       getCategories: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_categories'})
-        })
+        return callApi({ action : 'get_categories'})
       },
       getTaxonomies: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_taxonomies'})
-        })
+        return callApi({ action : 'get_taxonomies'})
+      },
+      getTerms: function () {
+        return callApi({ action : 'get_terms'})
       },
       getUsers: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_users'})
-        })
+        return callApi({ action : 'get_users'})
       },
       getCpts: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_cpts'})
-        })
+        return callApi({ action : 'get_cpts'})
       },
       getPostData: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_post_data'})
-        })
+        return callApi({ action : 'get_post_data'})
       },
       getAcfStatus: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_acf_status'})
-        })
+        return callApi({ action : 'get_acf_status'})
       },
       getAcfData: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_acf_data'})
-        })
+        return callApi({ action : 'get_acf_data'})
       },
       getMetaBoxStatus: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_metabox_status'})
-        })
+        return callApi({ action : 'get_metabox_status'})
       },
       getMetaBoxData: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_metabox_data'})
-        })
+        return callApi({ action : 'get_metabox_data'})
       },
       getWpmlStatus: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_wpml_status'})
-        })
+        return callApi({ action : 'get_wpml_status'})
       },
       getWpmlData: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_wpml_language'})
-        })
+        return callApi({ action : 'get_wpml_language'})
       },
       getMessages: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_messages'})
-        })
+        return callApi({ action : 'get_messages'})
       },
       setMessages: function ($data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'set_messages', data: $data})
-        })
+        return callApi({ action : 'set_messages', data: $data})
       },
       getLog: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_log'})
-        })
+        return callApi({ action : 'get_log'})
       },
       deleteLog: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'delete_log'})
-        })
+        return callApi({ action : 'delete_log'})
       },
       getQueue: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'get_queue'})
-        })
+        return callApi({ action : 'get_queue'})
       },
       deleteQueue: function () {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action : 'delete_queue'})
-        })
+        return callApi({ action : 'delete_queue'})
       },
 
 
       /**
        * Imports image into WP */
       importImage: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'image_import', data: {
+        return callApi({ action: 'image_import', data: {
             key     : data.key,
             imageKey: data.uid,
             postId  : data.postId,
             featured: data.featured,
             size    : data.size
-          }})
+          }
         })
       },
     }

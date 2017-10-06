@@ -2,7 +2,7 @@
 
 angular.module('myApp')
   .controller('AddTemplatesCtr', function ($scope, $state, UUID, Api, Percolate) {
-    console.log('Add New Channel - Templates state')
+    // console.log('Add New Channel - Templates state')
 
     // Check if we have the active User
     if( !$scope.activeChannel.user ) {
@@ -56,7 +56,7 @@ angular.module('myApp')
 
 
     function getTemplateSchemas(res) {
-      console.log('Schemas', res.data)
+      // console.log('Schemas', res.data)
 
       if( !res.data || !res.data.data ) {
         $scope.showError('There was an error.')
@@ -64,13 +64,11 @@ angular.module('myApp')
       }
 
       $scope.templates = res.data.data
-
-      return
+      $scope.stopLoader()
     }
 
-
     function getCpts (res) {
-      console.log('Post types', res.data)
+      // console.log('Post types', res.data)
       delete res.data.page
       delete res.data.attachment
       $scope.postTypes = res.data
@@ -87,7 +85,7 @@ angular.module('myApp')
 
     function getAcfStatus (res) {
       if(res.data === '1') {
-        console.log('ACF is found')
+        // console.log('ACF is found')
         $scope.isAcfActive = true
         return Api.getAcfData()
       }
@@ -96,7 +94,7 @@ angular.module('myApp')
 
     function getAcfData (res) {
       if( $scope.isAcfActive ) {
-        console.log('ACF data', res)
+        // console.log('ACF data', res)
 
         $scope.acfGroups = res.data.groups
         $scope.acfFields = res.data.fields
@@ -108,15 +106,6 @@ angular.module('myApp')
           })
         }
       }
-      return Api.getTaxonomies()
-    }
-
-    function getTaxonomies(res) {
-      console.log('Taxonomies', res)
-      if (res.data) {
-        $scope.taxonomies = res.data
-      }
-      return Api.getWpmlStatus()
     }
 
 
@@ -131,7 +120,6 @@ angular.module('myApp')
     }
 
     function getMetaBoxData (res) {
-      $scope.stopLoader()
       if ($scope.isMetaBoxActive) {
         $scope.metaboxGroups = res.data.groups
       }
@@ -142,10 +130,10 @@ angular.module('myApp')
     function setData (res) {
       $scope.stopLoader()
       if(!res.data.success) {
-        console.log('Error while saving to DB', res)
+        // console.log('Error while saving to DB', res)
         $scope.showError('Error while saving to DB.')
       } else {
-        console.log('Data saved', res)
+        // console.log('Data saved', res)
         // reset the new channel object
         $scope.activeChannel = {}
         // all done here
@@ -190,13 +178,11 @@ angular.module('myApp')
       }
 
       $scope.showLoader('Saving data...')
-      console.log('Submiting data, current dataset: ', $scope.Percolate)
+      // console.log('Submiting data, current dataset: ', $scope.Percolate)
 
       Api.setData($scope.Percolate)
         .then(setData, apiError)
     }
-
-
 
 
 
@@ -214,7 +200,6 @@ angular.module('myApp')
     })
       .then(getTemplateSchemas, apiError)
 
-
     /**
      * Populate the form fields with data from WP and Percolate
      */
@@ -222,7 +207,7 @@ angular.module('myApp')
       .then(getCpts, apiError)
       .then(getAcfStatus, apiError)
       .then(getAcfData, apiError)
-      .then(getTaxonomies, apiError)
+    Api.getWpmlStatus()
       .then(getWpmlStatus, apiError)
       .then(getMetaBoxStatus, apiError)
       .then(getMetaBoxData, apiError)
@@ -232,7 +217,7 @@ angular.module('myApp')
      */
     angular.extend($scope, {
       submitForm : submitForm,
-      getHandoffStatuses : getHandoffStatuses
+      getHandoffStatuses : getHandoffStatuses,
     })
 
   })

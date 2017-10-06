@@ -117,7 +117,7 @@ class Percolate_WP_Model
   }
 
   /**
-   * Get custom taxonomies
+   * Get all taxonomies
    *
    * @return array|false Taxonomies
    */
@@ -125,11 +125,25 @@ class Percolate_WP_Model
   {
     $args = array(
       'public'   => true,
-      '_builtin' => false
+      // '_builtin' => false
 
     );
     $taxonomies = get_taxonomies( $args, 'objects', 'and' );
     return $taxonomies;
+  }
+
+  /**
+   * Get all terms
+   *
+   * @return array|false Terms
+   */
+  public function getTerms()
+  {
+    $args = array(
+      'hide_empty'   => false,
+    );
+    $terms = get_terms( $args );
+    return $terms;
   }
 
 
