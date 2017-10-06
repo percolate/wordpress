@@ -314,6 +314,7 @@ class Percolate_Post_Model
         Percolate_Log::log('Post already imported: ' . $post['id']);
         // DEBUG: Delete post if any
         // wp_delete_post($posts->posts[0]->ID, true);
+
         $res['success'] = false;
         $res['percolate_id'] = $post['id'];
         $res['message'] = "Post already imported";
@@ -373,7 +374,7 @@ class Percolate_Post_Model
       }
     }
 
-    // ----------- Categories --------------
+    // ----------- OBSOLATE: Topic -> Category --------------
     $post_category = array();
 
     if( isset($post['topic_ids']) && !empty($post['topic_ids']) ) {
@@ -608,7 +609,34 @@ class Percolate_Post_Model
       }
     }
 
+    // -----------  Taxonomies v5  --------------
+    if( isset($channel->taxonomyMapping) && !empty($channel->taxonomyMapping) ) {
+      foreach ($channel->taxonomyMapping as $index => $mapping) {
+        Percolate_Log::log('Adding terms for : ' . print_r($mapping, true));
+        $wpTerms = [];
+        foreach ($schema['fields'] as $field) {
+          if ($field['type'] == 'term') {
+            foreach ($post['ext'][$field['key']] as $termID) {
+              $wpTerms[] = $mapping->terms->${termID};
+            }
+          }
+        }
+        Percolate_Log::log('$wpTerms' . print_r($wpTerms, true));
+        $taxonomyWp = get_taxonomy( $mapping->taxonomyWP );
+        if (!$taxonomyWp->hierarchical) {
+          Percolate_Log::log('Taxonomy is not hierarchical');
+          foreach ($wpTerms as $key => $termId) {
+            $term = get_term( $termId, $mapping->taxonomyWP );
+            $wpTerms[$key] = $term->slug;
+          }
+        }
+        wp_set_post_terms($wpPostID, $wpTerms, $mapping->taxonomyWP, $index==0 ? false : true);
+      }
+    }
+
     // ----------- Custom Taxonomies --------------
+    //   Not supported anymore
+    //   Superseded by v5 custom taxonomies
     if ( isset($template->taxonomy) && $template->taxonomy == 'on' && isset($template->taxonomyField) && isset($template->taxonomyWP) ) {
       $terms = $post['ext'][$template->taxonomyField];
       if (!is_array($terms)) {

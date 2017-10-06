@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.2.7
+
+* Adding support for Percolate's overhauled v5 Taxonomy API
+
 ### 4.x-1.2.6
 
 * Image import backward compatibility for WP < v4.8

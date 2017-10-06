@@ -1,76 +1,49 @@
-'use strict';
+'use strict'
 
 angular.module('wpPercolate', [])
   .factory('Percolate', function ($http) {
     var _url = ajax_object.ajax_url
+
+    function callApi (method, data) {
+      var payload = {
+        key     : data.key,
+        method  : method,
+      }
+      if (data.fields) {
+        payload.fields = data.fields
+      }
+
+      return $http({
+        method          : 'POST',
+        url             : _url,
+        headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
+        data            : jQuery.param({ action: 'call_percolate', data: payload})
+      })
+    }
 
     return {
       /* ------------------------------------
        * Setup screen
        * ------------------------------------ */
       getUser: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v3/me'
-          }})
-        })
+        return callApi('v3/me', data)
       },
       getLicenses: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v3/licenses',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v3/licenses', data)
       },
       getChannelsOld: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v4/license_channel/',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v4/license_channel/', data)
       },
 
       /**
        * V5: Get the platform ID for selecting the right templates */
       getPlatforms: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v5/platform/',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v5/platform/', data)
       },
       /**
        * V5: Get the channel ID for selecting the right templates */
       getChannels: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v5/channel/',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v5/channel/', data)
       },
 
       /* ------------------------------------
@@ -80,32 +53,14 @@ angular.module('wpPercolate', [])
       /**
        * Get the channel ID for selecting the right templates */
       getTopics: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v4/tag/',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v4/tag/', data)
       },
 
       /**
        * Get user role by license
        */
       getUsersByLicense: function (data){
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v3/licenses/' + data.license + '/users',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v3/licenses/' + data.license + '/users', data)
       },
 
       /* ------------------------------------
@@ -115,16 +70,19 @@ angular.module('wpPercolate', [])
       /**
        * Get the channel ID for selecting the right templates */
       getTemplateSchemas: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v5/schema/',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v5/schema/', data)
+      },
+
+      /**
+       * Get the v5 taxonomies */
+      getTaxonomies: function (data) {
+        return callApi('v5/taxonomy/', data)
+      },
+
+      /**
+       * Get the v5 terms */
+      getTerms: function (data) {
+        return callApi('v5/term/', data)
       },
 
 
@@ -148,31 +106,14 @@ angular.module('wpPercolate', [])
       /**
        * Get the channel ID for selecting the right templates */
       getMediaToplevel: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v3/media',
-            fields  : data.fields
-          }})
-        })
+        return callApi('v3/media', data)
       },
 
       /**
        * List folder content */
       getFolderContent: function (data) {
-        return $http({
-          method          : 'POST',
-          url             : _url,
-          headers         : {'Content-Type': 'application/x-www-form-urlencoded'},
-          data            : jQuery.param({ action: 'call_percolate', data: {
-            key     : data.key,
-            method  : 'v3/media/' + data.folder,
-            fields  : data.fields
-          }})
-        })
+        return callApi('v3/media/' + data.folder, data)
       },
+
     }
   })
