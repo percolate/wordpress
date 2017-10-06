@@ -75,25 +75,6 @@ angular.module('myApp')
         })
         return taxonomy
       })
-
-      console.log($scope.taxonomiesPerco);
-
-      // $scope.templates = $scope.templates.map(function(template) {
-      //
-      //   var taxonomyField = _.find(template.fields, {type: 'term'})
-      //
-      //   if (!taxonomyField || !taxonomyField.ext || !taxonomyField.ext.parent_term_ids[0])
-      //    return template
-      //
-      //   var taxID = taxonomyField.ext.parent_term_ids[0]
-      //   taxonomyField.taxonomy = _.find($scope.taxonomiesPerco, {root_id: taxID})
-      //   taxonomyField.terms = _.filter($scope.termsPerco, function(term) {
-      //     if (term.path_ids.indexOf(taxID) > -1)
-      //       return term
-      //   })
-      //
-      //   return template
-      // })
     }
 
     function getTaxonomiesWP(res) {
