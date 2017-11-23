@@ -85,6 +85,12 @@ angular.module('wpPercolate', [])
         return callApi('v5/term/', data)
       },
 
+      /**
+       * Get the v5 metadata */
+      getMetadata: function (data) {
+        return callApi('v5/metadata/', data)
+      },
+
 
       /* ------------------------------------
        * Importing posts

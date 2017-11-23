@@ -107,8 +107,8 @@ angular.module('myApp')
     }
 
     function processPercolateUsers(res){
-      // console.log('Percolate users: ', res)
-      if ($scope.topics) $scope.stopLoader()
+       console.log('Percolate users: ', res)
+      if (res.data.data) $scope.stopLoader()
 
       if( !res.data || !res.data.data ) {
         $scope.showError('There was an error.')

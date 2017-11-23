@@ -13,7 +13,72 @@
 
 <form ng-submit="submitForm( templatesForm )" name="templatesForm" class="row topics" novalidate>
   <div class="col-sm-8 col-sm-offset-2 col-lg-6 col-lg-offset-3">
+      <!-- taxonomy mapping -->
+      <hr>
+      <h4 class="text-center">Taxonomy mapping - metadata fields</h4>
 
+      <div class="taxonomy-map list-group">
+
+          <div class="list-group-item" ng-repeat="(key, map) in formData.taxonomyMapping" style="background: none;">
+
+              <div class="row form-group">
+                  <div class="col-sm-6">
+                      <select class="form-control"
+                              ng-model="formData.taxonomyMapping[key]['taxonomyPercoKey']"
+                              ng-change="selectedPerco(key)"
+                              ng-disabled="!taxonomiesPerco"
+                              required>
+                          <option value="">Select Percolate taxonomy</option>
+                          <option value="{{option.key}}" ng-repeat="option in taxonomiesPerco">{{option.label}}</option>
+                      </select>
+                  </div>
+                  <div class="col-sm-6">
+                      <select class="form-control"
+                              ng-model="formData.taxonomyMapping[key]['taxonomyWP']"
+                              ng-disabled="!taxonomiesWP"
+                              ng-change="selectedWPCategory()"
+                              taxonomiesWPrequired>
+                          <option value="">Select WordPress taxonomy</option>
+                          <option value="{{option.name}}"
+                                  ng-repeat="option in taxonomiesWP"
+                                  ng-disabled="disableWPCategory(option, formData.taxonomyMapping[key]['taxonomyWP'])"
+                          >
+                              {{option.label}}
+                          </option>
+                      </select>
+                  </div>
+              </div>
+
+              <div class="terms" ng-if="formData.taxonomyMapping[key]['taxonomyPerco'] && formData.taxonomyMapping[key]['taxonomyWP']">
+                  <div class="row form-group" ng-repeat="term in getTermsForTaxonomy(formData.taxonomyMapping[key]['taxonomyPerco'])">
+                      <div class="col-sm-6">
+                          <label for="mapping-{{key}}-{{term.id}}" style="font-weight: normal;"> – {{term.name}}</label>
+                      </div>
+                      <div class="col-sm-6">
+                          <select name="mapping-{{key}}-{{term.id}}" class="form-control"
+                                  ng-model="formData.taxonomyMapping[key]['terms'][term.id]"
+                                  ng-selected="edit.active ? formData.taxonomyMapping[key]['terms'][term.id] : false"
+                          >
+                              <option value="">Don't map</option>
+                              <option value="{{option.term_id}}" ng-repeat="option in termsWP | filterByTaxonomy: formData.taxonomyMapping[key]['taxonomyWP']">{{option.name}}</option>
+                          </select>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="form-group text-center">
+                  <a class="btn btn-default btn-block" ng-click="deleteMapping(key)">Remove mapping</a>
+              </div>
+
+          </div>
+
+      </div>
+
+      <div class="form-group text-center">
+          <a class="btn btn-default btn-block" ng-click="addMapping()">Add taxonomy mapping</a>
+      </div>
+
+      <hr>
     <!-- Templates -->
     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 
@@ -258,12 +323,75 @@
 
                 </tbody>
               </table>
+                <!-- taxonomy mapping -->
+                <h4 class="text-left">Taxonomy mapping</h4>
 
+                <div class="taxonomy-map list-group">
+
+                    <div class="list-group-item" ng-repeat="(key, map) in formData[template.id].taxonomyMapping" style="background: none;">
+
+                        <div class="row form-group">
+                            <div class="col-sm-6">
+                                <select class="form-control"
+                                        ng-model="formData[template.id].taxonomyMapping[key]['taxonomyPercoKey']"
+                                        ng-change="selectedPercoTemplate(template.id, key)"
+                                        ng-disabled="!template.taxonomies"
+                                        required>
+                                    <option value="">Select Percolate taxonomy</option>
+                                    <option value="{{option.keyId}}" ng-repeat="option in template.taxonomies">{{option.showName}}</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <select class="form-control"
+                                        ng-model="formData[template.id].taxonomyMapping[key]['taxonomyWP']"
+                                        ng-disabled="!template.taxonomiesWP"
+                                        ng-change="selectedWPCategoryTemplate(template.id)"
+                                        taxonomiesWPrequired>
+                                    <option value="">Select WordPress taxonomy</option>
+                                    <option value="{{option.name}}"
+                                            ng-repeat="option in template.taxonomiesWP"
+                                            ng-disabled="disableWPCategory(option, formData[template.id].taxonomyMapping[key]['taxonomyWP'])"
+                                    >
+                                        {{option.label}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="terms" ng-if="formData[template.id].taxonomyMapping[key]['taxonomyPerco'] && formData[template.id].taxonomyMapping[key]['taxonomyWP']">
+                            <div class="row form-group" ng-repeat="term in getTermsForTaxonomy(formData[template.id].taxonomyMapping[key]['taxonomyPerco'])">
+                                <div class="col-sm-6">
+                                    <label for="mapping-{{key}}-{{term.id}}" style="font-weight: normal;"> – {{term.name}}</label>
+                                </div>
+                                <div class="col-sm-6">
+                                    <select name="mapping-{{key}}-{{term.id}}" class="form-control"
+                                            ng-model="formData[template.id].taxonomyMapping[key]['terms'][term.id]"
+                                            ng-selected="edit.active ? formData[template.id].taxonomyMapping[key]['terms'][term.id] : false"
+                                    >
+                                        <option value="">Don't map</option>
+                                        <option value="{{option.term_id}}" ng-repeat="option in termsWP | filterByTaxonomy: formData[template.id].taxonomyMapping[key]['taxonomyWP']">{{option.name}}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <a class="btn btn-default btn-block" ng-click="deleteMappingTemplate(key, template.id)">Remove mapping</a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group text-center">
+                    <a class="btn btn-default btn-block" ng-disabled="!template.taxonomies" ng-click="addMappingTemplate(template.id, template.taxonomies)">Add taxonomy mapping</a>
+                </div>
+
+                <hr>
+                <!-- /taxonomy mapping -->
             </div><!-- Details -->
-
           </div><!-- Panel body -->
         </div>
-
       </div>
 
     </div>

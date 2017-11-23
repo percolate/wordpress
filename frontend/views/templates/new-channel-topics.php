@@ -18,64 +18,6 @@
 
     <hr>
 
-    <h4 class="text-center">Taxonomy mapping</h4>
-
-    <div class="taxonomy-map list-group">
-
-      <div class="list-group-item" ng-repeat="(key, map) in formData.taxonomyMapping" style="background: none;">
-
-        <div class="row form-group">
-          <div class="col-sm-6">
-            <select class="form-control"
-                    ng-model="formData.taxonomyMapping[key]['taxonomyPerco']"
-                    ng-disabled="!taxonomiesPerco"
-                    required>
-              <option value="">Select Percolate taxonomy</option>
-              <option value="{{option.root_id}}" ng-repeat="option in taxonomiesPerco">{{option.name}}</option>
-            </select>
-          </div>
-          <div class="col-sm-6">
-            <select class="form-control"
-                    ng-model="formData.taxonomyMapping[key]['taxonomyWP']"
-                    ng-disabled="!taxonomiesWP"
-                    taxonomiesWPrequired>
-              <option value="">Select WordPress taxonomy</option>
-              <option value="{{option.name}}" ng-repeat="option in taxonomiesWP">{{option.label}}</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="terms" ng-if="formData.taxonomyMapping[key]['taxonomyPerco'] && formData.taxonomyMapping[key]['taxonomyWP']">
-          <div class="row form-group" ng-repeat="term in getTermsForTaxonomy(formData.taxonomyMapping[key]['taxonomyPerco'])">
-            <div class="col-sm-6">
-              <label for="mapping-{{key}}-{{term.id}}" style="font-weight: normal;"> – {{term.name}}</label>
-            </div>
-            <div class="col-sm-6">
-              <select name="mapping-{{key}}-{{term.id}}" class="form-control"
-                      ng-model="formData.taxonomyMapping[key]['terms'][term.id]"
-                      ng-selected="edit.active ? formData.taxonomyMapping[key]['terms'][term.id] : false"
-              >
-                <option value="">Don't map</option>
-                <option value="{{option.term_id}}" ng-repeat="option in termsWP | filterByTaxonomy: formData.taxonomyMapping[key]['taxonomyWP']">{{option.name}}</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group text-center">
-          <a class="btn btn-default btn-block" ng-click="deleteMapping(key)">Remove mapping</a>
-        </div>
-
-      </div>
-
-    </div>
-
-    <div class="form-group text-center">
-      <a class="btn btn-default btn-block" ng-click="addMapping()">Add taxonomy mapping</a>
-    </div>
-
-    <hr>
-
     <!-- WP settings -->
     <h4 class="text-center">User mapping</h4>
 
