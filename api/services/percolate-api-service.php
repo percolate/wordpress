@@ -72,7 +72,7 @@ class Percolate_API_Service
     $data = json_decode( wp_remote_retrieve_body($res), true );
 
     if ($status != 200 && $status != 201) {
-      $message = "An unknown error occurred communicating with Percolate ($status): "; // . print_r($res, true);
+      $message = "An unknown error occurred communicating with Percolate ($status): " . print_r($res, true);
       if ($data) {
         if ($data['error']) {
           $message = $data['error'];
@@ -81,7 +81,7 @@ class Percolate_API_Service
           $message .= ' -- Request: '.$data['request'];
         }
       } else {
-        $message = "No Data received.";
+        $message = "No Data received."; //. print_r($res);
       }
       Percolate_Log::log($message);
       return $message;

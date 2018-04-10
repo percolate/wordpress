@@ -66,6 +66,39 @@ class Percolate_Setup
 
     // Add custom Cron schedules
     add_filter('cron_schedules', array( $this, 'cron_update_schedules' ));
+
+
+    if(!get_option('PercV4hasAcceptMessage') ) {
+        if(empty($_GET['hidePercV4Message'])) {
+            function show_plugin_alert_activation_percolate()
+            {
+                $url = $_SERVER['REQUEST_URI'];
+                $query = parse_url($url, PHP_URL_QUERY);
+                if ($query) {
+                    $url .= '&hidePercV4Message=1';
+                } else {
+                    $url .= '?hidePercV4Message=1';
+                }
+                ?>
+                <div class="error notice">
+                    <p>Percolate plugin has been updated to new version. You have to map <strong>all of taxonomy
+                            AGAIN!</strong></p>
+                    <p><a href="<?php echo $url; ?>">dismiss</a></p>
+                </div>
+                <?php
+            }
+
+            add_action('admin_notices', 'show_plugin_alert_activation_percolate');
+        } else {
+            function dismiss_notice_percov4()
+            {
+                if (isset($_GET['hidePercV4Message']))
+                    update_option('PercV4hasAcceptMessage', 1);
+            }
+
+            add_action('admin_init', 'dismiss_notice_percov4');
+        }
+    }
   }
 
   /**
@@ -75,6 +108,13 @@ class Percolate_Setup
     Percolate_Log::log('Percolate Importer plugin activated.');
     // Activate the WP Cron task for importing posts
     $this->Post->activateCron();
+
+    update_option('PercV4hasAcceptMessage', 1);
+
+    if($this->check_old_taxonomy()) {
+        update_option('PercV4hasAcceptMessage', 0);
+    }
+
   }
 
   /**
@@ -108,6 +148,52 @@ class Percolate_Setup
   public function renderSettings () {
     include_once(__DIR__ . '/frontend/views/settings/index.php');
   }
+
+    /**
+     * Check taxonomy version of plugin
+     */
+    public function check_old_taxonomy() {
+        $option = json_decode( $this->Post->Wp->getData() );
+
+        $showAlert = false;
+        //in case of old version (taxonomy fixing)
+        foreach($option->channels as $channel) {
+
+            if(isset($channel->taxonomyMapping)) {
+                $newTaxonomyMapping = [];
+
+                foreach($channel->taxonomyMapping as $taxonomy) {
+
+                    if(isset($taxonomy->taxonomyPercoKey)) {
+                        array_push($newTaxonomyMapping, $taxonomy);
+                    } else {
+                        $showAlert = true;
+                    }
+                }
+
+                if(count($newTaxonomyMapping) > 0) {
+                    $channel->taxonomyMapping = $newTaxonomyMapping;
+                } else {
+                    unset($channel->taxonomyMapping);
+                }
+
+            }
+        }
+
+        if($showAlert) {
+            wp_cache_delete ( 'alloptions', 'options' );
+
+            $success = update_option( 'PercV4Opt', json_encode($option) );
+
+            if($success) {
+                Percolate_Log::log('Percolate database successfully update taxonomy.');
+            } else {
+                Percolate_Log::log('Error - Percolate plugin cant update database!');
+            }
+        }
+
+        return $showAlert;
+    }
 
 
   /**

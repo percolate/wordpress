@@ -101,6 +101,51 @@ class Percolate_Post_Model
     return $posts;
   }
 
+/**
+* Get all fieldsets from Percolate
+*
+* @param stdObject $channel
+* @return array Fieldsets
+*/
+    public function getAllfieldsets($channel)
+    {
+        /**
+         * Call the percolate API and try to import fieldsets
+         */
+        $key    = $channel->key;
+        $method = "v5/schema/";
+        $fields = array(
+            'scope_ids'     => 'license:' . $channel->license,
+            'type'          => 'metadata'
+        );
+
+        $res_fieldsets = $this->Percolate->callAPI($key, $method, $fields);
+
+        return $res_fieldsets['data'];
+    }
+
+/**
+* Get all metadata of post from Percolate
+*
+* @param stdObject $channel
+* @return array Fieldsets
+*/
+    public function getMetadata($channel, $postId)
+    {
+        /**
+         * Call the percolate API and try to get metadata
+         */
+        $key    = $channel->key;
+        $method = "v5/metadata/";
+        $fields = array(
+            'object_ids'     => $postId
+        );
+
+        $resData = $this->Percolate->callAPI($key, $method, $fields);
+
+        //Percolate_Log::log('Metadata result: ' . print_r($resData, true));
+        return $resData;
+    }
 
   /**
    * Get the post data from Percolate for a post that's already imported
@@ -230,6 +275,7 @@ class Percolate_Post_Model
       'message' => ''
     );
 
+
     // ------ Check if we have everything --------
     if( !isset($post) || empty($post) )
     {
@@ -259,8 +305,16 @@ class Percolate_Post_Model
           return $res;
     }
 
-    Percolate_Log::log('----------------------------------');
 
+    $fieldsets = $this->getAllfieldsets($channel);
+
+    $metadata = $this->getMetadata($channel, $post['id']);
+
+    $option = json_decode( $this->Wp->getData() );
+    //Percolate_Log::log('$option ' . print_r($option, true));
+
+
+      Percolate_Log::log('----------------------------------');
 
     if ($wpPostID) {
 
@@ -609,32 +663,137 @@ class Percolate_Post_Model
       }
     }
 
+
     // -----------  Taxonomies v5  --------------
-    if( isset($channel->taxonomyMapping) && !empty($channel->taxonomyMapping) ) {
-      foreach ($channel->taxonomyMapping as $index => $mapping) {
-        Percolate_Log::log('Adding terms for : ' . print_r($mapping, true));
-        $wpTerms = [];
-        foreach ($schema['fields'] as $field) {
-          if ($field['type'] == 'term') {
-            foreach ($post['ext'][$field['key']] as $termID) {
-              $wpTerms[] = $mapping->terms->${termID};
-            }
+      //DEPRECATED
+
+     /* if( isset($channel->taxonomyMapping) && !empty($channel->taxonomyMapping) ) {
+      //Percolate_Log::log('Adding terms print channel : ' . print_r($channel, true));
+      //Percolate_Log::log('Adding terms print schema : ' . print_r($schema, true));
+      //Percolate_Log::log('Adding terms print post : ' . print_r($post, true));
+
+
+    foreach ($channel->taxonomyMapping as $index => $mapping) {
+      Percolate_Log::log('Adding terms for : ' . print_r($mapping, true));
+
+      $wpTerms = [];
+
+      foreach ($schema['fields'] as $field) {
+        if ($field['type'] == 'term') {
+          foreach ($post['ext'][$field['key']] as $termID) {
+            $wpTerms[] = $mapping->terms->${termID};
           }
         }
-        Percolate_Log::log('$wpTerms' . print_r($wpTerms, true));
-        $taxonomyWp = get_taxonomy( $mapping->taxonomyWP );
-        if (!$taxonomyWp->hierarchical) {
-          Percolate_Log::log('Taxonomy is not hierarchical');
-          foreach ($wpTerms as $key => $termId) {
-            $term = get_term( $termId, $mapping->taxonomyWP );
-            $wpTerms[$key] = $term->slug;
-          }
+      }
+
+      $taxonomyWp = get_taxonomy( $mapping->taxonomyWP );
+      if (!$taxonomyWp->hierarchical) {
+        Percolate_Log::log('Taxonomy is not hierarchical');
+        foreach ($wpTerms as $key => $termId) {
+          $term = get_term( $termId, $mapping->taxonomyWP );
+          $wpTerms[$key] = $term->slug;
         }
+      }
+        Percolate_Log::log("$taxonomyWp" . print_r($taxonomyWp, true));
+        Percolate_Log::log('WPPostID ' . print_r($wpPostID, true));
+        Percolate_Log::log('$wpTerms ' . print_r($wpTerms, true));
+        Percolate_Log::log('$mapping ' . print_r($mapping, true));
+        Percolate_Log::log('$index ' . print_r($index, true));
+
         wp_set_post_terms($wpPostID, $wpTerms, $mapping->taxonomyWP, $index==0 ? false : true);
       }
-    }
+    }*/
+      //Taxonomies v6
+      $wpTerms = [];
+      $indexCnt = 0;
+      //Percolate_Log::log("SchemaTaxonomy" . print_r($schema['fields'], true));
+      if(isset($schema['fields']) && !empty($schema['fields']) ) {
 
-    // ----------- Custom Taxonomies --------------
+          foreach($schema['fields'] as $field) {
+              if($field['type'] == 'term') {
+                  $schemeTaxonomies = $option->channels->{$channel->uuid}->{$schema['id']}->taxonomyMapping;
+                  //Percolate_Log::log("$schemeTaxonomies".print_r($schemeTaxonomies, true));
+                  if(isset($schemeTaxonomies) && !empty($schemeTaxonomies)) {
+                      $postTaxonomies = $post['ext']; //array of values
+
+                      foreach($postTaxonomies[$field['key']] as $postTaxonomy) {
+
+                          foreach($schemeTaxonomies as $schemeTaxonomy) {
+
+                              //Percolate_Log::log("Key:".print_r($field['key'],true) . " another " . print_r($schemeTaxonomy->taxonomyPercoKey, true));
+                              if($field['key'] != $schemeTaxonomy->taxonomyPercoKey)
+                                  continue;
+                              foreach($schemeTaxonomy->terms as $schemeTerm) {
+                                  $indexCnt++;
+                                  //Percolate_Log::log('$schemeTerm'. print_r($schemeTerm, true));
+                                  //Percolate_Log::log("$postTaxonomy".print_r($postTaxonomy, true));
+
+                                  $taxonomyWp = get_taxonomy( $schemeTaxonomy->taxonomyWP );
+
+                                  if (!$taxonomyWp->hierarchical) {
+                                      Percolate_Log::log('Taxonomy is not hierarchical');
+                                      foreach ($wpTerms as $key => $schemeTaxonomy->terms->{$postTaxonomy}) {
+                                          $term = get_term( $schemeTaxonomy->terms->{$postTaxonomy}, $schemeTaxonomy->taxonomyWP );
+                                          $wpTerms[$key] = $term->slug;
+                                      }
+                                  } else {
+                                      Percolate_Log::log('Taxonomy is hierarchical');
+                                      foreach ($post['ext'][$field['key']] as $termId) {
+                                          $wpTerms[] = $schemeTaxonomy->terms->{$termId};
+                                      }
+                                  }
+
+                                  //Percolate_Log::log("FinalTaxonomy" . print_r($wpTerms, true));
+                                  wp_set_post_terms($wpPostID, $wpTerms, $schemeTaxonomy->taxonomyWP, $indexCnt==0 ? false : true);
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+      //Taxonomies from Creative detail
+      //$fieldsets, $metadata
+      //Percolate_Log::log('Fieldsets'. print_r($fieldsets, true));
+      //Percolate_Log::log('Metadata'. print_r($metadata, true));
+      if(isset($option->channels->{$channel->uuid}->taxonomyMapping)) {
+          $optionsTaxonomy = $option->channels->{$channel->uuid}->taxonomyMapping;
+          //Percolate_Log::log('optionsTaxonomy'. print_r($optionsTaxonomy, true));
+
+          foreach ($optionsTaxonomy as $taxonomy) {
+              $taxonomyKey = $taxonomy->taxonomyPercoKey;
+
+              foreach ($fieldsets as $fieldset) {
+                  foreach ($metadata['data'] as $meta) {
+                      //Percolate_Log::log('dataTax'. print_r($meta['ext'], true));
+
+                      //Percolate_Log::log('dataTax2'. print_r($meta['ext'][$taxonomyKey], true));
+                      if ($meta['ext'][$taxonomyKey]) {
+                          foreach ($meta['ext'][$taxonomyKey] as $dataVal) {
+                              $taxonomyWp = get_taxonomy($taxonomy->taxonomyWP);
+
+                              if (!$taxonomyWp->hierarchical) {
+                                  Percolate_Log::log('Taxonomy is not hierarchical');
+                                  foreach ($wpTerms as $key => $taxonomy->terms->{$dataVal}) {
+                                      $term = get_term($taxonomy->terms->{$dataVal}, $taxonomy->taxonomyWP);
+                                      $wpTerms[$key] = $term->slug;
+                                  }
+                              } else {
+                                  Percolate_Log::log('Taxonomy is hierarchical');
+                                  $wpTerms[] = $taxonomy->terms->{$dataVal};
+                              }
+
+                              Percolate_Log::log("FinalTaxonomy" . print_r($wpTerms, true));
+                              wp_set_post_terms($wpPostID, $wpTerms, $taxonomy->taxonomyWP, $indexCnt == 0 ? false : true);
+                          }
+                      }
+                  }
+              }
+          }
+      }
+
+      // ----------- Custom Taxonomies --------------
     //   Not supported anymore
     //   Superseded by v5 custom taxonomies
     if ( isset($template->taxonomy) && $template->taxonomy == 'on' && isset($template->taxonomyField) && isset($template->taxonomyWP) ) {
