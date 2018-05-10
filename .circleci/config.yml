@@ -1,0 +1,16 @@
+version: 2
+
+workflows:
+  version: 2
+  mobile-tools:
+    jobs:
+      - mdl
+
+jobs:
+
+  mdl:
+    docker:
+      - image: rsrchboy/mdl
+    steps:
+      - checkout
+      - run: mdl .
