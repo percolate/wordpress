@@ -25,6 +25,35 @@ angular.module('wpPercolate', [])
       /* ------------------------------------
        * Setup screen
        * ------------------------------------ */
+
+      getLicenseV5: function(data) {
+        return callApi('v5/license/license:' + data.license, data);
+      },
+      getPlatformV5: function(data) {
+        return callApi('v5/platform/' + data.platform, data);
+      },
+      getChannelV5: function(data) {
+        return callApi('v5/channel/' + data.channel, data);
+      },
+      getUserV5: function(data) {
+        return callApi('v5/me', data)
+          .then(d => {            
+            if (!d || !d.data || !d.data.data)
+              return {
+                data: null
+              };
+            return {
+              data: {
+                username: d.data.data.email,
+                email: d.data.data.email,
+                name: d.data.data.name,
+                id: d.data.data.id.replace('user:',''),
+                active: true,
+              }
+            };
+          });
+      },
+
       getUser: function (data) {
         return callApi('v3/me', data)
       },
@@ -63,6 +92,50 @@ angular.module('wpPercolate', [])
         return callApi('v3/licenses/' + data.license + '/users', data)
       },
 
+      getUsersByLicenseV5: function (data){
+        var orig = data;
+        console.log(orig);
+        return callApi('v5/user_role/', {
+          key: data.key,
+          fields: {
+            scope_ids: "license:" + data.license
+          }
+        }).then(function(data) {
+          console.log(data);
+          var userIds = data.data.data.map(function(v) { 
+            return v.user_id;
+          });
+          console.log('Loaded user IDs: ',userIds);
+          return callApi('v5/user/', {
+            key: orig.key,
+            fields: angular.extend({
+              ids: userIds.join(','),
+              limit: orig.fields.limit,
+              offset: orig.fields.offset
+            }, orig.fields)
+          })
+              .then(function(users) {
+                users = users.data;
+                return {
+                  data: {
+                    pagination: {
+                      total: users.meta.total,
+                      limit: users.meta.query.limit,
+                      offset: users.meta.query.offset
+                    },
+                    data: users.data.map(function(u) {
+                      u.id = parseInt(u.id.replace('user:',''));
+                      return {
+                        user: u,
+                        id: u.id
+                      };
+                    })
+                  }
+                };  
+              });
+        })
+      },
+      
       /* ------------------------------------
        * Templates screen
        * ------------------------------------ */

@@ -163,11 +163,81 @@ angular.module('myApp')
       if( form.$invalid ) {
         return
       }
+      var fd = angular.extend({}, $scope.formData);          
+      fd.license = fd.license.trim().replace('license:','');      
+      fd.platform = fd.platform.trim();
+      fd.channel = fd.channel.trim();
 
-      // extend new channel object
-      angular.extend($scope.activeChannel, $scope.formData)
-      console.log('Submiting form, current dataset: ', $scope.activeChannel)
-      $state.go('add.topics')
+      if (fd.platform.indexOf('platform:') != 0)
+        fd.platform = 'platform:' + fd.platform;
+      if (fd.channel.indexOf('channel:') != 0)
+        fd.channel = 'channel:' + fd.channel;
+
+      $scope.showLoader('Please wait while we verify the configuration...')
+      Percolate.getUserV5({key: fd.key})
+        .then(d => {
+          if (!d.data || !d.data) {
+            $scope.stopLoader()
+            $scope.showError("Invalid API Key");
+            return;
+          }          
+          fd.user = d.data;
+
+          console.log("API Key validated",d);
+          return Percolate.getLicenseV5({key: fd.key, license: fd.license})
+        },err => { 
+          $scope.stopLoader()
+          $scope.showError("Invalid API Key");
+        })
+        .then(d => {
+          if (!d) return;
+          if (!d.data || !d.data.data) {
+            $scope.stopLoader()
+            $scope.showError("Invalid License ID");
+            return;
+          }
+          
+          console.log("License validated",d);
+          return Percolate.getPlatformV5({key: fd.key, platform: fd.platform})
+        },err => { 
+          $scope.stopLoader()
+          $scope.showError("Invalid License ID");
+        })
+        .then(d => {
+          if (!d) return;
+          if (!d.data || !d.data.data) {
+            $scope.stopLoader()
+            $scope.showError("Invalid Platform ID");
+            return;
+          }
+          
+          console.log("platform validated",d);
+          return Percolate.getChannelV5({key: fd.key, channel: fd.channel})
+        },err => { 
+          $scope.stopLoader()
+          $scope.showError("Invalid Platform ID");
+        })
+        .then(d => {
+          if (!d) return;
+          if (!d.data || !d.data.data) {
+            $scope.stopLoader()
+            $scope.showError("Invalid Channel ID");
+            return;
+          }
+          
+          console.log("channel validated",d);
+
+          $scope.stopLoader();
+          
+          // extend new channel object
+          angular.extend($scope.activeChannel, fd);
+          console.log('Submiting form, current dataset: ', $scope.activeChannel)
+          $state.go('add.topics')
+        },err => { 
+          $scope.stopLoader()      
+          $scope.showError("Invalid channel ID");
+        });
+       
     }
 
 
