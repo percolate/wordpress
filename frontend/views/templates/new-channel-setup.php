@@ -17,7 +17,6 @@
       <label for="key">First, please enter your Percolate API key</label>
       <input  type="text" name="key" id="key" class="form-control"
               ng-model="formData.key"
-              ng-change="checkKey()"
               ng-class="{ 'has-error' : setupForm.key.$invalid && (!setupForm.key.$pristine || submitted) }" required>
     </div>
 
@@ -29,29 +28,25 @@
     </div>
 
     <div class="form-group">
-      <label for="license">License</label>
-      <select name="license" id="license" class="form-control"
+      <label for="license">License ID</label>
+      <input  type="text" name="license" id="license" class="form-control"
               ng-model="formData.license"
-              ng-disabled="!licenses"
-              ng-change="changeLicense()"
-              ng-options="option.id as option.name for option in licenses" required></select>
+              ng-class="{ 'has-error' : setupForm.license.$invalid && (!setupForm.license.$pristine || submitted) }" required>
     </div>
 
     <div class="form-group">
-      <label for="platform">Platform</label>
-      <select name="platform" id="platform" class="form-control"
+      <label for="platform">Platform ID</label>
+      <input  type="text" name="platform" id="platform" class="form-control"
               ng-model="formData.platform"
-              ng-disabled="!platforms"
-              ng-change="changePlatform()"
-              ng-options="option.id as option.name for option in platforms" required></select>
+              ng-class="{ 'has-error' : setupForm.platform.$invalid && (!setupForm.platform.$pristine || submitted) }" required>
+
     </div>
 
     <div class="form-group">
-      <label for="channel">Channel</label>
-      <select name="channel" id="channel" class="form-control"
+      <label for="channel">Channel ID</label>
+      <input  type="text" name="channel" id="channel" class="form-control"
               ng-model="formData.channel"
-              ng-disabled="!channels"
-              ng-options="option.id as option.name for option in channels" required></select>
+              ng-class="{ 'has-error' : setupForm.channel.$invalid && (!setupForm.channel.$pristine || submitted) }" required>      
     </div>
 
     <div class="form-group">

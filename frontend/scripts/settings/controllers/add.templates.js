@@ -145,7 +145,8 @@ angular.module('myApp')
         key    : $scope.activeChannel.key,
         fields : {
           'scope_ids': 'license:' + $scope.activeChannel.license,
-          'type': 'metadata'
+          'type': 'metadata',
+          'extend_scopes': true
         }
       })
         .then(getMetadataPerco, apiError)
@@ -457,7 +458,8 @@ angular.module('myApp')
       fields : {
         'scope_ids': 'license:' + $scope.activeChannel.license,
         'ext.platform_ids': $scope.activeChannel.platform,
-        'type': 'post'
+        'type': 'post',
+        'extend_scopes':true
       }
     })
       .then(getTemplateSchemas, apiError)

@@ -38,6 +38,7 @@ angular.module('myApp')
      * -------------------------------------- */
 
     function apiError (err) {
+      console.log('Error: ', err);
       $scope.stopLoader()
       $scope.showError(err)
       return
@@ -96,7 +97,7 @@ angular.module('myApp')
     function fetchPercolatUsers(paginationData) {
       $scope.showLoader('Loading users from Percolate...')
       $scope.percolateUsers = null
-      return Percolate.getUsersByLicense({
+      return Percolate.getUsersByLicenseV5({
         key    : $scope.activeChannel.key,
         license: $scope.activeChannel.license,
         fields : {
@@ -197,7 +198,7 @@ angular.module('myApp')
       if( $scope.formData ) {
         angular.extend($scope.activeChannel, $scope.formData)
       }
-      // console.log('Submiting form, current dataset: ', $scope.activeChannel)
+      console.log('Submiting form, current dataset: ', $scope.activeChannel)
       $state.go('add.templates')
     }
 
@@ -216,6 +217,7 @@ angular.module('myApp')
 
      // Check if we have the active User
      if( !$scope.activeChannel.user ) {
+       console.log('No active users found');
        $scope.showError('No active user found.')
        $state.go('manage')
      }

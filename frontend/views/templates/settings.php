@@ -83,7 +83,7 @@
 
 <p>
   <small>
-    Plugin version: 4.x-1.2.7 (<i>Supported WordPress version - Plugin version</i>)<br>
+    Plugin version: 4.x-1.3.0 (<i>Supported WordPress version - Plugin version</i>)<br>
     PHP >= 5.6 required for the plugin to function properly
   </small>
 </p>

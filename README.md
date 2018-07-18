@@ -198,6 +198,10 @@ You should see that:
 
 ## Changelog
 
+### 4.x-1.3.0
+
+* Manual settings UI
+
 ### 4.x-1.2.7
 
 * Adding support for Percolate's overhauled v5 Taxonomy API
